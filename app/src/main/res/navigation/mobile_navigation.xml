@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_login_fragment">
+    <!--login-->
+    <fragment
+        android:id="@+id/nav_login_fragment"
+        android:name="com.example.scanner.ui.navigation.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_nav_login_fragment_to_nav_home"
+            app:destination="@id/nav_home"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/mobile_navigation"
+            app:launchSingleTop="true"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_nav_login_fragment_self"
+            app:destination="@id/nav_login_fragment"
+            app:popUpTo="@id/mobile_navigation" />
+    </fragment>
+    <action
+        android:id="@+id/action_global_nav_login_fragment"
+        app:destination="@id/nav_login_fragment"
+        app:popUpTo="@id/mobile_navigation" />
+
+    <!--home-->
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.scanner.ui.navigation.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" >
+    </fragment>
+
+    <!--invoices-->
+    <fragment
+        android:id="@+id/nav_invoices"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragment"
+        />
+    <!--invoice info-->
+    <fragment
+        android:id="@+id/nav_invoice_info_fragment"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfo"
+        android:label="InvoiceInfoFragment" />
+    <!--invoice lines-->
+    <fragment
+        android:id="@+id/nav_invoice_lines_fragment"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentLines"
+        android:label="InvoiceLinesFragment" />
+    <!--invoice line info-->
+    <fragment
+        android:id="@+id/nav_invoice_line_info_fragment"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfoLine"
+        android:label="InvoiceLineInfoFragment" />
+
+    <!--components-->
+    <fragment
+        android:id="@+id/nav_components_fragment"
+        android:name="com.example.scanner.ui.navigation.ComponentFragment"
+        android:label="ComponentsFragment"
+        />
+
+
+    <!--components info-->
+    <fragment
+        android:id="@+id/nav_components_info_fragment"
+        android:name="com.example.scanner.ui.navigation.ComponentFragmentInfo"
+        android:label="ComponentsCardFragment"
+        />
+
+    <!--receive-->
+    <fragment
+        android:id="@+id/nav_receive"
+        android:name="com.example.scanner.ui.navigation.ReceiveFragment"
+        android:label="@string/menu_gallery"
+        />
+    <!--receive_info-->
+    <fragment
+        android:id="@+id/nav_receive_info_fragment"
+        android:name="com.example.scanner.ui.navigation.ReceiveFragmentInfo"
+        android:label="ReceiveInfoFragment" />
+
+    <!--isolator-->
+    <fragment
+        android:id="@+id/nav_isolator"
+        android:name="com.example.scanner.ui.navigation.IsolatorFragment"
+        />
+
+    <!--isolator_isolate-->
+    <fragment
+        android:id="@+id/nav_isolator_isolate_fragment"
+        android:name="com.example.scanner.ui.navigation.IsolatorFragmentIsolate"
+        android:label="IsolatorIsolatingFragment" />
+    <fragment
+        android:id="@+id/nav_isolator_minus_fragment"
+        android:name="com.example.scanner.ui.navigation.IsolatorFragmentMinus"
+        android:label="IsolatorMinusFragment" />
+
+
+</navigation>

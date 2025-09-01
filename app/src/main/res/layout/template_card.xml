@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/RowFormContainer"
+    >
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        >
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            >
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                >
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/container_vertical"
+                    style="@style/ContentPadding"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+
+                    >
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </ScrollView>
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/container_horizon"
+                style="@style/ContentPadding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end"
+                >
+<!--                <include layout="@layout/template_progress"/>-->
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:visibility="gone"/>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+<!--        <include layout="@layout/template_progress_text" android:id="@+id/progress" android:visibility="gone"/>-->
+<!--        <ProgressBar-->
+<!--            android:id="@+id/progress"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_gravity="center"-->
+<!--            android:visibility="gone"/>-->
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:background="@drawable/rounded_dialog"
+    >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/receive_action_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/Theme.Scanner.AppBarOverlay">
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    app:popupTheme="@style/Theme.Scanner.PopupOverlay"
+                    >
+                        <LinearLayout
+                            android:id="@+id/icon_container"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:layout_gravity="end"
+                            >
+                        </LinearLayout>
+                </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_text_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="начните ввод здесь"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_clear_all"
+            >
+                <com.example.scanner.ui.views.MyTextInputEditText
+                    android:id="@+id/input_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:selectAllOnFocus="true"
+                    android:imeOptions="actionDone"
+
+                    />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/container_radio"
+            android:visibility="gone"
+            >
+                <RadioButton
+                    android:id="@+id/manual_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ручной ввод"
+                    android:checked="true"/>
+                <RadioButton
+                    android:id="@+id/scanner_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Сканирование"
+                    />
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="История"
+            android:paddingTop="20dp"/>
+        <ListView
+            android:id="@+id/historyList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="200dp"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="1dp"
+            />
+
+
+
+
+</LinearLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

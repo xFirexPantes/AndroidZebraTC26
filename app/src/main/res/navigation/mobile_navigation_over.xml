@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation_over.xml"
+    app:startDestination="@id/transparent_fragment">
+
+    <fragment
+        android:id="@+id/progress_fragment"
+        android:name="com.example.scanner.ui.navigation_over.ProgressFragment"
+        android:label="fragment_progress"
+        tools:layout="@layout/fragment_progress" >
+    </fragment>
+    <fragment
+        android:id="@+id/transparent_fragment"
+        android:name="com.example.scanner.ui.navigation_over.TransparentFragment"
+        android:label="fragment_transparent"
+        tools:layout="@layout/fragment_transparent" >
+    </fragment>
+    <action
+        android:id="@+id/action_global_transparent_fragment"
+        app:destination="@id/transparent_fragment"
+        app:popUpTo="@id/mobile_navigation_over.xml"
+        app:launchSingleTop="true" />
+    <action
+        android:id="@+id/action_global_progress_fragment"
+        app:destination="@id/progress_fragment"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/transparent_fragment" />
+    <fragment
+        android:id="@+id/errorsFragment"
+        android:name="com.example.scanner.ui.navigation_over.ErrorsFragment"
+        tools:layout="@layout/fragment_errors" />
+    <action
+        android:id="@+id/action_global_errorsFragment"
+        app:destination="@id/errorsFragment"
+        app:popUpTo="@id/mobile_navigation_over.xml"
+        app:launchSingleTop="true" />
+
+</navigation>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/order_by_not_collected"
+        android:title="@string/order_by_not_collected"
+        />
+    <item android:id="@+id/order_by_collected"
+        android:title="@string/order_by_collected"
+        />
+
+    <item android:id="@+id/order_by_place"
+        android:title="@string/order_by_place"
+        />
+
+    <item android:id="@+id/order_by_name"
+        android:title="@string/order_by_name"
+        />
+
+    <item android:id="@+id/order_by_name_desc"
+        android:title="@string/order_by_name_desc"
+        />
+</menu>

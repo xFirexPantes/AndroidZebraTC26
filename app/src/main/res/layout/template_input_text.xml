@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/data_attribute_note_view_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/note_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Примечание"
+        android:layout_marginTop="5dp"
+        tools:ignore="HardcodedText">
+        <com.example.scanner.ui.views.MyTextInputEditText
+            android:id="@+id/note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:drawableEnd="@drawable/ic_clear_all"
+            android:inputType="textMultiLine"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</FrameLayout>
+
