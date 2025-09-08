@@ -598,6 +598,7 @@ fun TemplatePresenterBinding.setAttribute(
 }
 
 
+//region templatesAcces
 val TemplatePresenterBinding.templateImageSquareContainer: ConstraintLayout
     get()  {
 
@@ -777,6 +778,7 @@ val TemplatePresenterBinding.templateAttributeData1TextView: TextView
             }
                 ).dataAttribute1
     }
+//endregion
 
 //endregion
 
