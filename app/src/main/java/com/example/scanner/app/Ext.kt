@@ -169,8 +169,10 @@ fun Any.toPresentString(any:Any?): String{
         "$any"
 }
 
-fun ImageView.loadImage(uri: String,callback: Callback?=null){
+fun ImageView.loadImage(uri: String?,callback: Callback?=null){
     Other.getInstanceSingleton().picasso.load(uri)
+        //.resize(128,128)
+        .placeholder(R.drawable.ic_menu_camera_gray)
            .into(this,callback)
 }
 
@@ -354,52 +356,89 @@ fun TemplatePresenterBinding.setAttribute(
                             holder: RecyclerView.ViewHolder,
                             position: Int
                         ) {
+                            val url=data[position].url
+                            if(holder.itemView.tag==null){
+                                val templateCardBinding=
+                                TemplateCardBinding.bind(holder.itemView)
+                                templateCardBinding.containerVertical.removeAllViews()
+                                templateCardBinding.containerVertical
+                                    .apply {
+                                        addView(
+                                            TemplatePresenterBinding.inflate(inflater,root,false)
+                                                .apply {
+                                                    templateImageSquareContainer.visibility =View.VISIBLE
 
-                            TemplateCardBinding.bind(holder.itemView).containerVertical.removeAllViews()
-                            TemplateCardBinding.bind(holder.itemView).containerVertical
-                                .apply {
-                                    addView(
-                                        TemplatePresenterBinding.inflate(inflater,root,false)
-                                            .apply {
-                                                templateImageSquareContainer.visibility =View.VISIBLE
-                                                data[position].url?.let {url->
                                                     templateImageSquareImageView.loadImage(url,object :Callback{
-                                                        override fun onSuccess() {
-                                                            templateImageSquareImageView.setOnClickListener {
-                                                                mainActivityRouter?.navigate(
-                                                                    TransparentFragment::class.java,
-                                                                    Bundle().apply {
-                                                                        putSerializable(
-                                                                            TransparentFragment.PARAM,
-                                                                            url
-                                                                        )
-                                                                    }
-                                                                )
+                                                            override fun onSuccess() {
+                                                                templateImageSquareImageView.setOnClickListener {
+                                                                    mainActivityRouter?.navigate(
+                                                                        TransparentFragment::class.java,
+                                                                        Bundle().apply {
+                                                                            putSerializable(
+                                                                                TransparentFragment.PARAM,
+                                                                                url
+                                                                            )
+                                                                        }
+                                                                    )
+                                                                }
                                                             }
-                                                        }
 
-                                                        override fun onError(e: java.lang.Exception?) {
-                                                            (templateImageSquareImageView.layoutParams as LinearLayout.LayoutParams).height=LinearLayout.LayoutParams.WRAP_CONTENT
-                                                            templateImageSquareImageView.scaleType=ImageView.ScaleType.CENTER_INSIDE
-                                                            templateImageSquareImageView.setImageResource(R.drawable.ic_error)
-                                                            templateImageSquareImageViewError.text=
-                                                                StringBuilder("Файл не найден \n${e?.message}")
-                                                        }
-                                                    })
+                                                            override fun onError(e: java.lang.Exception?) {
+                                                                (templateImageSquareImageView.layoutParams as LinearLayout.LayoutParams).height=LinearLayout.LayoutParams.WRAP_CONTENT
+                                                                templateImageSquareImageView.scaleType=ImageView.ScaleType.CENTER_INSIDE
+                                                                templateImageSquareImageView.setImageResource(R.drawable.ic_error)
+                                                                templateImageSquareImageViewError.text=
+                                                                    StringBuilder("Файл не найден \n${e?.message}")
+                                                            }
+                                                        })
+
+
                                                 }
+                                                .root
+                                        )
+                                        addView(
+                                            TemplatePresenterBinding.inflate(inflater,root,false)
+                                                .apply {
+                                                    setAttribute(Pair(arrayOf("horizontalDivider"),""),"")
+                                                }.root
 
+                                        )
+
+                                    }
+                                holder.itemView.tag=
+                                    templateCardBinding
+
+                            }
+                            else{
+                                val imageView=(TemplatePresenterBinding.bind((holder.itemView.tag as TemplateCardBinding)
+                                    .containerVertical
+                                    .getChildAt(0)))
+                                    .templateImageSquareImageView
+
+                                imageView.loadImage(url,object :Callback{
+                                        override fun onSuccess() {
+                                            imageView.setOnClickListener {
+                                                mainActivityRouter?.navigate(
+                                                    TransparentFragment::class.java,
+                                                    Bundle().apply {
+                                                        putSerializable(
+                                                            TransparentFragment.PARAM,
+                                                            url
+                                                        )
+                                                    }
+                                                )
                                             }
-                                            .root
-                                    )
-                                    addView(
-                                        TemplatePresenterBinding.inflate(inflater,root,false)
-                                            .apply {
-                                                setAttribute(Pair(arrayOf("horizontalDivider"),""),"")
-                                            }.root
+                                        }
 
-                                    )
-
-                                }
+                                        override fun onError(e: java.lang.Exception?) {
+                                            (templateImageSquareImageView.layoutParams as LinearLayout.LayoutParams).height=LinearLayout.LayoutParams.WRAP_CONTENT
+                                            templateImageSquareImageView.scaleType=ImageView.ScaleType.CENTER_INSIDE
+                                            templateImageSquareImageView.setImageResource(R.drawable.ic_error)
+                                            templateImageSquareImageViewError.text=
+                                                StringBuilder("Файл не найден \n${e?.message}")
+                                        }
+                                    })
+                            }
 
                         }
 

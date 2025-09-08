@@ -37,7 +37,7 @@
         </activity>
 
         <uses-library
-            android:name="com.symbol.emdk"  />
+            android:name="com.symbol.emdk" android:required="false" />
 
         <activity
             android:name=".ui.activities.CrashActivity"
