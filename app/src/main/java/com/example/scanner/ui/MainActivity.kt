@@ -22,6 +22,8 @@ import com.example.scanner.ui.base.BaseActivity
 import com.example.scanner.ui.base.ScanFragmentBase
 import com.example.scanner.ui.navigation.ComponentFragment
 import com.example.scanner.ui.navigation.ComponentFragmentInfo
+import com.example.scanner.ui.navigation.InControlFragment
+import com.example.scanner.ui.navigation.InControlFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragment
 import com.example.scanner.ui.navigation.HomeFragment
 import com.example.scanner.ui.navigation.InvoiceFragmentInfo
@@ -184,6 +186,16 @@ class MainActivity : BaseActivity() {
                 ReceiveFragmentInfo::class.java ->
                     navControllerMain?.navigate(R.id.nav_receive_info_fragment, route.params)
 
+                //endregion
+                //region InControl
+
+                InControlFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_incontrol_fragment, route.params)
+                //endregion
+
+                //region Components Info
+                InControlFragmentInfo::class.java ->
+                    navControllerMain?.navigate(R.id.nav_incontrol_info_fragment, route.params)
                 //endregion
 
                 //region ProgressFragment

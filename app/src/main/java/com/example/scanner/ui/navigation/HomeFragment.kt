@@ -1,12 +1,14 @@
 package com.example.scanner.ui.navigation
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.viewModels
@@ -47,6 +49,7 @@ class HomeFragment : BaseFragment() {
                 TransparentFragment::class.java
             )
         }
+
     }
 
     override fun onCreateView(
@@ -129,6 +132,22 @@ class HomeFragment : BaseFragment() {
                                 accept.button.setOnClickListener { forbiddenToast()}
                                 floatDisable
                             }
+                        incontrol.button.alpha=
+                            if(state.incontrol) {
+                                incontrol.button.setOnClickListener {
+                                    //                            homeViewModel.mainActivityRouter.navigate(
+                                    //                                ScanReceiveFragment::class.java)
+                                    homeViewModel.mainActivityRouter.navigate(
+                                        InControlFragment::class.java,
+                                        Bundle().apply { putSerializable(InControlFragment.PARAM,"") }
+                                    )
+                                }
+                                floatEnable
+                            }
+                            else{
+                                incontrol.button.setOnClickListener { forbiddenToast()}
+                                floatDisable
+                            }
 
 
 
@@ -152,6 +171,18 @@ class HomeFragment : BaseFragment() {
                     }
                 }
             })
+            val versionTextView: TextView = root.findViewById(R.id.textVersion)
+
+            // Получаем версию приложения
+            try {
+                val packageInfo = requireActivity().packageManager.getPackageInfo(
+                    requireActivity().packageName, 0
+                )
+                val versionName = packageInfo.versionName
+                versionTextView.text = "Версия: $versionName"
+            } catch (e: PackageManager.NameNotFoundException) {
+                versionTextView.text = "Версия: не найдена"
+            }
 
         }
         .root
@@ -165,6 +196,7 @@ class HomeFragment : BaseFragment() {
             val issuance: Boolean,
             val accept: Boolean,
             val search: Boolean,
+            val incontrol: Boolean,
         ): HomeFragmentFormState<Nothing>()
     }
 
@@ -269,7 +301,8 @@ class HomeFragment : BaseFragment() {
                             accept = it.access.accept,
                             issuance = it.access.issuance,
                             search = it.access.search,
-                            isolator = it.access.isolator
+                            isolator = it.access.isolator,
+                            incontrol = it.access.incontrol
                         )
                     }
                 }

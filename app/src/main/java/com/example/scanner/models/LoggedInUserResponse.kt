@@ -15,6 +15,7 @@ data class LoggedInUserResponse(
         val issuance:Boolean=false,
         val search:Boolean=false,
         val accept:Boolean=false,
+        val incontrol: Boolean=false,
         val token:String
         )
 }

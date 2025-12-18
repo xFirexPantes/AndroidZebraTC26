@@ -1,11 +1,15 @@
 package com.example.scanner.modules
 
+import android.util.Log
 import android.net.Uri
 import com.example.scanner.models.AcceptInfoResponse
 import com.example.scanner.models.AcceptScanResponse
 import com.example.scanner.models.AcceptSearchResponse
+import com.example.scanner.models.AcceptPutkatResponse
 import com.example.scanner.models.ComponentInfoResponse
 import com.example.scanner.models.ComponentsSearchResponse
+import com.example.scanner.models.ComponentsUrgentSearchResponse
+import com.example.scanner.models.InControlBackResponse
 import com.example.scanner.models.InvoiceInfoResponse
 import com.example.scanner.models.InvoiceSearchResponse
 import com.example.scanner.models.IsolatorReasonsResponse
@@ -15,6 +19,9 @@ import com.example.scanner.models.LinesInfoResponse
 import com.example.scanner.models.LinesSearchResponse
 import com.example.scanner.models.LoggedInUserResponse
 import com.example.scanner.models.MessageToUserFromServer
+import com.example.scanner.models.InControlInfoResponse
+import com.example.scanner.models.InControlSearchResponse
+import com.example.scanner.models.InControlUrgentSearchResponse
 import com.example.scanner.ui.MainActivity
 import com.example.scanner.ui.base.NonFatalExceptionShowDialogMessage
 import com.example.scanner.ui.navigation_over.ProgressFragment
@@ -40,6 +47,7 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
 
 
 class ApiPantes(
@@ -187,6 +195,15 @@ class ApiPantes(
             @Query("token") token: String,
         ):Call<ComponentsSearchResponse>
 
+        @GET("component/urgentsearch")
+        @Headers("Content-Type: application/json")
+        fun componentUrgentSearch(
+            @Header("Authorization") authorization:String,
+            @Query("last") last: String,
+            @Query("query") query: String,
+            @Query("token") token: String,
+        ):Call<ComponentsUrgentSearchResponse>
+
         @GET("component/info")
         @Headers("Content-Type: application/json")
         fun componentInfo(
@@ -264,8 +281,18 @@ class ApiPantes(
             @Query("component") component: String,
             @Query("token") token: String,
         ):Call<AcceptInfoResponse>
+        @GET("accept/putkat")
+        @Headers("Content-Type: application/json")
+        fun acceptPutkat(
+            @Header("Authorization") authorization:String,
+            @Query("Stel") Stel:String,
+            @Query("Shelf") Shelf:String,
+            @Query("curKat") curKat:String,
+            @Query("isOk") isOk:Boolean,
+            @Query("coil") coil:Boolean,
+            @Query("token") token: String,
+        ):Call<AcceptPutkatResponse>
         //endregion
-
         //region log
         @POST("log/add")
         fun log(
@@ -274,7 +301,44 @@ class ApiPantes(
             @Query("token") token: String,
         ):Call<ResponseBody>
         //endregion
+//region incontrol
+        @GET("incontrol/search")
+        @Headers("Content-Type: application/json")
+        fun incontrolSearch(
+            @Header("Authorization") authorization:String,
+            @Query("last") last: String,
+            @Query("query") query: String,
+            @Query("token") token: String,
+        ):Call<InControlSearchResponse>
 
+        @GET("incontrol/urgentsearch")
+        @Headers("Content-Type: application/json")
+        fun incontrolUrgentSearch(
+            @Header("Authorization") authorization:String,
+            @Query("last") last: String,
+            @Query("query") query: String,
+            @Query("token") token: String,
+        ):Call<InControlUrgentSearchResponse>
+
+        @GET("incontrol/info")
+        @Headers("Content-Type: application/json")
+        fun incontrolInfo(
+            @Header("Authorization") authorization:String,
+            @Query("component") component: String,
+            @Query("token") token: String,
+        ):Call<InControlInfoResponse>
+
+        @GET("incontrol/back2sklad")
+        @Headers("Content-Type: application/json")
+        fun incontrolBack2sklad(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("prim") prim: String,
+            @Query("token") token: String,
+        ):Call<String>
+        //endregion
+
+        //endregion
     }
 
     private val client = OkHttpClient.Builder()
@@ -300,6 +364,9 @@ class ApiPantes(
             }
             proceed
         })
+        .callTimeout(2, TimeUnit.MINUTES)  // общий таймаут запроса
+        .readTimeout(2, TimeUnit.MINUTES)   // таймаут чтения данных
+        .writeTimeout(2, TimeUnit.MINUTES)  // таймаут отправки данных
         .build()
     lateinit var api:Api
 
@@ -484,6 +551,18 @@ class ApiPantes(
         return flow {
             val response:Response<ComponentsSearchResponse> =
                 api.componentSearch( "Bearer $token",last,query,token).execute()
+            emit(
+                when(response.isSuccessful){
+                    true->ApiState.Success(response.body()!! as ComponentsSearchResponse)
+                    else->ApiState.Error(buildException(response))
+                }
+            )
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun componentUrgentSearch(token:String,query:String,last:String): ApiState<ComponentsSearchResponse> {
+        return flow {
+            val response:Response<ComponentsSearchResponse> =
+                api.componentSearch( "Bearer $token",last,"U",token).execute()
             emit(
                 when(response.isSuccessful){
                     true->ApiState.Success(response.body()!! as ComponentsSearchResponse)
@@ -680,8 +759,64 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    //endregion
+    suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean): ApiState<AcceptPutkatResponse> {
+        return flow {
+            val response:Response<AcceptPutkatResponse> =
+                api.acceptPutkat( "Bearer $token",Stel,Shelf,curKat,isOk,coil,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
 
+    //endregion
+//incontrol
+    suspend fun incontrolInfo(token:String,component:String): ApiState<InControlInfoResponse> {
+        return flow {
+            val response:Response<InControlInfoResponse> =
+                api.incontrolInfo( "Bearer $token",component,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun incontrolSearch(token:String,query:String,last:String): ApiState<InControlSearchResponse> {
+        return flow {
+            val response:Response<InControlSearchResponse> =
+                api.incontrolSearch( "Bearer $token",last,query,token).execute()
+            emit(
+                when(response.isSuccessful){
+                    true->ApiState.Success(response.body()!! as InControlSearchResponse)
+                    else->ApiState.Error(buildException(response))
+                }
+            )
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun incontrolBack2sklad(token:String, num: String,prim: String): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.incontrolBack2sklad("Bearer $token", num, prim,token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    //endregion
      suspend fun log(token:String, data: String): Response<ResponseBody?> {
         return api.log( "Bearer $token",data,token).execute()
     }

@@ -2,7 +2,7 @@ package com.example.scanner.models
 
 import java.io.Serializable
 
-data class ComponentInfoResponse(
+data class InControlInfoResponse(
     val amount: Double,
     val attributes: List<Attribute>,
     val cell: String,

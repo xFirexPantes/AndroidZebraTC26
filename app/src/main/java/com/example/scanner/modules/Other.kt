@@ -10,12 +10,13 @@ import com.example.scanner.ui.base.ScanFragmentBase
 import com.example.scanner.ui.dialogs.FileDownload.FileDownloadViewModel
 import com.example.scanner.ui.dialogs.IssuanceIssueDialogViewModel
 import com.example.scanner.ui.navigation.ComponentFragment
-
 import com.example.scanner.ui.navigation.InvoiceFragment
 import com.example.scanner.ui.navigation.HomeFragment
 import com.example.scanner.ui.navigation.InvoiceFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragmentInfoLine
 import com.example.scanner.ui.navigation.ComponentFragmentInfo
+import com.example.scanner.ui.navigation.InControlFragment
+import com.example.scanner.ui.navigation.InControlFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragmentLines
 import com.example.scanner.ui.navigation.IsolatorFragment
 import com.example.scanner.ui.navigation.IsolatorFragmentIsolate
@@ -141,5 +142,11 @@ val viewModelFactory= viewModelFactory {
     }
     initializer {
         FileDownloadViewModel(Pref.getInstanceSingleton((this[APPLICATION_KEY] as App)))
+    }
+    initializer {
+        InControlFragment.InControlViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
+        InControlFragmentInfo.InControlInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
 }

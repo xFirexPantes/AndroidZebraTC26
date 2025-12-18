@@ -8,6 +8,14 @@
     android:layout_height="match_parent"
     tools:context=".ui.navigation.HomeFragment">
 
+    <TextView
+        android:id="@+id/textVersion"
+        android:layout_width="97dp"
+        android:layout_height="29dp"
+        android:text="TextView"
+        tools:layout_editor_absoluteX="41dp"
+        tools:layout_editor_absoluteY="0dp" />
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/user_view_container"
         android:layout_width="0dp"
@@ -42,17 +50,18 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:layout_weight="1">
+
             <TextView
                 android:id="@+id/user_view_text"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                 android:layout_weight="1"
-                tools:text="username"
+                android:ellipsize="end"
                 android:gravity="center_vertical"
-                />
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                tools:text="username" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -105,7 +114,11 @@
                 app:title="@{@string/button_receive}"
                 app:icon="@{@drawable/ic_receive}"
                 />
-
+            <include layout="@layout/template_button"
+                android:id="@+id/incontrol"
+                app:title="@{@string/button_incontrol}"
+                app:icon="@{@drawable/ic_incontrol}"
+                />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

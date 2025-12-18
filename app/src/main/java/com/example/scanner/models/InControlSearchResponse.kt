@@ -1,20 +1,17 @@
 package com.example.scanner.models
 
-data class ComponentsSearchResponse(
+data class InControlSearchResponse(
     val found:ArrayList<Item> = ArrayList(),
     var last:String = "",
     val total:Long = 0
 ) {
     data class Item(
         val amount:Double,
-        val cell:String,
-        val case:String,
-        val coil:Boolean,
         val id:String,
         val name: String,
         val nominal:String,
+        val cell: String,
         val rack:Int,
-        val isokol: Double,
-        val drykol: Double
+        val coil: Boolean,
     )
 }

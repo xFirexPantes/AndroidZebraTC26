@@ -124,7 +124,40 @@
                         tools:text="ст.3 яч. Сокол"
                         tools:ignore="InefficientWeight" />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="В изоляторе "
+                        style="@style/RecyclerItemTextTitleLage"
+                        tools:ignore="HardcodedText" />
+                    <TextView
+                        android:id="@+id/isokol"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="isokol"
+                        style="@style/RecyclerItemTextDataLage"/>
 
+                    <Space
+                        android:layout_width="100px"
+                        android:layout_height="wrap_content"
+                         />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="На сушке "
+                        style="@style/RecyclerItemTextTitleLage"
+                        tools:ignore="HardcodedText" />
+                    <TextView
+                        android:id="@+id/drykol"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        tools:text="drykol"
+                        style="@style/RecyclerItemTextDataLage"/>
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

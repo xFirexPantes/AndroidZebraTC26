@@ -10,6 +10,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red_half">#FF7B7B</color>
     <color name="background2">#CAE6FF</color>
-<!--    <color name="base_background">#CAB7FB</color>-->
+    <color name="yellow">#FFFF00</color>
+    <color name="default_background">#FFFFFF</color>
+    <!--    <color name="base_background">#CAB7FB</color>-->
     <color name="base_background">#FAF8FF</color>
 </resources>

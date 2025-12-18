@@ -24,7 +24,8 @@ data class LinesInfoResponse(
         val name:String,
         val value:String
     ): Serializable
-    data class CoilsItem(val amount: Int,var collected:Boolean,val number:Int,val quantity:Double){
+    data class CoilsItem(val amount: Int,var collected:Boolean,val number:Int,val quantity:Double,
+                         val isused:Boolean = false){
         override fun toString(): String {
             return StringBuilder()
                 .append(number)

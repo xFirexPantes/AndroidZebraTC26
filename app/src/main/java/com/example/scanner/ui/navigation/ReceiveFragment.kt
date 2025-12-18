@@ -1,6 +1,10 @@
 package com.example.scanner.ui.navigation
 
 import android.content.Context
+import android.graphics.Color
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.SoundPool
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.Gravity
@@ -9,6 +13,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
@@ -16,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.scanner.R
 import com.example.scanner.app.batch2
@@ -61,6 +68,12 @@ class ReceiveFragment : BaseFragment() {
     private lateinit var layoutManager:LinearLayoutManager
     private var layoutManagerOnSaveInstanceStateParcelable:Parcelable?=null
     private lateinit var step1: EditText
+    private var stelFromQR: String = ""
+    private var yachFromQR: String = ""
+    private var Nkat: String = ""
+    private var isKat: Boolean = false
+
+    private lateinit var infoTextView :TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
@@ -72,6 +85,7 @@ class ReceiveFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         layoutManager=object : LinearLayoutManager(requireContext()) {
             override fun onScrollStateChanged(state: Int) {
                 super.onScrollStateChanged(state)
@@ -82,6 +96,11 @@ class ReceiveFragment : BaseFragment() {
                 }
             }
         }
+
+
+
+        // Добавляем в infoContainer (из разметки)
+
         return TemplateFragmentBinding.inflate(inflater,container,false)
             .apply {
 
@@ -155,6 +174,31 @@ class ReceiveFragment : BaseFragment() {
                 }
 
                 root.addView(
+                    TemplateCardBinding.inflate(inflater, root, false)
+                        .apply {
+                            // Создаём TextView и добавляем в containerVertical
+                                infoTextView = TextView(requireContext()).apply {
+                                id = View.generateViewId()  // генерируем ID
+                                visibility = View.GONE  // изначально скрыт
+                                setTextColor(Color.RED)  // например, красный текст
+                                textSize = 14f
+                                setPadding(8, 8, 8, 8)
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                                )
+                            }
+                            containerVertical.addView(infoTextView, 0)  // добавляем в начало
+
+                            // Сохраняем ссылку (если нужно управлять позже)
+                            // Например, через tag или поле во фрагменте
+                            containerVertical.tag = infoTextView  // или сохраните в поле фрагмента
+
+                            // ... остальная логика (наблюдатели и т.д.)
+                        }
+                        .root
+                )
+                root.addView(
                     TemplateCardBinding.inflate(inflater,root,false)
                         .apply {
                             receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner){
@@ -165,7 +209,28 @@ class ReceiveFragment : BaseFragment() {
                                     }
                                     else -> {
                                         containerVertical.visibility= View.VISIBLE
-                                        containerVertical.setBackgroundColor(ResourcesCompat.getColor(resources,R.color.background2,null))
+                                        val currentStel = it.stel?.toString() ?: ""
+                                        val currentCell = it.cell?.toString() ?: ""
+                                        val isMatch = (stelFromQR == currentStel) && (yachFromQR == currentCell)
+                                        if (isMatch) {
+                                            containerVertical.setBackgroundColor(
+                                                ResourcesCompat.getColor(
+                                                    resources,
+                                                    android.R.color.holo_green_light,
+                                                    null
+                                                )
+                                            )
+                                        }
+                                            else{
+                                                containerVertical.setBackgroundColor(
+                                            ResourcesCompat.getColor(
+                                                resources,
+                                                R.color.background2,
+                                                null
+                                            )
+                                        )
+
+                                        }
 
                                         arrayOf(
                                             Pair(arrayOf("name"),"Наим. "),
@@ -174,6 +239,9 @@ class ReceiveFragment : BaseFragment() {
                                             Pair(arrayOf("case"),"Корпус "),
                                             Pair(arrayOf("element"),"Элемент "),
                                             Pair(arrayOf("nominal"),"Номинал "),
+                                            Pair(arrayOf("stel"),"Ст. "),
+                                            Pair(arrayOf("cell"),"Яч. "),
+                                            Pair(arrayOf("coil"),"Кат. "),
                                         ).forEach {pair->
                                             containerVertical.addView(
                                                 TemplatePresenterBinding.inflate(inflater,containerVertical,false)
@@ -440,6 +508,10 @@ class ReceiveFragment : BaseFragment() {
                     adapterReceive.resetContent()
                     receiveViewModel.step2AcceptScan(getArgument(PARAM_STEP_2_VALUE),"")
                 }
+                is ReceiveFragmentFormState.NoOp -> {
+                    // Ничего не делаем — экран не обновляется
+                    // Можно оставить пустым или добавить комментарий
+                }
             }
 
             when{
@@ -460,7 +532,7 @@ class ReceiveFragment : BaseFragment() {
                                 receiveViewModel.receiveFragmentVisibleStep2
                                     .postValue(View.VISIBLE)
                                 receiveViewModel.receiveFragmentVisibleStep1
-                                    .postValue(View.GONE)
+                                    .postValue(View.VISIBLE)
                                 receiveViewModel.receiveFragmentVisibleEmpty
                                     .postValue(View.GONE)
                             }
@@ -488,22 +560,82 @@ class ReceiveFragment : BaseFragment() {
             when(val stateScan=it){
                 is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
                     stateScan.stringScanResult?.let { stringScanResult ->
-                        when {
-                            receiveViewModel.receiveFragmentAcceptSearchResponse.value==null -> {
-                                requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
+
+
+                            if (stringScanResult[0]=='3')  {
+                                val parts = stringScanResult.split('$')
+                                // Номер катушки находится на 1‑й позиции (индекс 1)
+                                if (parts.size > 1) Nkat = parts[1]
+                                stelFromQR = ""
+                                yachFromQR = ""
+                                infoTextView.visibility = View.GONE
+                               requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
                                 step1.setText(stringScanResult)
                                 receiveViewModel.receiveFragmentFormState
                                     .postValue(
                                         ReceiveFragmentFormState.RequestSearch)
                             }
-                            else -> {
-                                requireArguments().putSerializable(PARAM_STEP_2_VALUE, stringScanResult)
-                                receiveViewModel.receiveFragmentFormState
-                                    .postValue(
-                                        ReceiveFragmentFormState.RequestScan)
+                            else  {
+
+                                if (stringScanResult.startsWith('C')) {
+                                    // Отбрасываем первый символ 'C'
+                                    val content = stringScanResult.substring(1)
+
+                                    // Проверяем, что осталось ровно 12 символов
+                                    if (content.length == 12) {
+                                        // Разбиваем на 3 части по 4 символа
+                                        val shelfPart = content.substring(0, 4)   // стеллаж
+                                        val levelPart = content.substring(4, 8)  // полка
+                                        val cellPart  = content.substring(8, 12) // ячейка
+
+                                        // Удаляем ведущие нули в каждой части
+                                        val stel = shelfPart.toIntOrNull()?.toString() ?: ""
+                                        val level = levelPart.toIntOrNull()?.toString() ?: "0"
+                                        val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
+
+                                        // Формируем yach = Полка + "." + Ячейка
+                                        val yach = if (level.isNotEmpty() && cell.isNotEmpty()) {
+                                            "${level}.${cell}"
+                                        } else {
+                                            ""
+                                        }
+
+                                        // Получаем текущие значения stel и cell из отображаемых данных
+                                        val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
+                                        if (currentItem != null) {
+                                            val currentStel = currentItem.stel?.toString() ?: ""
+                                            val currentCell = currentItem.cell?.toString() ?: ""
+
+                                            // Сравниваем
+                                            val isOk: Boolean
+                                            if (stel == currentStel && yach == currentCell) {
+                                                // Совпадение → зелёный фон
+                                                infoTextView.visibility = View.VISIBLE
+                                                infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
+                                                isOk = true
+                                            } else {
+                                                // Несовпадение → красный фон
+
+                                                infoTextView.visibility = View.VISIBLE
+                                                infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
+                                                val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                                                audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
+                                                isOk = false
+                                            }
+                                            receiveViewModel.putKat2Sklad(stel,yach,Nkat,isOk,currentItem.coil)
+                                        } else {
+                                            showErrorMessage("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
+                                        }
+                                    } else {
+                                        showErrorMessage("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
+                                    }
+                                } else {
+                                    // Другие случаи (можно оставить как есть или дополнить)
+                                    showErrorMessage("Неподдерживаемый формат QR-кода")
+                                }
                             }
                         }
-                    }
+
                 }
                 else->{}
             }
@@ -511,6 +643,12 @@ class ReceiveFragment : BaseFragment() {
 
     }
 
+
+
+
+    private fun showErrorMessage(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putParcelable("qq",layoutManager.onSaveInstanceState())
@@ -600,6 +738,8 @@ class ReceiveFragment : BaseFragment() {
                     Pair(arrayOf("element"),"Элемент "),
                     Pair(arrayOf("nominal"),"Номинал "),
                     Pair(arrayOf("case"),"Корпус "),
+                    Pair(arrayOf("rack"),"Ст. "),
+                    Pair(arrayOf("cell"),"Яч. "),
                 ).forEach{
                     containerVertical.addView(
                         TemplatePresenterBinding.inflate(layoutInflater,containerVertical,false)
@@ -678,7 +818,30 @@ class ReceiveFragment : BaseFragment() {
                 )
             }
         }
+        fun putKat2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,coil: Boolean) {
+            ioCoroutineScope.launch {
 
+                    when(val token=loginRepository.user?.token){
+                        null-> ReceiveFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+                        else->{
+                            when(val result = apiPantes.acceptPutkat(
+                                token = token,
+                                Stel= stel,
+                                Shelf = shelf,
+                                curKat= curKat,
+                                isOk = isOk,
+                                coil = coil
+                            )){
+                                is ApiPantes.ApiState.Success->
+                                    ReceiveFragmentFormState.NoOp
+                                is ApiPantes.ApiState.Error->
+                                    ReceiveFragmentFormState.Error(result.exception)
+                            }
+                        }
+                    }
+
+            }
+        }
         val receiveFragmentTitle=
             MutableLiveData<String?>()
         val receiveFragmentSubtitle=
@@ -719,6 +882,7 @@ class ReceiveFragment : BaseFragment() {
         data object RequestSearch: ReceiveFragmentFormState<Nothing>()
         data object RequestScan: ReceiveFragmentFormState<Nothing>()
         data object SetupForm: ReceiveFragmentFormState<Nothing>()
+        data object NoOp : ReceiveFragmentFormState<Nothing>()
 
     }
 }

@@ -16,7 +16,7 @@ import com.example.scanner.databinding.TemplateFragmentBinding
 import com.example.scanner.databinding.TemplateFrameBinding
 import com.example.scanner.databinding.TemplatePresenterBinding
 import com.example.scanner.databinding.TemplateTabLayoutBinding
-import com.example.scanner.models.ComponentInfoResponse
+import com.example.scanner.models.InControlInfoResponse
 import com.example.scanner.modules.ApiPantes
 import com.example.scanner.modules.Other
 import com.example.scanner.modules.viewModelFactory
@@ -31,13 +31,13 @@ import com.example.scanner.app.valueByName
 import com.example.scanner.ui.base.NonFatalExceptionShowToaste
 
 
-class ComponentFragmentInfo: BaseFragment() {
+class InControlFragmentInfo: BaseFragment() {
 
     companion object{
         const val PARAM="param"
     }
     //private val tabMainName="Характеристики"
-    private val componentsInfoViewModel:ComponentsInfoViewModel by viewModels { viewModelFactory }
+    private val incontrolInfoViewModel:InControlInfoViewModel by viewModels { viewModelFactory }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,10 +55,10 @@ class ComponentFragmentInfo: BaseFragment() {
                     TemplateTabLayoutBinding.inflate(inflater,root,false)
                         .apply {
                             tabLayout.removeAllTabs()
-                            componentsInfoViewModel.componentsInfoFormState.observe(viewLifecycleOwner){
+                            incontrolInfoViewModel.incontrolInfoFormState.observe(viewLifecycleOwner){
                                 when(val state=it){
-                                    is ComponentsInfoFormState.SuccessComponentInfo->{
-                                        state.data as ComponentInfoResponse
+                                    is InControlInfoFormState.SuccessInControlInfo->{
+                                        state.data as InControlInfoResponse
                                         toolbar.title=state.data.name
                                         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
                                             override fun onTabSelected(tab: TabLayout.Tab) {
@@ -70,27 +70,27 @@ class ComponentFragmentInfo: BaseFragment() {
                                                     .replace(
                                                         R.id.fragment_container,
                                                         when(tab.position){
-//                                                            0->ComponentInfoFragmentTabMain()
+//                                                            0->incontrolInfoFragmentTabMain()
 //                                                                .apply {
 //                                                                    arguments=
 //                                                                        Bundle()
 //                                                                            .apply {
 //                                                                                putSerializable(
-//                                                                                    ComponentInfoFragmentTabMain.PARAM,
+//                                                                                    incontrolInfoFragmentTabMain.PARAM,
 //                                                                                    state.data)
 //                                                                            }
 //                                                                }
 
-                                                            else->ComponentInfoFragmentTabOther()
+                                                            else->incontrolInfoFragmentTabOther()
                                                                 .apply {
                                                                     arguments=
                                                                         Bundle()
                                                                             .apply {
                                                                                 putSerializable(
-                                                                                    ComponentInfoFragmentTabOther.PARAM,
+                                                                                    incontrolInfoFragmentTabOther.PARAM,
                                                                                     state.data)
                                                                                 putSerializable(
-                                                                                    ComponentInfoFragmentTabOther.PARAM1,
+                                                                                    incontrolInfoFragmentTabOther.PARAM1,
                                                                                     tab.position)
                                                                                     //tab.position-1)
                                                                             }
@@ -118,8 +118,8 @@ class ComponentFragmentInfo: BaseFragment() {
                                         }
 
                                     }
-                                    is ComponentsInfoFormState.Error-> {
-                                        componentsInfoViewModel.mainActivityRouter
+                                    is InControlInfoFormState.Error-> {
+                                        incontrolInfoViewModel.mainActivityRouter
                                             .navigate(
                                                 ErrorsFragment::class.java,
                                                 Bundle().apply {
@@ -140,30 +140,30 @@ class ComponentFragmentInfo: BaseFragment() {
                 )
 
 
-                componentsInfoViewModel.requestComponentInfo(
+                incontrolInfoViewModel.requestincontrolInfo(
                     Other.Companion.getInstanceSingleton().parseArguments(requireArguments(), PARAM))
 
             }
             .root
     }
 
-    sealed class ComponentsInfoFormState<out T : Any> {
-        data class SuccessComponentInfo<out T : Any>(val data:T): ComponentsInfoFormState<T>()
-        data class Error(val exception: Throwable) : ComponentsInfoFormState<Nothing>()
+    sealed class InControlInfoFormState<out T : Any> {
+        data class SuccessInControlInfo<out T : Any>(val data:T): InControlInfoFormState<T>()
+        data class Error(val exception: Throwable) : InControlInfoFormState<Nothing>()
     }
 
-    class ComponentsInfoViewModel(private val apiPantes: ApiPantes, private val loginRepository: LoginRepository) :
+    class InControlInfoViewModel(private val apiPantes: ApiPantes, private val loginRepository: LoginRepository) :
         BaseViewModel() {
-        fun requestComponentInfo(id: String) {
+        fun requestincontrolInfo(id: String) {
             ioCoroutineScope.launch {
-                componentsInfoFormState.postValue(
+                incontrolInfoFormState.postValue(
                     when(val token=loginRepository.user?.token) {
-                        null -> ComponentsInfoFormState.Error(ErrorsFragment.Companion.nonFatalExceptionShowToasteToken)
-                        else -> when(val result=apiPantes.componentInfo(token,id)){
+                        null -> InControlInfoFormState.Error(ErrorsFragment.Companion.nonFatalExceptionShowToasteToken)
+                        else -> when(val result=apiPantes.incontrolInfo(token,id)){
                             is ApiPantes.ApiState.Success->
-                                ComponentsInfoFormState.SuccessComponentInfo(result.data)
+                                InControlInfoFormState.SuccessInControlInfo(result.data)
                             is ApiPantes.ApiState.Error->
-                                ComponentsInfoFormState.Error(result.exception)
+                                InControlInfoFormState.Error(result.exception)
                         }
                     }
                 )
@@ -171,21 +171,21 @@ class ComponentFragmentInfo: BaseFragment() {
         }
 
         companion object {
-            fun getInstance(context: Context): ComponentsInfoViewModel {
-                return ComponentsInfoViewModel(
+            fun getInstance(context: Context): InControlInfoViewModel {
+                return InControlInfoViewModel(
                     ApiPantes.Companion.getInstanceSingleton(),
                     LoginRepository.Companion.getInstanceSingleton(context)
                 )
             }
         }
 
-        val componentsInfoFormState=
-            MutableLiveData<ComponentsInfoFormState<*>>()
+        val incontrolInfoFormState=
+            MutableLiveData<InControlInfoFormState<*>>()
 
     }
 
-    class ComponentInfoFragmentTabOther: BaseFragment() {
-        private val componentsInfoViewModel:ComponentsInfoViewModel by viewModels { viewModelFactory }
+    class incontrolInfoFragmentTabOther: BaseFragment() {
+        private val incontrolInfoViewModel:InControlInfoViewModel by viewModels { viewModelFactory }
 
         companion object{
             const val PARAM="param"
@@ -197,7 +197,7 @@ class ComponentFragmentInfo: BaseFragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
         ): View {
-            val componentInfoResponse: ComponentInfoResponse =
+            val incontrolInfoResponse: InControlInfoResponse =
                 Other.Companion.getInstanceSingleton()
                     .parseArguments(requireArguments(),PARAM)
             val tabNumber:Int=
@@ -207,7 +207,7 @@ class ComponentFragmentInfo: BaseFragment() {
 
             return TemplateCardBinding.inflate(inflater,container,false)
                 .apply {
-                    componentInfoResponse.tabs[tabNumber].attributes.forEach { tabAttributeItem ->
+                    incontrolInfoResponse.tabs[tabNumber].attributes.forEach { tabAttributeItem ->
                         containerVertical.addView(
                             TemplatePresenterBinding.inflate(inflater,this.root,false)
                                 .apply {
@@ -222,8 +222,8 @@ class ComponentFragmentInfo: BaseFragment() {
                                                             widget: View
                                                         ) {
                                                             try {
-                                                                componentInfoResponse.valueByName("document").toString().downloadFile(requireContext())
-//                                                                val  strSrc= Uri.decode(componentInfoResponse.valueByName("document").toString())
+                                                                incontrolInfoResponse.valueByName("document").toString().downloadFile(requireContext())
+//                                                                val  strSrc= Uri.decode(incontrolInfoResponse.valueByName("document").toString())
 //                                                                val request = DownloadManager.Request(strSrc.toUri())
 //                                                                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 //                                                                request.setDestinationUri(Uri.fromFile(
@@ -237,7 +237,7 @@ class ComponentFragmentInfo: BaseFragment() {
 //                                                                downloadManager.enqueue(request)
 
                                                             }catch (e: Exception){
-                                                                componentsInfoViewModel.mainActivityRouter.navigate(
+                                                                incontrolInfoViewModel.mainActivityRouter.navigate(
                                                                     ErrorsFragment::class.java,
                                                                     Bundle().apply {
                                                                         putSerializable(
@@ -257,8 +257,8 @@ class ComponentFragmentInfo: BaseFragment() {
                                                 ),
                                             tabAttributeItem.name
                                         ),
-                                        componentInfoResponse,
-                                        componentsInfoViewModel.mainActivityRouter
+                                        incontrolInfoResponse,
+                                        incontrolInfoViewModel.mainActivityRouter
                                     )
                                 }
                                 .root

@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -196,10 +197,26 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                         (parent as ViewGroup).visibility=View.VISIBLE
                                                         //isEnabled=!getArgument<Boolean>(PARAM_LINE_COLLECTED)
                                                     }
+                                                    if (coilsItem.isused) {
+                                                        templateAttributeDataTextView.setBackgroundColor(
+                                                            ContextCompat.getColor(
+                                                                layoutInflater.context,
+                                                                R.color.yellow
+                                                            )
+                                                        )
+                                                    } else {
+                                                        templateAttributeDataTextView.setBackgroundColor(
+                                                            ContextCompat.getColor(
+                                                                layoutInflater.context,
+                                                                R.color.default_background
+                                                            )
+                                                        )
+                                                    }
 
                                                 }
                                                 .root
                                         )
+
                                     }
                                     //endregion
                                     //region примечание
@@ -235,6 +252,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                         }
                                                     }
                                                 })
+
                                             }
                                             .root
                                     )

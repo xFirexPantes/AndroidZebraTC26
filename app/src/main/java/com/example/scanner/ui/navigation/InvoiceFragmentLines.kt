@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -409,6 +410,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                         },
                         last = adapterLines.last.toString(),
                         query = invoiceLinesViewModel.filterSearchView.value?:""
+
                     )
                 }
                 is InvoiceLinesFormState.Stub->{}
@@ -748,6 +750,9 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
             val itemData: LinesSearchResponse.Item =
                 data.found[position]
 
+
+
+
             val itemBinding =
                 TemplateCardBinding.bind(holder.itemView)
                     .apply {
@@ -758,36 +763,69 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                         }
                     }
 
+
             @Suppress("UNCHECKED_CAST")
             val existingAttribute=
                 when(holder.itemView.tag){
                     null->HashMap()
                     else -> holder.itemView.tag as HashMap<Pair<Array<Any>, String>, TemplatePresenterBinding>
                 }
-            contentItems.forEach {
+            contentItems.forEachIndexed { index, it ->
                 existingAttribute[it]
                     ?.apply {
                         setAttribute(it, itemData)
-                        postSetAttribute(it,this,itemData)
+                        postSetAttribute(it, this, itemData)
+
+                        // Окрашиваем только первое поле (индекс 0)
+                        if (index == 0 && itemData.isused) {
+                            this.root.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    holder.itemView.context,
+                                    R.color.yellow
+                                )
+                            )
+                        } else {
+                            this.root.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    holder.itemView.context,
+                                    R.color.default_background
+                                )
+                            )
+                        }
                     }
-                    ?:run {
+                    ?: run {
                         itemBinding.containerVertical.addView(
                             TemplatePresenterBinding.inflate(
                                 layoutInflater,
                                 itemBinding.containerVertical,
-                                false)
-                                .apply {
-                                    existingAttribute[it]=this
-                                    setAttribute(it, itemData)
-                                    postSetAttribute(it,this,itemData)
+                                false
+                            ).apply {
+                                existingAttribute[it] = this
+                                setAttribute(it, itemData)
+                                postSetAttribute(it, this, itemData)
+
+                                // Окрашиваем только первое поле (индекс 0)
+                                if (index == 0 && itemData.isused) {
+                                    this.root.setBackgroundColor(
+                                        ContextCompat.getColor(
+                                            holder.itemView.context,
+                                            R.color.yellow
+                                        )
+                                    )
+                                } else {
+                                    this.root.setBackgroundColor(
+                                        ContextCompat.getColor(
+                                            holder.itemView.context,
+                                            R.color.default_background
+                                        )
+                                    )
                                 }
+                            }
                                 .root
-
                         )
-
                     }
-
             }
+
             holder.itemView.tag=existingAttribute
             itemBinding.containerVertical.setOnClickListener {
                 invoiceLinesViewModel.mainActivityRouter.navigate(

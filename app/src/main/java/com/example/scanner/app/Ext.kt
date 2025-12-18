@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -36,6 +37,8 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -587,6 +590,164 @@ fun TemplatePresenterBinding.setAttribute(
                 templateAttributeTitleTextView.visibility= View.GONE
                 templateAttributeDataTextView.visibility= View.GONE
             }
+
+            "coilslist","packslist" -> {
+                try {
+                    // Получаем список данных, предполагая, что каждый элемент содержит label и kol
+                    val listData = srcData.valueByName(pair.first[0].toString()) as List<ComponentInfoResponse.Coil>
+                             val VIEW_TYPE_HEADER = 0
+                    val VIEW_TYPE_ITEM = 1
+                    if (listData.isEmpty()) {
+                        templateAttributeDataTextView.text = "Список пуст"
+                        return
+                    }
+
+
+
+                    val headerContainer = templateRecyclerContainer.findViewById<LinearLayout>(R.id.header_recycler_view)
+                    val recyclerView = templateRecyclerContainer.findViewById<RecyclerView>(R.id.data_recycler_view)
+
+                    val headers = listOf("№", "Остаток", "Кол-во")
+                    headerContainer.removeAllViews()
+
+                    listOf("№", "Остаток", "Кол-во").forEach { headerText ->
+                        val textView = TextView(headerContainer.context).apply {
+                            layoutParams = LinearLayout.LayoutParams(
+                                8,
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                1f
+                            )
+                            text = headerText
+                            textSize = 16f
+                            typeface = Typeface.DEFAULT_BOLD
+                            setPadding(8, 8, 8, 8)
+                        }
+                        headerContainer.addView(textView)
+                    }
+
+                    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
+                    recyclerView.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+                        inner class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+                            val coilTextView: TextView = itemView.findViewById(R.id.coil_text)
+                            val ostTextView: TextView = itemView.findViewById(R.id.coil_osttext)
+                            val kolTextView: TextView = itemView.findViewById(R.id.kol_text)
+                        }
+
+                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+                            return ListViewHolder(
+                                LayoutInflater.from(parent.context)
+                                    .inflate(R.layout.item_list_row, parent, false)
+                            )
+                        }
+
+                        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+                            if (holder is ListViewHolder) {
+                                val item = listData[position]
+                                holder.coilTextView.text = item.label ?: ""
+                                holder.ostTextView.text = item.ost ?: ""
+                                holder.kolTextView.text = item.kol ?: ""
+                            }
+                        }
+
+                        override fun getItemCount(): Int {
+                            return listData.size
+                        }
+                    }
+
+                    // Настраиваем видимость
+                    templateRecyclerContainer.visibility = View.VISIBLE
+                    templateAttributeTitleTextView.text = pair.second
+
+                    // Добавляем разделители
+                    recyclerView.addItemDecoration(
+                        DividerItemDecoration(
+                            recyclerView.context,
+                            DividerItemDecoration.VERTICAL
+                        )
+                    )
+
+                } catch (e: Exception) {
+                    templateAttributeDataTextView.text = "Ошибка при загрузке списка"
+                    Timber.tag("ViewBinding").e(e)
+                }
+            }
+//            "packslist" -> {
+//                try {
+//                    // Получаем список данных, предполагая, что каждый элемент содержит label и kol
+//                    val listData = srcData.valueByName(pair.first[0].toString()) as List<ComponentInfoResponse.Coil>
+//                     val VIEW_TYPE_HEADER = 0
+//                    val VIEW_TYPE_ITEM = 1
+//                    if (listData.isEmpty()) {
+//                        templateAttributeDataTextView.text = "Список пуст"
+//                        return
+//                    }
+//
+//                    templateRecyclerRecyclerView.layoutManager = LinearLayoutManager(templateRecyclerRecyclerView.context)
+//
+//                    templateRecyclerRecyclerView.adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+//
+//                        // Создаем ViewHolder для отображения двух столбцов
+//                        inner class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+//                            val coilTextView: TextView = itemView.findViewById(R.id.coil_text)
+//                            val ostTextView: TextView = itemView.findViewById(R.id.coil_osttext)
+//                            val kolTextView: TextView = itemView.findViewById(R.id.kol_text)
+//                        }
+//
+//                        // ViewHolder для заголовка
+//                        inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+//                            val header1: TextView = itemView.findViewById(R.id.header_coil)
+//                            val header2: TextView = itemView.findViewById(R.id.header_ost)
+//                            val header3: TextView = itemView.findViewById(R.id.header_kol)
+//                        }
+//
+//                        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+//                            return when (viewType) {
+//                                VIEW_TYPE_HEADER -> HeaderViewHolder(
+//                                    LayoutInflater.from(parent.context)
+//                                        .inflate(R.layout.item_list_header, parent, false)
+//                                )
+//                                else -> ListViewHolder(
+//                                    LayoutInflater.from(parent.context)
+//                                        .inflate(R.layout.item_list_row, parent, false)
+//                                )
+//                            }
+//                        }
+//
+//                        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+//                            when (holder) {
+//                                is HeaderViewHolder -> {
+//                                    holder.header1.text = "№"
+//                                    holder.header2.text = "Остаток"
+//                                    holder.header3.text = "Кол-во"
+//                                }
+//                                is ListViewHolder -> {
+//                                    val item = listData[position - 1] // вычитаем 1 из-за заголовка
+//                                    holder.coilTextView.text = item.label ?: ""
+//                                    holder.ostTextView.text = item.ost ?: ""
+//                                    holder.kolTextView.text = item.kol ?: ""
+//                                }
+//                            }
+//                        }
+//
+//                        override fun getItemViewType(position: Int): Int {
+//                            return if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_ITEM
+//                        }
+//
+//                        override fun getItemCount(): Int {
+//                            return listData.size + 1 // +1 для заголовка
+//                        }
+//
+//                    }
+//
+//                    templateRecyclerContainer.visibility = View.VISIBLE
+//
+//                    templateAttributeTitleTextView.text = pair.second
+//                } catch (e: Exception) {
+//                    templateAttributeDataTextView.text = "Ошибка при загрузке списка"
+//                    Timber.tag("ViewBinding").e(e)
+//                }
+//            }
             else -> {
 
                 templateAttributeDataTextView.text =toPresentString(
@@ -773,6 +934,7 @@ val TemplatePresenterBinding.templateRecyclerRecyclerView: RecyclerView
                 (newAttribute(AttributesType.RecyclerView) as TemplateRecyclerPresenterBinding).dataRecyclerView
             }
     }
+
 val TemplatePresenterBinding.templateRecyclerContainer: FrameLayout
     get()  {
         return allAttributes()[AttributesType.RecyclerView]

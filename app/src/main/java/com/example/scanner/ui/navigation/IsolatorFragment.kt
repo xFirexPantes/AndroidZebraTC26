@@ -296,7 +296,7 @@ class IsolatorFragment : BaseFragment() {
                     newItemPosition: Int
                 ): Boolean {
                     return data.found[newItemPosition].id==
-                            dataOld?.found[oldItemPosition]?.id
+                            dataOld?.found?.get(oldItemPosition)?.id
                 }
 
                 override fun areContentsTheSame(
@@ -304,7 +304,7 @@ class IsolatorFragment : BaseFragment() {
                     newItemPosition: Int
                 ): Boolean {
                     return data.found[newItemPosition].id==
-                            dataOld?.found[oldItemPosition]?.id
+                            dataOld?.found?.get(oldItemPosition)?.id
                             &&
                             data.found[newItemPosition].amount==
                             dataOld.found[oldItemPosition].amount

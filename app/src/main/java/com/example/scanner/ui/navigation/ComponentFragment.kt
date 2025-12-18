@@ -1,10 +1,14 @@
 package com.example.scanner.ui.navigation
 
 import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.collection.emptyLongSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -43,6 +47,10 @@ class ComponentFragment: BaseFragment() {
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private val adapterComponents=
         AdapterComponents()
+    private lateinit var infoTextView : TextView
+    private lateinit var urgentSearchBut : Button
+    private var isUrgent : Boolean = false
+    private var isUrgentCompare : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
@@ -78,6 +86,51 @@ class ComponentFragment: BaseFragment() {
                     //endregion
                     //region button scan
                     iconContainer.addView(
+                        TemplateCardBinding.inflate(inflater, root, false)
+                            .apply {
+                                // Создаём TextView и добавляем в containerVertical
+                                urgentSearchBut = Button(requireContext()).apply {
+                                    id = View.generateViewId()  // генерируем ID
+                                    visibility = View.VISIBLE  // изначально скрыт
+                                    setPadding(8, 8, 8, 8)
+                                    layoutParams = ViewGroup.LayoutParams(
+                                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                                        ViewGroup.LayoutParams.WRAP_CONTENT
+                                    )
+                                }
+                                urgentSearchBut.setText("срочно")
+                                containerVertical.addView(urgentSearchBut , 0)  // добавляем в начало
+
+                                // Сохраняем ссылку (если нужно управлять позже)
+                                // Например, через tag или поле во фрагменте
+                                containerVertical.tag = urgentSearchBut  // или сохраните в поле фрагмента
+
+                                // ... остальная логика (наблюдатели и т.д.)
+                                urgentSearchBut.setOnClickListener(){
+                                    adapterComponents.resetContent()
+                                    isUrgent = !isUrgent
+                                    if (isUrgent) {
+                                        urgentSearchBut.setBackgroundColor(Color.argb(255,0,0,200))
+                                        urgentSearchBut.setTextColor(Color.argb(255,255,255,255))
+
+                                        componentsViewModel.componentUrgentSearch(
+                                            getArgument(PARAM),"")
+
+
+                                    }
+                                    else{
+                                        isUrgentCompare = false
+                                        urgentSearchBut.setBackgroundColor(Color.argb(100,100,100,100))
+                                        urgentSearchBut.setTextColor(Color.argb(255,0,0,0))
+
+                                    }
+
+
+                                }
+                            }
+                            .root
+                    )
+                    iconContainer.addView(
                         TemplateIconBinding.inflate(inflater,toolbar,false)
                             .apply {
                                 componentsViewModel.pref.scannerIconDrawableId.observe(viewLifecycleOwner){
@@ -102,7 +155,31 @@ class ComponentFragment: BaseFragment() {
                     .observe(viewLifecycleOwner){
                         toolbar.subtitle=it
                     }
+                root.addView(
+                    TemplateCardBinding.inflate(inflater, root, false)
+                        .apply {
+                            // Создаём TextView и добавляем в containerVertical
+                            infoTextView = TextView(requireContext()).apply {
+                                id = View.generateViewId()  // генерируем ID
+                                visibility = View.GONE  // изначально скрыт
+                                setTextColor(Color.RED)  // например, красный текст
+                                textSize = 14f
+                                setPadding(8, 8, 8, 8)
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.WRAP_CONTENT
+                                )
+                            }
+                            containerVertical.addView(infoTextView, 0)  // добавляем в начало
 
+                            // Сохраняем ссылку (если нужно управлять позже)
+                            // Например, через tag или поле во фрагменте
+                            containerVertical.tag = infoTextView  // или сохраните в поле фрагмента
+
+                            // ... остальная логика (наблюдатели и т.д.)
+                        }
+                        .root
+                )
                 //region recyclerView
                 root.addView(
                     TemplateRecyclerBinding.inflate(inflater,root,false)
@@ -180,25 +257,50 @@ class ComponentFragment: BaseFragment() {
                 is ComponentsFragmentState.Success ->{
                     state.data?.let { componentsSearchResponse->
                         componentsSearchResponse as ComponentsSearchResponse
+                        if (      isUrgentCompare){
+                            val apiId = componentsSearchResponse.found.firstOrNull()?.id
+                            val currentId = if (adapterComponents.itemCount > 0) {
+                                adapterComponents.data.found.firstOrNull()?.id
+                            } else {
+                                null
+                            }
+                            if (apiId != null && currentId != null) {
+                                if (apiId == currentId) {
+                                    infoTextView.visibility = View.VISIBLE
+                                    infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
+                                } else {
+                                    infoTextView.visibility = View.VISIBLE
+                                    infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
+                                }
+                            } else {
 
-                        if (adapterComponents.isResetContent){
+                            }
+                        }
+                        else {
+                        if (adapterComponents.isResetContent) {
+                            infoTextView.visibility = View.GONE
                             componentsViewModel.componentFragmentTitle
                                 .postValue(
-                                    getString(R.string.format_title,"${componentsSearchResponse.total}")
+                                    getString(
+                                        R.string.format_title,
+                                        "${componentsSearchResponse.total}"
+                                    )
                                 )
                             componentsViewModel.componentFragmentEmpty
                                 .postValue(
-                                    if(componentsSearchResponse.found.isEmpty())
+                                    if (componentsSearchResponse.found.isEmpty())
                                         View.VISIBLE
                                     else
                                         View.GONE
                                 )
                             adapterComponents.setContent(componentsSearchResponse)
-                        }
-                        else{
+                        } else {
                             adapterComponents.appendContent(componentsSearchResponse)
                         }
-
+                            if (isUrgent) {
+                                isUrgentCompare = true
+                            }
+                    }
 
                     }
 
@@ -236,18 +338,22 @@ class ComponentFragment: BaseFragment() {
             when(val scanState=it){
                 is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
                     scanState.stringScanResult?.let { stringScanResult ->
-                        arguments=Bundle().apply {
-                            putSerializable(PARAM,stringScanResult)
-                        }
-                        componentsViewModel.componentFragmentSubtitle
-                            .postValue(getString(R.string.format_subtitle,getArgument(PARAM)))
-                        adapterComponents.resetContent()
-                        componentsViewModel.componentSearch(getArgument(PARAM),"")
 
-                        componentsViewModel.componentsFragmentReady
-                            .postValue(
-                                View.GONE
-                            )
+                            arguments=Bundle().apply {
+                                putSerializable(PARAM,stringScanResult)
+                            }
+                            componentsViewModel.componentFragmentSubtitle
+                                .postValue(getString(R.string.format_subtitle,getArgument(PARAM)))
+                            adapterComponents.resetContent()
+                            componentsViewModel.componentSearch(getArgument(PARAM),"")
+
+                            componentsViewModel.componentsFragmentReady
+                                .postValue(
+                                    View.GONE
+                                )
+
+
+
 
                     }
                 }
@@ -282,7 +388,7 @@ class ComponentFragment: BaseFragment() {
                     newItemPosition: Int
                 ): Boolean {
                     return data.found[newItemPosition].id==
-                            dataOld?.found[oldItemPosition]?.id
+                            dataOld?.found?.get(oldItemPosition)?.id
                 }
 
                 override fun areContentsTheSame(
@@ -290,7 +396,7 @@ class ComponentFragment: BaseFragment() {
                     newItemPosition: Int
                 ): Boolean {
                     return data.found[newItemPosition].id==
-                            dataOld?.found[oldItemPosition]?.id
+                            dataOld?.found?.get(oldItemPosition)?.id
                 }
             }
         }
@@ -334,6 +440,8 @@ class ComponentFragment: BaseFragment() {
                 Pair(arrayOf("coil"),"Катушка "),
                 Pair(arrayOf("horizontalDivider"),""),
                 Pair(arrayOf("amount"),"На складе "),
+                Pair(arrayOf("isokol"),"В изоляторе "),
+                Pair(arrayOf("drykol"),"На сушке "),
                 //Pair(arrayOf("isolated"),"В изоляторе "),
             )
                 .forEach {pair->
@@ -436,6 +544,28 @@ class ComponentFragment: BaseFragment() {
                                     is ApiPantes.ApiState.Error->
                                         ComponentsFragmentState.Error(result.exception)
                                 }
+
+                    }
+                )
+            }
+        }
+        fun componentUrgentSearch(param: String,last:String) {
+            ioCoroutineScope.launch {
+                componentsFragmentState.postValue(
+                    when(val token=loginRepository.user?.token){
+                        null-> ComponentsFragmentState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+                        else-> when(
+                            val result = apiPantes.componentUrgentSearch(
+                                token = token,
+                                query = param,
+                                last=last,
+                            )
+                        ){
+                            is ApiPantes.ApiState.Success->
+                                ComponentsFragmentState.Success(result.data)
+                            is ApiPantes.ApiState.Error->
+                                ComponentsFragmentState.Error(result.exception)
+                        }
 
                     }
                 )

@@ -1,6 +1,6 @@
 package com.example.scanner.models
 
-data class ComponentsSearchResponse(
+data class ComponentsUrgentSearchResponse(
     val found:ArrayList<Item> = ArrayList(),
     var last:String = "",
     val total:Long = 0

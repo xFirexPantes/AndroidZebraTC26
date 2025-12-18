@@ -7,4 +7,7 @@ data class AcceptSearchResponse(
     val id: String,
     val name: String,
     val nominal: String,
+    val stel: String,
+    val cell: String,
+    val coil: Boolean
 )

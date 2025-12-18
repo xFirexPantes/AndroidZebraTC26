@@ -23,6 +23,7 @@ class Pref(context: Context,private val gson: Gson) {
                 }
         }
 
+
         private const val PREFS="prefs"
         private const val PREF_LOGGED_USER="pref_logged_user"
         private const val PREF_CHECK_BOX_EAN8="pref_check_box_ean8"

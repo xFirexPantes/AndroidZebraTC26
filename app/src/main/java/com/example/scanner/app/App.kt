@@ -2,7 +2,7 @@ package com.example.scanner.app
 
 import android.app.Application
 import android.util.Log
-import com.example.scanner.BuildConfig
+//import com.example.scanner.BuildConfig
 import com.example.scanner.modules.CrashHandler
 import fr.bipi.treessence.common.formatter.Formatter
 import fr.bipi.treessence.common.os.OsInfoProvider

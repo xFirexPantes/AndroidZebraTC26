@@ -14,5 +14,7 @@ data class AcceptScanResponse(
         val id: String,
         val name: String,
         val nominal: String,
+        val stel: String,
+        val cell: String,
     )
 

@@ -22,6 +22,6 @@ data class LinesSearchResponse(
         val separate:Boolean,
         val number:String,
         var isDirty: Double=0.0,
-
+        var isused: Boolean=false
         ):Serializable
 }
