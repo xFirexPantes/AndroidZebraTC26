@@ -138,8 +138,8 @@ class HomeFragment : BaseFragment() {
                                     //                            homeViewModel.mainActivityRouter.navigate(
                                     //                                ScanReceiveFragment::class.java)
                                     homeViewModel.mainActivityRouter.navigate(
-                                        InControlFragment::class.java,
-                                        Bundle().apply { putSerializable(InControlFragment.PARAM,"") }
+                                        InControlMenuFragment::class.java,
+                                        Bundle().apply { putSerializable(InControlMenuFragment.PARAM_STEP_1_VALUE,"") }
                                     )
                                 }
                                 floatEnable
@@ -189,16 +189,7 @@ class HomeFragment : BaseFragment() {
 
     }
 
-    sealed class HomeFragmentFormState<out T : Any> {
-        data class SetView(
-            val username: String? = null,
-            val isolator: Boolean,
-            val issuance: Boolean,
-            val accept: Boolean,
-            val search: Boolean,
-            val incontrol: Boolean,
-        ): HomeFragmentFormState<Nothing>()
-    }
+
 
     class HomeViewModel(val loginRepository: LoginRepository) : BaseViewModel() {
 

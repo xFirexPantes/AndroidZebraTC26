@@ -10,6 +10,7 @@ import com.example.scanner.models.ComponentInfoResponse
 import com.example.scanner.models.ComponentsSearchResponse
 import com.example.scanner.models.ComponentsUrgentSearchResponse
 import com.example.scanner.models.InControlBackResponse
+import com.example.scanner.models.InControlCheckStResponse
 import com.example.scanner.models.InvoiceInfoResponse
 import com.example.scanner.models.InvoiceSearchResponse
 import com.example.scanner.models.IsolatorReasonsResponse
@@ -336,6 +337,13 @@ class ApiPantes(
             @Query("prim") prim: String,
             @Query("token") token: String,
         ):Call<String>
+        @GET("incontrol/checkst")
+        @Headers("Content-Type: application/json")
+        fun incontrolCheckst(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<InControlCheckStResponse>
         //endregion
 
         //endregion
@@ -801,6 +809,26 @@ class ApiPantes(
             try {
                 val response: Response<String> =
                     api.incontrolBack2sklad("Bearer $token", num, prim,token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolCheckst(token:String, num: String): ApiState<InControlCheckStResponse> {
+        return flow {
+            try {
+                val response: Response<InControlCheckStResponse> =
+                    api.incontrolCheckst("Bearer $token", num, token).execute()
 
                 Log.d("API", "Response code: ${response.code()}")
 

@@ -1,7 +1,5 @@
 package com.example.scanner.ui.navigation
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -9,13 +7,14 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -39,25 +38,33 @@ import com.example.scanner.ui.base.ScanFragmentBase
 import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class InControlFragment: BaseFragment() {
     companion object{
         const val PARAM="param"
     }
 
+    private var paramValue: String? = null
 
     private val incontrolViewModel: InControlViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private val adapterincontrol=
         Adapterincontrol()
     private lateinit var infoTextView : TextView
+    private var msg: String = ""
+    private var IDAll: String = ""
+    private var action15: Boolean = false
+    private var action23: Boolean = false
     //private lateinit var urgentSearchBut : Button
     //private var isUrgent : Boolean = false
    // private var isUrgentCompare : Boolean = false
 
     sealed class Back2SkladState<out T : Any> {
         data class Success(val message: String) : Back2SkladState<String>()
+        data class CheckST(val IDAll: String,val isOk: String,val action15: Boolean,val action23: Boolean) : Back2SkladState<String>()
         data class Error(val exception: Throwable) : Back2SkladState<Nothing>()
         object Idle : Back2SkladState<Nothing>()
     }
@@ -65,6 +72,7 @@ class InControlFragment: BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
         super.onCreate(savedInstanceState)
+        paramValue = arguments?.getString(PARAM)
     }
 
     override fun onCreateView(
@@ -80,6 +88,7 @@ class InControlFragment: BaseFragment() {
                         findNavController().navigateUp()
                     }
                     //region iconManual
+
                     iconContainer.addView(
                         TemplateIconBinding.inflate(inflater,toolbar,false)
                             .apply {
@@ -272,6 +281,13 @@ class InControlFragment: BaseFragment() {
                 showError(state.exception)
             }
             Back2SkladState.Idle -> {}
+            is Back2SkladState.CheckST -> {
+                IDAll = state.IDAll
+                msg = state.isOk
+                action15 = state.action15
+                action23 = state.action23
+            }
+
         }
     }
     override fun onPause() {
@@ -289,7 +305,7 @@ class InControlFragment: BaseFragment() {
         incontrolViewModel.refreshListEvent.observe(viewLifecycleOwner) {
             // Перезагружаем данные списка
             adapterincontrol.resetContent()
-            incontrolViewModel.incontrolSearch("default", "")
+            incontrolViewModel.incontrolSearch(paramValue!!, "")
         }
         incontrolViewModel.incontrolFragmentState.observe(viewLifecycleOwner)
         {
@@ -385,14 +401,23 @@ class InControlFragment: BaseFragment() {
                 )
             }
 
+
         }
-        fun showPrimInputDialog(onConfirm: (String) -> Unit) {
+
+        fun showPrimInputDialog( onConfirm: (String) -> Unit) {
             val builder = AlertDialog.Builder(requireContext())
             val input = EditText(requireContext())
-            input.inputType = InputType.TYPE_CLASS_TEXT
-
-            builder.setTitle("Введите примечание")
-            builder.setMessage("Укажите причину перемещения:")
+                    input.inputType = InputType.TYPE_CLASS_TEXT  // или нужный тип ввода
+            val dtValue = adapterincontrol.findDtByIdAll(IDAll)
+            var actions = ""
+            if (action15 == true) {
+                actions += "\nТест на паяемость и теплостойкость при пайке"
+            }
+            if (action23 == true) {
+                actions += "\nБаланс смачиваемости"
+            }
+            builder.setTitle("Укажите место хранения на ВК")
+            builder.setMessage("Проверить к: ${dtValue ?: "Не указано"}" + actions)
             builder.setView(input)
 
             builder.setPositiveButton("ОК") { dialog, _ ->
@@ -405,23 +430,62 @@ class InControlFragment: BaseFragment() {
                 dialog.cancel()
             }
 
+            // Показываем диалог
             builder.show()
+
+            // 1. Устанавливаем фокус на поле ввода
+            input.post {
+                // 1. Устанавливаем фокус на поле ввода
+                input.requestFocus()
+
+                // 2. Показываем клавиатуру
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+            }
         }
+
         scanViewModel.scanFragmentBaseFormState.observe(viewLifecycleOwner)
         {
             when(val scanState=it){
                 is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
                     scanState.stringScanResult?.let { stringScanResult ->
-                        if (stringScanResult[0]=='3') {
+                        if (stringScanResult[0] == '3') {
                             val parts = stringScanResult.split('$')
+                            if (parts.size > 1) {
+                                val num = parts[1]
 
-                                // Номер катушки находится на 1‑й позиции (индекс 1)
-                                if (parts.size > 1) {
-                                    val num = parts[1]
+                                // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
+                                lifecycleScope.launch {
+                                    try {
+                                        // 1. Вызываем checkst() и ждём результата
+                                        val result = incontrolViewModel.checkst(num)
 
-                                    showPrimInputDialog { prim ->
-                                        incontrolViewModel.back2Sklad(num, prim)
+                                        when (result) {
+                                            is Result.Success -> {
+                                                msg = result.data.isOk
+                                                IDAll = result.data.IDAll
+                                                action15 = result.data.action15
+                                                action23 = result.data.action23
+                                                // 2. Получаем DT по IDAll
+
+
+                                                if (msg.isEmpty()) {
+                                                    // 3. Показываем диалог с подставленным DT
+                                                    showPrimInputDialog { prim ->
+                                                        incontrolViewModel.back2Sklad(num, prim)
+                                                    }
+                                                } else {
+                                                    showResponse(msg)
+                                                }
+                                            }
+                                            is Result.Failure -> {
+                                                showError(result.exception)
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        showError(e)
                                     }
+                                }
                             }
                         }
                         if (stringScanResult.startsWith('C')) {
@@ -445,7 +509,7 @@ class InControlFragment: BaseFragment() {
         incontrolViewModel.incontrolFragmentState.postValue(
             InControlFragmentState.Idle
         )
-        incontrolViewModel.incontrolSearch("default","")
+       // incontrolViewModel.incontrolSearch(paramValue!!,"")
     }
 
     inner class Adapterincontrol(): BaseRecyclerAdapter<InControlSearchResponse>(InControlSearchResponse()) {
@@ -478,6 +542,11 @@ class InControlFragment: BaseFragment() {
         }
 
 
+        fun findDtByIdAll(idAll: String): String? {
+            return data.found
+                .firstOrNull { it.IDAll == idAll.toInt() }  // ищем первый элемент с совпадающим id
+                ?.DT                                   // предполагаем, что у InControlSearchResponse.found.item есть поле dt
+        }
         override fun appendData(dataNew: InControlSearchResponse) {
             if (dataNew.found.isNotEmpty()) {
                 // Проверяем, нет ли уже таких элементов
@@ -525,9 +594,11 @@ class InControlFragment: BaseFragment() {
                 Pair(arrayOf("nominal"),"Номинал "),
                 Pair(arrayOf("horizontalDivider"),""),
                 Pair(arrayOf("amount"),"На складе "),
-                //Pair(arrayOf("coil"),"Кат. "),
-                //Pair(arrayOf("isolated"),"В изоляторе "),
+                    //Pair(arrayOf("isolated"),"В изоляторе "),
             )
+                .filter { pair ->
+                    !pair.first.contains("DT") // Дополнительная фильтрация
+                }
                 .forEach {pair->
                     itemBinding.containerVertical.addView(
                         TemplatePresenterBinding.inflate(layoutInflater,itemBinding.containerVertical,false)
@@ -635,6 +706,36 @@ class InControlFragment: BaseFragment() {
 
             }
         }
+        suspend fun checkst(num: String): Result<Back2SkladState.CheckST> = withContext(Dispatchers.IO) {
+            val token = loginRepository.user?.token
+                ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)
+
+            when (val result = apiPantes.incontrolCheckst(token, num)) {
+                is ApiPantes.ApiState.Success -> {
+                    if (result.data.toString().isNotEmpty()) {
+
+                        val DT = result.data.isOk!!
+                        val IDAll = result.data.IDAll!!
+                        val action15 = result.data.action15!!
+                        val action23  = result.data.action23!!
+                        DT.let {
+                            Back2SkladState.CheckST(
+                                IDAll ,
+                                it,action15,action23
+                            )
+                        }.let {
+                            Result.Success(
+                                it
+                            )
+                        }
+                    } else {
+                        Result.Failure(Exception("Empty response"))
+                    }
+                }
+
+                is ApiPantes.ApiState.Error -> Result.Failure(result.exception)
+            } as Result<Back2SkladState.CheckST>
+        }
 
         companion object {
             fun getInstance(context: Context): InControlViewModel {
@@ -660,5 +761,26 @@ class InControlFragment: BaseFragment() {
         val back2SkladState = MutableLiveData<Back2SkladState<String>>()
         val refreshListEvent = MutableLiveData<Unit>()
     }
+    sealed class Result<out T : Any> {
+        data class Success<out T : Any>(val data: T) : Result<T>()
+        data class Failure(val exception: Throwable) : Result<Nothing>()
+    }
 
+    // Для удобства: расширения
+    val Result<*>.isSuccess: Boolean get() = this is Result.Success
+    val Result<*>.isFailure: Boolean get() = this is Result.Failure
+
+    inline fun <R : Any> Result<R>.onSuccess(action: (R) -> Unit): Result<R> {
+        if (this is Result.Success) action(data)
+        return this
+    }
+
+    inline fun Result<*>.onFailure(action: (Exception) -> Unit): Result<*> {
+        if (this is Result.Failure) action(exception)
+        return this
+    }
+
+    fun action(exception: Throwable) {
+        TODO("Not yet implemented")
+    }
 }

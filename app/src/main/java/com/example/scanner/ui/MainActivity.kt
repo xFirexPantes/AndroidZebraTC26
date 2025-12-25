@@ -26,6 +26,7 @@ import com.example.scanner.ui.navigation.InControlFragment
 import com.example.scanner.ui.navigation.InControlFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragment
 import com.example.scanner.ui.navigation.HomeFragment
+import com.example.scanner.ui.navigation.InControlMenuFragment
 import com.example.scanner.ui.navigation.InvoiceFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragmentInfoLine
 import com.example.scanner.ui.navigation.InvoiceFragmentLines
@@ -188,9 +189,11 @@ class MainActivity : BaseActivity() {
 
                 //endregion
                 //region InControl
-
                 InControlFragment::class.java ->
                     navControllerMain?.navigate(R.id.nav_incontrol_fragment, route.params)
+
+                InControlMenuFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_incontrol_menu_fragment, route.params)
                 //endregion
 
                 //region Components Info

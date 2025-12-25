@@ -13,5 +13,7 @@ data class InControlSearchResponse(
         val cell: String,
         val rack:Int,
         val coil: Boolean,
+        val DT:String,
+        val IDAll:Int,
     )
 }

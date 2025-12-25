@@ -73,13 +73,18 @@
         android:name="com.example.scanner.ui.navigation.ComponentFragmentInfo"
         android:label="ComponentsCardFragment"
         />
-    <!--incontrol-->
+    <!--incontrolmenu-->
+    <fragment
+        android:id="@+id/nav_incontrol_menu_fragment"
+        android:name="com.example.scanner.ui.navigation.InControlMenuFragment"
+        android:label="InControlMenuFragment"
+        />
+
+    <!--incontrol (добавляем сюда!)-->
     <fragment
         android:id="@+id/nav_incontrol_fragment"
         android:name="com.example.scanner.ui.navigation.InControlFragment"
-        android:label="InControlFragment"
-        />
-
+        android:label="InControlFragment" />
 
     <!--incontrol info-->
     <fragment
