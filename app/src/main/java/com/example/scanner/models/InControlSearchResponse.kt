@@ -15,5 +15,6 @@ data class InControlSearchResponse(
         val coil: Boolean,
         val DT:String,
         val IDAll:Int,
+        val inBox:Boolean,
     )
 }

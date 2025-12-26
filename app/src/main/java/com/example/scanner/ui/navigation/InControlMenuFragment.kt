@@ -38,14 +38,26 @@ class InControlMenuFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        binding?.toIncontrol?.isEnabled = false
+        binding?.toBox?.isEnabled = false
+        binding?.toWarehouse?.isEnabled = false
+        binding?.toIncontrol?.alpha = 0F
+        binding?.toBox?.alpha = 0F
+        binding?.toWarehouse?.alpha = 0F
         homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is HomeFragmentFormState.SetView -> {
                     // Активируем/деактивируем кнопки на основе прав пользователя
-                    binding?.toIncontrol?.isEnabled = state.incontrol  //
-                    binding?.toBox?.isEnabled = state.incontrol  //
-                    binding?.toWarehouse?.isEnabled = state.accept
+                    if (state.incontrol ){
+                        binding?.toIncontrol?.isEnabled = true
+                        binding?.toIncontrol?.alpha = 1F
+                        binding?.toBox?.isEnabled = true
+                        binding?.toBox?.alpha = 1F
+                    }
+                    if (state.accept){
+                        binding?.toWarehouse?.isEnabled = true
+                        binding?.toWarehouse?.alpha = 1F
+                    }
 
                 }
                 else -> {
@@ -53,6 +65,9 @@ class InControlMenuFragment : Fragment() {
                     binding?.toIncontrol?.isEnabled = false
                     binding?.toBox?.isEnabled = false
                     binding?.toWarehouse?.isEnabled = false
+                    binding?.toIncontrol?.alpha = 0F
+                    binding?.toBox?.alpha = 0F
+                    binding?.toWarehouse?.alpha = 0F
                 }
             }
         }
@@ -64,10 +79,16 @@ class InControlMenuFragment : Fragment() {
         }
 
         binding?.toBox?.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция пока не реализована", Toast.LENGTH_SHORT).show()
+            homeViewModel.mainActivityRouter.navigate(
+                InControlFragment::class.java,
+                Bundle().apply { putSerializable(InControlFragment.PARAM, "toBox") }
+            )
         }
         binding?.toWarehouse?.setOnClickListener {
-            Toast.makeText(requireContext(), "Функция пока не реализована", Toast.LENGTH_SHORT).show()
+            homeViewModel.mainActivityRouter.navigate(
+                InControlFragment::class.java,
+                Bundle().apply { putSerializable(InControlFragment.PARAM, "toWH") }
+            )
         }
     }
 

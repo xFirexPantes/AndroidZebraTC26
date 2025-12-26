@@ -11,6 +11,7 @@ import com.example.scanner.models.ComponentsSearchResponse
 import com.example.scanner.models.ComponentsUrgentSearchResponse
 import com.example.scanner.models.InControlBackResponse
 import com.example.scanner.models.InControlCheckStResponse
+import com.example.scanner.models.InControlIDAllResponse
 import com.example.scanner.models.InvoiceInfoResponse
 import com.example.scanner.models.InvoiceSearchResponse
 import com.example.scanner.models.IsolatorReasonsResponse
@@ -309,6 +310,7 @@ class ApiPantes(
             @Header("Authorization") authorization:String,
             @Query("last") last: String,
             @Query("query") query: String,
+            @Query("box") box: Int,
             @Query("token") token: String,
         ):Call<InControlSearchResponse>
 
@@ -344,6 +346,35 @@ class ApiPantes(
             @Query("num") num: String,
             @Query("token") token: String,
         ):Call<InControlCheckStResponse>
+        @GET("incontrol/put2box")
+        @Headers("Content-Type: application/json")
+        fun incontrolPut2box(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("box") box: Int,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("incontrol/takebox")
+        @Headers("Content-Type: application/json")
+        fun incontrolTakebox(
+            @Header("Authorization") authorization:String,
+            @Query("box") box: Int,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("incontrol/put2wh")
+        @Headers("Content-Type: application/json")
+        fun incontrolPut2WH(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("incontrol/getidall")
+        @Headers("Content-Type: application/json")
+        fun incontrolGetIDAll(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<ArrayList<Int>>
         //endregion
 
         //endregion
@@ -792,10 +823,10 @@ class ApiPantes(
 
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun incontrolSearch(token:String,query:String,last:String): ApiState<InControlSearchResponse> {
+    suspend fun incontrolSearch(token:String,query:String,box: Int,last:String): ApiState<InControlSearchResponse> {
         return flow {
             val response:Response<InControlSearchResponse> =
-                api.incontrolSearch( "Bearer $token",last,query,token).execute()
+                api.incontrolSearch( "Bearer $token",last,query,box,token).execute()
             emit(
                 when(response.isSuccessful){
                     true->ApiState.Success(response.body()!! as InControlSearchResponse)
@@ -829,6 +860,87 @@ class ApiPantes(
             try {
                 val response: Response<InControlCheckStResponse> =
                     api.incontrolCheckst("Bearer $token", num, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+
+    suspend fun incontrolGetIDAll(token:String, num: String): ApiState<ArrayList<Int>> {
+        return flow {
+            try {
+                val response: Response<ArrayList<Int>> =
+                    api.incontrolGetIDAll("Bearer $token", num, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolPut2box(token:String, num: String, box: Int): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.incontrolPut2box("Bearer $token", num,box, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolTakebox(token:String,box: Int): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.incontrolTakebox("Bearer $token",box, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolPut2WH(num: String,token:String): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.incontrolPut2WH("Bearer $token", num, token).execute()
 
                 Log.d("API", "Response code: ${response.code()}")
 
