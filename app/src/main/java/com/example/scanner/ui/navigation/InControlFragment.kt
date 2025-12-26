@@ -813,7 +813,7 @@ class InControlFragment: BaseFragment() {
             }
         }
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val itemBinding=TemplateCardBinding.bind(holder.itemView)
+            val itemBinding =TemplateCardBinding.bind(holder.itemView)
             val itemData =
                 data.found[position]
                  itemBinding.containerVertical.removeAllViews()
