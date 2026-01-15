@@ -71,7 +71,7 @@ class ReceiveFragment : BaseFragment() {
     private var stelFromQR: String = ""
     private var yachFromQR: String = ""
     private var Nkat: String = ""
-    private var isKat: Boolean = false
+    private var isBottle: Boolean = false
 
     private lateinit var infoTextView :TextView
 
@@ -512,6 +512,12 @@ class ReceiveFragment : BaseFragment() {
                     // Ничего не делаем — экран не обновляется
                     // Можно оставить пустым или добавить комментарий
                 }
+
+                ReceiveFragmentFormState.RequestSearchBottle -> {
+                    receiveViewModel.step3AcceptSearch(
+                        getArgument<String>(PARAM_STEP_1_VALUE)
+                    )
+                }
             }
 
             when{
@@ -568,6 +574,7 @@ class ReceiveFragment : BaseFragment() {
                                 if (parts.size > 1) Nkat = parts[1]
                                 stelFromQR = ""
                                 yachFromQR = ""
+                                isBottle = false
                                 infoTextView.visibility = View.GONE
                                requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
                                 step1.setText(stringScanResult)
@@ -622,7 +629,23 @@ class ReceiveFragment : BaseFragment() {
                                                 audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
                                                 isOk = false
                                             }
-                                            receiveViewModel.putKat2Sklad(stel,yach,Nkat,isOk,currentItem.coil)
+                                            if (isBottle) {
+                                                receiveViewModel.putBottle2Sklad(
+                                                    stel,
+                                                    yach,
+                                                    Nkat,
+                                                    isOk
+                                                )
+                                            }
+                                            else {
+                                                receiveViewModel.putKat2Sklad(
+                                                    stel,
+                                                    yach,
+                                                    Nkat,
+                                                    isOk,
+                                                    currentItem.coil
+                                                )
+                                            }
                                         } else {
                                             showErrorMessage("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
                                         }
@@ -630,8 +653,24 @@ class ReceiveFragment : BaseFragment() {
                                         showErrorMessage("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
                                     }
                                 } else {
+                                    val parts = stringScanResult.split('$')
+                                    if (parts.size == 5)  {
+                                        // Номер катушки находится на 1‑й позиции (индекс 1)
+                                        Nkat = parts[2]
+                                        isBottle = true
+                                        stelFromQR = ""
+                                        yachFromQR = ""
+                                        infoTextView.visibility = View.GONE
+                                        requireArguments().putSerializable(PARAM_STEP_1_VALUE, Nkat)
+                                        step1.setText(stringScanResult)
+                                        receiveViewModel.receiveFragmentFormState
+                                            .postValue(
+                                                ReceiveFragmentFormState.RequestSearchBottle)
+                                    }
+                                    else{
                                     // Другие случаи (можно оставить как есть или дополнить)
                                     showErrorMessage("Неподдерживаемый формат QR-кода")
+                                        }
                                 }
                             }
                         }
@@ -818,6 +857,33 @@ class ReceiveFragment : BaseFragment() {
                 )
             }
         }
+        fun step3AcceptSearch(query: String) {
+            ioCoroutineScope.launch {
+                receiveFragmentFormState.postValue(
+                    when(val token=loginRepository.user?.token){
+                        null-> ReceiveFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+                        else->{
+                            when(val result = apiPantes.acceptSearchBottle(
+                                token = token,
+                                query = query,
+                            )){
+                                is ApiPantes.ApiState.Success->
+                                    ReceiveFragmentFormState.SuccessSearch(result.data)
+                                is ApiPantes.ApiState.Error->
+                                    ReceiveFragmentFormState.Error(
+                                        if (result.exception is NonFatalExceptionShowDialogMessage){
+                                            NonFatalExceptionShowToaste(result.exception.message.toString())
+                                        }
+                                        else{
+                                            result.exception
+                                        }
+                                    )
+                            }
+                        }
+                    }
+                )
+            }
+        }
         fun putKat2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,coil: Boolean) {
             ioCoroutineScope.launch {
 
@@ -839,6 +905,29 @@ class ReceiveFragment : BaseFragment() {
                             }
                         }
                     }
+
+            }
+        }
+        fun putBottle2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean) {
+            ioCoroutineScope.launch {
+
+                when(val token=loginRepository.user?.token){
+                    null-> ReceiveFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+                    else->{
+                        when(val result = apiPantes.acceptPutbottle(
+                            token = token,
+                            Stel= stel,
+                            Shelf = shelf,
+                            curKat= curKat,
+                            isOk = isOk
+                        )){
+                            is ApiPantes.ApiState.Success->
+                                ReceiveFragmentFormState.NoOp
+                            is ApiPantes.ApiState.Error->
+                                ReceiveFragmentFormState.Error(result.exception)
+                        }
+                    }
+                }
 
             }
         }
@@ -880,6 +969,7 @@ class ReceiveFragment : BaseFragment() {
         data object ResetSearch: ReceiveFragmentFormState<Nothing>()
         data object ResetScan: ReceiveFragmentFormState<Nothing>()
         data object RequestSearch: ReceiveFragmentFormState<Nothing>()
+        data object RequestSearchBottle: ReceiveFragmentFormState<Nothing>()
         data object RequestScan: ReceiveFragmentFormState<Nothing>()
         data object SetupForm: ReceiveFragmentFormState<Nothing>()
         data object NoOp : ReceiveFragmentFormState<Nothing>()
