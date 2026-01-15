@@ -962,6 +962,7 @@ class InControlFragment: BaseFragment() {
                     .w("Cannot scroll to position $position. Valid range: 0–${itemCount - 1}")
             }
         }
+        @SuppressLint("SuspiciousIndentation")
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val itemBinding =TemplateCardBinding.bind(holder.itemView)
             val itemData =
