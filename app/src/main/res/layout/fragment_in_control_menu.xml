@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/icons8_back_50"
-        app:popupTheme="@style/Theme.Scanner.PopupOverlay"
-        >
+        app:popupTheme="@style/Theme.Scanner.PopupOverlay">
         <LinearLayout
             android:id="@+id/icon_container"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="horizontal"
-            android:layout_gravity="end"
-            >
-        </LinearLayout>
+            android:layout_gravity="end" />
     </androidx.appcompat.widget.Toolbar>
+
+    <!-- Кнопка "Принять на ВК" -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/toIncontrol"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -33,11 +32,10 @@
         android:textColor="#FFFFFF"
         android:padding="16dp"
         android:textSize="16sp"
-        android:textAllCaps="false" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50px"
-        android:orientation="horizontal"></LinearLayout>
+        android:textAllCaps="false"
+        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
+
+    <!-- Кнопка "Положить в коробку" -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/toBox"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -49,12 +47,10 @@
         android:textColor="#FFFFFF"
         android:padding="16dp"
         android:textSize="16sp"
-        android:textAllCaps="false" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50px"
-        android:orientation="horizontal"></LinearLayout>
+        android:textAllCaps="false"
+        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
 
+    <!-- Кнопка "Принять на склад" -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/toWarehouse"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
