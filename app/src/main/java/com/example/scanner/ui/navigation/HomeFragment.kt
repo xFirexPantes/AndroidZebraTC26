@@ -133,7 +133,7 @@ class HomeFragment : BaseFragment() {
                                 floatDisable
                             }
                         incontrol.button.alpha=
-                            if(state.incontrol) {
+                            if(state.incontrol or state.accept) {
                                 incontrol.button.setOnClickListener {
                                     //                            homeViewModel.mainActivityRouter.navigate(
                                     //                                ScanReceiveFragment::class.java)
