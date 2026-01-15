@@ -268,6 +268,15 @@ class ApiPantes(
 //            @Query("qr") qr: Int?,
             @Query("token") token: String,
         ):Call<AcceptSearchResponse>
+        @GET("accept/searchbottle")
+        @Headers("Content-Type: application/json")
+        fun acceptSearchBottle(
+            @Header("Authorization") authorization:String,
+            @Query("component") query: String,
+//            @Query("component") component: String,
+//            @Query("qr") qr: Int?,
+            @Query("token") token: String,
+        ):Call<AcceptSearchResponse>
         @GET("accept/scan")
         @Headers("Content-Type: application/json")
         fun acceptScan(
@@ -292,6 +301,16 @@ class ApiPantes(
             @Query("curKat") curKat:String,
             @Query("isOk") isOk:Boolean,
             @Query("coil") coil:Boolean,
+            @Query("token") token: String,
+        ):Call<AcceptPutkatResponse>
+        @GET("accept/putbottle")
+        @Headers("Content-Type: application/json")
+        fun acceptPutbottle(
+            @Header("Authorization") authorization:String,
+            @Query("Stel") Stel:String,
+            @Query("Shelf") Shelf:String,
+            @Query("curKat") curKat:String,
+            @Query("isOk") isOk:Boolean,
             @Query("token") token: String,
         ):Call<AcceptPutkatResponse>
         //endregion
@@ -788,6 +807,16 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
+    suspend fun acceptSearchBottle(token:String, query: String): ApiState<AcceptSearchResponse> {
+        return flow {
+            val response:Response<AcceptSearchResponse> =
+                api.acceptSearchBottle( "Bearer $token",query,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
     suspend fun acceptInfo(token:String, component: String): ApiState<AcceptInfoResponse> {
         return flow {
             val response:Response<AcceptInfoResponse> =
@@ -798,10 +827,21 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
+
     suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean): ApiState<AcceptPutkatResponse> {
         return flow {
             val response:Response<AcceptPutkatResponse> =
                 api.acceptPutkat( "Bearer $token",Stel,Shelf,curKat,isOk,coil,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun acceptPutbottle(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean): ApiState<AcceptPutkatResponse> {
+        return flow {
+            val response:Response<AcceptPutkatResponse> =
+                api.acceptPutbottle( "Bearer $token",Stel,Shelf,curKat,isOk,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 else->emit(ApiState.Error(buildException(response)))
