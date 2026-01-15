@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.scanner.R
@@ -41,33 +41,24 @@ class InControlMenuFragment : Fragment() {
         binding?.toIncontrol?.isEnabled = false
         binding?.toBox?.isEnabled = false
         binding?.toWarehouse?.isEnabled = false
-        binding?.toIncontrol?.alpha = 0F
-        binding?.toBox?.alpha = 0F
-        binding?.toWarehouse?.alpha = 0F
+
         homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is HomeFragmentFormState.SetView -> {
-                    // Активируем/деактивируем кнопки на основе прав пользователя
-                    if (state.incontrol ){
-                        binding?.toIncontrol?.isEnabled = true
-                        binding?.toIncontrol?.alpha = 1F
-                        binding?.toBox?.isEnabled = true
-                        binding?.toBox?.alpha = 1F
-                    }
-                    if (state.accept){
-                        binding?.toWarehouse?.isEnabled = true
-                        binding?.toWarehouse?.alpha = 1F
-                    }
+                    // Кнопка "Принять на ВК" (toIncontrol)
+                    binding?.toIncontrol?.visibility =
+                        if (state.incontrol) View.VISIBLE else View.GONE
+                    binding?.toIncontrol?.isEnabled = state.incontrol
 
-                }
-                else -> {
-                    // Если состояние не SetView — отключаем всё
-                    binding?.toIncontrol?.isEnabled = false
-                    binding?.toBox?.isEnabled = false
-                    binding?.toWarehouse?.isEnabled = false
-                    binding?.toIncontrol?.alpha = 0F
-                    binding?.toBox?.alpha = 0F
-                    binding?.toWarehouse?.alpha = 0F
+                    // Кнопка "Положить в коробку" (toBox)
+                    binding?.toBox?.visibility =
+                        if (state.incontrol) View.VISIBLE else View.GONE
+                    binding?.toBox?.isEnabled = state.incontrol
+
+                    // Кнопка "Принять на склад" (toWarehouse)
+                    binding?.toWarehouse?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.toWarehouse?.isEnabled = state.accept
                 }
             }
         }
