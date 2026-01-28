@@ -7,6 +7,7 @@ data class InControlCheckStResponse(
     val IDAll: String? = "",
     val action15: Boolean? = false,
     val action23: Boolean? = false,
+
 ): Serializable{
 
 }

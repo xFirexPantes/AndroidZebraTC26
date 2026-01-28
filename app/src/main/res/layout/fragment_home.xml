@@ -119,6 +119,11 @@
                 app:title="@{@string/button_incontrol}"
                 app:icon="@{@drawable/ic_incontrol}"
                 />
+            <include layout="@layout/template_button"
+                android:id="@+id/update"
+                app:title="@{@string/button_update}"
+                app:icon="@{@drawable/ic_update}"
+                />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

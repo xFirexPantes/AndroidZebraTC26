@@ -21,6 +21,7 @@ class App:Application() {
 
     companion object{
         var fileLoggerTree:FileLoggerTree?=null
+        lateinit var instance: App
         val plantFileLoggerTree:(stringPath:String?)->Unit={ stringPath->
             stringPath?.let { path ->
                 if (fileLoggerTree ==null){

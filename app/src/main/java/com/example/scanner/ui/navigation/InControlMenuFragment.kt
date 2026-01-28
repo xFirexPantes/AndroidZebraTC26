@@ -41,10 +41,15 @@ class InControlMenuFragment : Fragment() {
         binding?.toIncontrol?.isEnabled = false
         binding?.toBox?.isEnabled = false
         binding?.toWarehouse?.isEnabled = false
+        binding?.WHtoIncontrol?.isEnabled = false
 
         homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is HomeFragmentFormState.SetView -> {
+                    // Кнопка "Отправить на ВК" (toIncontrol)
+                    binding?.WHtoIncontrol?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.WHtoIncontrol?.isEnabled = state.accept
                     // Кнопка "Принять на ВК" (toIncontrol)
                     binding?.toIncontrol?.visibility =
                         if (state.incontrol) View.VISIBLE else View.GONE
@@ -61,6 +66,12 @@ class InControlMenuFragment : Fragment() {
                     binding?.toWarehouse?.isEnabled = state.accept
                 }
             }
+        }
+        binding?.WHtoIncontrol?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                InControlFragment::class.java,
+                Bundle().apply { putSerializable(InControlFragment.PARAM, "WHtoIncontrol") }
+            )
         }
         binding?.toIncontrol?.setOnClickListener {
             homeViewModel.mainActivityRouter.navigate(

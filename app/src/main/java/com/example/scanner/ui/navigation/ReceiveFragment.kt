@@ -568,7 +568,7 @@ class ReceiveFragment : BaseFragment() {
                     stateScan.stringScanResult?.let { stringScanResult ->
 
 
-                            if (stringScanResult[0]=='3')  {
+                            if(stringScanResult.substring(0, 3) == "3N0") {
                                 val parts = stringScanResult.split('$')
                                 // Номер катушки находится на 1‑й позиции (индекс 1)
                                 if (parts.size > 1) Nkat = parts[1]

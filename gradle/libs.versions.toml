@@ -28,6 +28,7 @@ androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-view
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 emdk = { module = "com.symbol:emdk", version.ref = "emdk" }
 
+
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

@@ -22,6 +22,20 @@
 
     <!-- Кнопка "Принять на ВК" -->
     <com.google.android.material.button.MaterialButton
+        android:id="@+id/WHtoIncontrol"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Отправить на ВК"
+        app:backgroundTint="#0DA5CA"
+        app:strokeColor="#FFFFFF"
+        android:textColor="#FFFFFF"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:textAllCaps="false"
+        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
+    <!-- Кнопка "Принять на ВК" -->
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/toIncontrol"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"

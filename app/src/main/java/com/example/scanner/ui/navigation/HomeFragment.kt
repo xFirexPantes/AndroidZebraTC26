@@ -1,18 +1,31 @@
 package com.example.scanner.ui.navigation
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.FileProvider
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.lifecycleScope
 import com.example.scanner.R
 import com.example.scanner.app.floatDisable
 import com.example.scanner.app.floatEnable
@@ -22,22 +35,28 @@ import com.example.scanner.ui.base.BaseFragment
 import com.example.scanner.modules.viewModelFactory
 import com.example.scanner.ui.base.BaseViewModel
 import com.example.scanner.ui.base.ScanFragmentBase
-import com.example.scanner.ui.dialogs.FileDownload
 import com.example.scanner.ui.navigation.login.LoginFragment
 import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_over.ProgressFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.BufferedReader
+import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
 import java.lang.ref.WeakReference
-import androidx.core.net.toUri
-
+import java.net.HttpURLConnection
+import java.net.URL
+private const val REQUEST_INSTALL_PERMISSION = 1001
 
 class HomeFragment : BaseFragment() {
-
+    val handler = Handler(Looper.getMainLooper())
     private val homeViewModel: HomeViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
-
+    private var networkPath: String = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         homeViewModel.loginInit()
@@ -148,6 +167,15 @@ class HomeFragment : BaseFragment() {
                                 incontrol.button.setOnClickListener { forbiddenToast()}
                                 floatDisable
                             }
+                        update.button.alpha = if (state.incontrol || state.update) {
+                            update.button.setOnClickListener {
+                                checkForUpdates() // Вызываем проверку обновлений
+                            }
+                            floatEnable
+                        } else {
+                            update.button.setOnClickListener { forbiddenToast() }
+                            floatDisable
+                        }
 
 
 
@@ -189,7 +217,247 @@ class HomeFragment : BaseFragment() {
 
     }
 
+    private fun checkForUpdates() {
+        val networkPath = "http://192.168.5.125/txrw" // URL сервера с обновлениями
+        val url = URL("$networkPath/version.txt")
 
+        Thread {
+            try {
+                if (!isNetworkAvailable()) {
+                    handler.post {
+                        showToast("Нет подключения к интернету")
+                    }
+
+                    return@Thread
+                }
+
+
+                val reader = BufferedReader(InputStreamReader(url.openStream()))
+                val latestVersion = reader.readLine()
+
+                if (latestVersion != requireActivity().packageManager.getPackageInfo(
+                        requireActivity().packageName, 0
+                    ).versionName) {
+
+                    Handler(Looper.getMainLooper()).post {
+                        showUpdateDialog(networkPath)
+                    }
+
+                } else {
+
+                    handler.post {
+                        showToast("Нет обновлений")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("UpdateChecker", "Ошибка проверки обновлений: ${e.message}", e)
+                handler.post {
+                    showToast("Ошибка при проверке обновлений")
+                }
+            } finally {
+
+            }
+        }.start()
+    }
+
+    private fun showUpdateDialog(networkPath: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Доступно обновление")
+            .setMessage("Желаете установить новую версию?")
+            .setPositiveButton("Да") { _, _ -> downloadAndInstallUpdate(networkPath) }
+            .setNegativeButton("Нет") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .show()
+    }
+
+    private fun getCurrentVersion(): String? {
+        return try {
+            requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).versionName
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+            return when {
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                else -> false
+            }
+        } else {
+            val networkInfo = connectivityManager.activeNetworkInfo
+            return networkInfo != null && networkInfo.isConnected
+        }
+    }
+
+    private val installPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Пользователь дал разрешение — продолжаем загрузку
+            downloadAndInstallUpdateInternal(networkPath)
+        } else {
+            handler.post {
+                showToast("Разрешение не получено")
+            }
+
+        }
+    }
+    private fun isInstallPermissionGranted(): Boolean {
+        return when {
+            Build.VERSION.SDK_INT >= 30 ->
+                requireActivity().packageManager.canRequestPackageInstalls()
+            Build.VERSION.SDK_INT == 29 ->
+                true  // В Android 10 считаем, что разрешено (или проверяем иначе)
+            else ->
+                true  // Для старых версий разрешение не требуется
+        }
+    }
+
+    private fun downloadAndInstallUpdate(networkPath: String) {
+        this.networkPath = networkPath
+
+        if (!isInstallPermissionGranted()) {
+            // Показываем настройки только если разрешения НЕТ
+            val intent = Intent(
+                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                Uri.parse("package:${requireActivity().packageName}")
+            )
+            installPermissionLauncher.launch(intent)
+            return
+        }
+
+        // Разрешение есть → начинаем загрузку
+        downloadAndInstallUpdateInternal(networkPath)
+    }
+    // Фоновая загрузка файла
+    private suspend fun downloadFile(urlString: String, fileSize: Long): File {
+        return withContext(Dispatchers.IO) {
+            val url = URL(urlString)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.connectTimeout = 15_000
+            connection.readTimeout = 15_000
+            connection.connect()
+
+            val downloadDir = File(requireActivity().filesDir, "downloads").apply {
+                if (!exists()) mkdirs()
+            }
+            val apkFile = File(downloadDir, "update.apk")
+
+            connection.inputStream.use { input ->
+                apkFile.outputStream().use { output ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    var totalBytesRead: Long = 0
+
+                    while (input.read(buffer).also { bytesRead = it } > 0) {
+                        output.write(buffer, 0, bytesRead)
+                        totalBytesRead += bytesRead
+                        val progress = (totalBytesRead * 100 / fileSize).toInt()
+                        updateProgress(progress)
+                    }
+                }
+            }
+            apkFile
+        }
+    }
+
+    private fun downloadAndInstallUpdateInternal(networkPath: String) = lifecycleScope.launch {
+        try {
+            val fileSize = withContext(Dispatchers.IO) {
+                val url = URL("$networkPath/trxw.apk")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.connectTimeout = 15_000
+                connection.readTimeout = 15_000
+                connection.connect()
+
+                val size = connection.contentLengthLong
+                if (size <= 0) throw IOException("Неверный размер файла")
+                size
+            }
+
+            val apkFile = withContext(Dispatchers.IO) {
+                downloadFile("$networkPath/trxw.apk", fileSize)
+            }
+
+            installApk(apkFile)
+
+        } catch (e: IOException) {
+            handler.post {
+                showToast("Ошибка сети: ${e.message}")
+            }
+
+        } catch (e: Exception) {
+            handler.post {
+                showToast("Ошибка: ${e.message}")
+            }
+
+        }
+    }
+    // Установка APK
+    private fun installApk(apkFile: File) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            val authority = "${requireActivity().packageName}.fileprovider"
+            val apkUri = FileProvider.getUriForFile(
+                requireContext(),
+                authority,
+                apkFile
+            )
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
+        } else {
+            intent.setDataAndType(
+                Uri.fromFile(apkFile),
+                "application/vnd.android.package-archive"
+            )
+        }
+
+        startActivity(intent)
+    }
+
+    // Обработка результата разрешения
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_INSTALL_PERMISSION) {
+            if (Build.VERSION.SDK_INT >= 30) {
+                if (requireActivity().packageManager.canRequestPackageInstalls()) {
+                    // Повторный запуск загрузки после получения разрешения
+                    val currentNetworkPath =
+                    downloadAndInstallUpdate("http://192.168.5.125/txrw/trxw.apk")
+                } else {
+                    handler.post {
+                        showToast("Разрешение не получено")
+                    }
+
+                }
+            } else {
+                // Для SDK 29 считаем, что пользователь сам включит
+                handler.post {
+                    showToast("Включите «Неизвестные источники» в настройках")
+                }
+
+            }
+        }
+    }
+
+    private fun updateProgress(progress: Int) {
+        handler.post {
+            Toast.makeText(requireContext(), "Загрузка: $progress%", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
 
     class HomeViewModel(val loginRepository: LoginRepository) : BaseViewModel() {
 
@@ -293,7 +561,8 @@ class HomeFragment : BaseFragment() {
                             issuance = it.access.issuance,
                             search = it.access.search,
                             isolator = it.access.isolator,
-                            incontrol = it.access.incontrol
+                            incontrol = it.access.incontrol,
+                            update = it.access.update
                         )
                     }
                 }

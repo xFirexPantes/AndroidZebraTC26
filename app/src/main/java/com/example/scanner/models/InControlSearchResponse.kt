@@ -16,5 +16,7 @@ data class InControlSearchResponse(
         val DT:String,
         val IDAll:Int,
         val inBox:Boolean,
+        val NumNakl: String,
+        val kolpacks:Int,
     )
 }
