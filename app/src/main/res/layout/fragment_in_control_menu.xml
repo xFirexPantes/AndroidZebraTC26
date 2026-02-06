@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="14dp">
+
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -12,70 +14,162 @@
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/icons8_back_50"
         app:popupTheme="@style/Theme.Scanner.PopupOverlay">
+
         <LinearLayout
             android:id="@+id/icon_container"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
-            android:layout_gravity="end" />
+            android:layout_gravity="end"
+            android:orientation="horizontal" />
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Кнопка "Принять на ВК" -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/WHtoIncontrol"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Отправить на ВК"
-        app:backgroundTint="#0DA5CA"
-        app:strokeColor="#FFFFFF"
-        android:textColor="#FFFFFF"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
-    <!-- Кнопка "Принять на ВК" -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/toIncontrol"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Принять на ВК"
-        app:backgroundTint="#0DA5CA"
-        app:strokeColor="#FFFFFF"
-        android:textColor="#FFFFFF"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
+        android:layout_height="match_parent">
 
-    <!-- Кнопка "Положить в коробку" -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/toBox"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Положить в коробку"
-        app:backgroundTint="#0DA5CA"
-        app:strokeColor="#FFFFFF"
-        android:textColor="#FFFFFF"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:textAllCaps="false"
-        android:layout_marginBottom="8dp" /> <!-- Гибкий отступ снизу -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-    <!-- Кнопка "Принять на склад" -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/toWarehouse"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Принять на склад"
-        app:backgroundTint="#0DA5CA"
-        app:strokeColor="#FFFFFF"
-        android:textColor="#FFFFFF"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:textAllCaps="false" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="5dp"
+                android:text="Входной контроль"
+                android:textColor="#555555"
+                android:textSize="18sp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toIncontrol"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Принять на ВК"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_forward_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toBox"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Отправить в коробку"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:tooltipText="Доступно после приёма на ВК"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_back_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="5dp"
+                android:text="Склад"
+                android:textColor="#555555"
+                android:textSize="18sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/WHtoIncontrol"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Отправить на ВК"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_back_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toWarehouse"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Забрать коробку с ВК"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_forward_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="5dp"
+                android:text="Сушка"
+                android:textColor="#555555"
+                android:textSize="18sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toDry"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Отправить в печь"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_forward_24"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/fromDry"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Забрать из печи"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_back_24"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/listDry"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Что на сушке"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_brightness_high_24_gold"
+                app:iconTint="@color/yellow"
+                app:strokeColor="#FFFFFF" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

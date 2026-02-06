@@ -2,26 +2,19 @@ package com.example.scanner.app
 
 import android.app.Application
 import android.util.Log
-//import com.example.scanner.BuildConfig
 import com.example.scanner.modules.CrashHandler
 import fr.bipi.treessence.common.formatter.Formatter
 import fr.bipi.treessence.common.os.OsInfoProvider
 import fr.bipi.treessence.common.os.OsInfoProviderDefault
 import fr.bipi.treessence.common.time.TimeStamper
-import fr.bipi.treessence.common.utils.FileUtils
 import fr.bipi.treessence.file.FileLoggerTree
 import timber.log.Timber
-import java.io.File
-import java.lang.Exception
-import java.util.logging.FileHandler
-import java.util.logging.LogRecord
-import java.util.logging.Logger
+
 
 class App:Application() {
 
     companion object{
         var fileLoggerTree:FileLoggerTree?=null
-        lateinit var instance: App
         val plantFileLoggerTree:(stringPath:String?)->Unit={ stringPath->
             stringPath?.let { path ->
                 if (fileLoggerTree ==null){

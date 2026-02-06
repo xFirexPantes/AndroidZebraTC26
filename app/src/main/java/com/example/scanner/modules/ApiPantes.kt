@@ -9,9 +9,9 @@ import com.example.scanner.models.AcceptPutkatResponse
 import com.example.scanner.models.ComponentInfoResponse
 import com.example.scanner.models.ComponentsSearchResponse
 import com.example.scanner.models.ComponentsUrgentSearchResponse
-import com.example.scanner.models.InControlBackResponse
+import com.example.scanner.models.DryInfoResponse
+import com.example.scanner.models.DrySearchResponse
 import com.example.scanner.models.InControlCheckStResponse
-import com.example.scanner.models.InControlIDAllResponse
 import com.example.scanner.models.InvoiceInfoResponse
 import com.example.scanner.models.InvoiceSearchResponse
 import com.example.scanner.models.IsolatorReasonsResponse
@@ -28,7 +28,6 @@ import com.example.scanner.ui.MainActivity
 import com.example.scanner.ui.base.NonFatalExceptionShowDialogMessage
 import com.example.scanner.ui.navigation_over.ProgressFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -404,13 +403,6 @@ class ApiPantes(
             @Query("box") box: Int,
             @Query("token") token: String,
         ):Call<String>
-        @GET("incontrol/put2wh")
-        @Headers("Content-Type: application/json")
-        fun incontrolPut2WH(
-            @Header("Authorization") authorization:String,
-            @Query("num") num: String,
-            @Query("token") token: String,
-        ):Call<String>
         @GET("incontrol/getidall")
         @Headers("Content-Type: application/json")
         fun incontrolGetIDAll(
@@ -418,6 +410,47 @@ class ApiPantes(
             @Query("num") num: String,
             @Query("token") token: String,
         ):Call<ArrayList<Int>>
+        @GET("dry/getid")
+        @Headers("Content-Type: application/json")
+        fun dryGetID(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<Int>
+        @GET("dry/search")
+        @Headers("Content-Type: application/json")
+        fun drySearch(
+            @Header("Authorization") authorization:String,
+            @Query("Cab") Cab: Int,
+            @Query("skladId") skladId: Int,
+            @Query("Sost") Sost: String,
+            @Query("ActionNme") ActionNme: String,
+            @Query("rgm") rgm: String,
+            @Query("token") token: String,
+        ):Call<DrySearchResponse>
+        @GET("dry/info")
+        @Headers("Content-Type: application/json")
+        fun dryInfo(
+            @Header("Authorization") authorization:String,
+            @Query("id") id: Int,
+            @Query("token") token: String,
+        ):Call<DryInfoResponse>
+        @GET("incontrol/put2wh")
+        @Headers("Content-Type: application/json")
+        fun incontrolPut2WH(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("dry/putfromdry")
+        @Headers("Content-Type: application/json")
+        fun dryPut2WH(
+            @Header("Authorization") authorization:String,
+            @Query("IdResSub") IdresSub: Int,
+            @Query("id") id: Int,
+            @Query("num") num: Int,
+            @Query("token") token: String,
+        ):Call<String>
         //endregion
 
         //endregion
@@ -628,7 +661,18 @@ class ApiPantes(
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
 
+    suspend fun dryInfo(token:String,id: Int): ApiState<DryInfoResponse> {
+        return flow {
+            val response:Response<DryInfoResponse> =
+                api.dryInfo( "Bearer $token",id,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
 
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
     suspend fun componentSearch(token:String,query:String,last:String): ApiState<ComponentsSearchResponse> {
         return flow {
             val response:Response<ComponentsSearchResponse> =
@@ -971,6 +1015,26 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
     }
+    suspend fun dryGetID(token:String, num: String): ApiState<Int> {
+        return flow {
+            try {
+                val response: Response<Int> =
+                    api.dryGetID("Bearer $token", num, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
     suspend fun incontrolPut2box(token:String, num: String, box: Int): ApiState<String> {
         return flow {
             try {
@@ -1071,11 +1135,44 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
     }
+
+    suspend fun drySearch(token:String,Cab: Int,skladID: Int,Sost:String,ActionNme: String,rgm: String): ApiState<DrySearchResponse> {
+        return flow {
+            val response:Response<DrySearchResponse> =
+                api.drySearch( "Bearer $token",Cab,skladID,Sost,ActionNme,rgm,token).execute()
+            emit(
+                when(response.isSuccessful){
+                    true->ApiState.Success(response.body()!! as DrySearchResponse)
+                    else->ApiState.Error(buildException(response))
+                }
+            )
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
     suspend fun incontrolPut2WH(num: String,token:String): ApiState<String> {
         return flow {
             try {
                 val response: Response<String> =
                     api.incontrolPut2WH("Bearer $token", num, token).execute()
+
+                Log.d("API", "Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Log.e("API_ERROR", "Message: ${e.message}")
+                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun dryPut2WH(IdresSub: Int,id : Int,num: Int,token:String): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.dryPut2WH("Bearer $token", IdresSub,id,num, token).execute()
 
                 Log.d("API", "Response code: ${response.code()}")
 

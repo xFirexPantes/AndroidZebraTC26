@@ -42,6 +42,10 @@ class InControlMenuFragment : Fragment() {
         binding?.toBox?.isEnabled = false
         binding?.toWarehouse?.isEnabled = false
         binding?.WHtoIncontrol?.isEnabled = false
+        binding?.toDry?.isEnabled = false
+        binding?.fromDry?.isEnabled = false
+        binding?.listDry?.isEnabled = false
+
 
         homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) { state ->
             when (state) {
@@ -64,6 +68,18 @@ class InControlMenuFragment : Fragment() {
                     binding?.toWarehouse?.visibility =
                         if (state.accept) View.VISIBLE else View.GONE
                     binding?.toWarehouse?.isEnabled = state.accept
+
+                    binding?.toDry?.visibility =
+                        if (state.incontrol) View.VISIBLE else View.GONE
+                    binding?.toDry?.isEnabled = state.incontrol
+
+                    binding?.fromDry?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.fromDry?.isEnabled = state.accept
+
+                    binding?.listDry?.visibility =
+                        if (state.accept || state.incontrol) View.VISIBLE else View.GONE
+                    binding?.listDry?.isEnabled = (state.accept || state.incontrol)
                 }
             }
         }
@@ -90,6 +106,24 @@ class InControlMenuFragment : Fragment() {
             homeViewModel.mainActivityRouter.navigate(
                 InControlFragment::class.java,
                 Bundle().apply { putSerializable(InControlFragment.PARAM, "toWH") }
+            )
+        }
+        binding?.toDry?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                DryFragment::class.java,
+                Bundle().apply { putSerializable(DryFragment.PARAM, "toDry") }
+            )
+        }
+        binding?.fromDry?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                DryFragment::class.java,
+                Bundle().apply { putSerializable(DryFragment.PARAM, "fromDry") }
+            )
+        }
+        binding?.listDry?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                DryFragment::class.java,
+                Bundle().apply { putSerializable(DryFragment.PARAM, "listDry") }
             )
         }
     }

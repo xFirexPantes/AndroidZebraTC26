@@ -10,11 +10,12 @@
 
     <TextView
         android:id="@+id/textVersion"
-        android:layout_width="97dp"
+        android:layout_width="wrap_content"
         android:layout_height="29dp"
         android:text="TextView"
         tools:layout_editor_absoluteX="41dp"
-        tools:layout_editor_absoluteY="0dp" />
+        tools:layout_editor_absoluteY="0dp"
+        tools:ignore="MissingConstraints" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/user_view_container"
@@ -123,6 +124,11 @@
                 android:id="@+id/update"
                 app:title="@{@string/button_update}"
                 app:icon="@{@drawable/ic_update}"
+                />
+            <include layout="@layout/template_button"
+                android:id="@+id/admin"
+                app:title="@{@string/button_admin}"
+                app:icon="@{@drawable/ic_admin}"
                 />
         </LinearLayout>
 

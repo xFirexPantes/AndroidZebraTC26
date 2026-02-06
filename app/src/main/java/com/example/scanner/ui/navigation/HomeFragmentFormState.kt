@@ -10,5 +10,6 @@ sealed class HomeFragmentFormState<out T : Any> {
         val search: Boolean,
         val incontrol: Boolean,
         val update: Boolean,
+        val admin: Boolean,
     ) : HomeFragmentFormState<Nothing>()
 }

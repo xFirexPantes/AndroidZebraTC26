@@ -19,3 +19,23 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Сохраняем классы NFC
+-keep class android.nfc.** { *; }
+-keep interface android.nfc.** { *; }
+
+# Сохраняем классы для обработки NFC intent
+-keep class * extends android.app.Activity
+-keepclassmembers class * extends android.app.Activity {
+    public void onCreate(android.os.Bundle);
+    public void onNewIntent(android.content.Intent);
+}
+
+# Сохраняем NdefMessage и связанные классы
+-keep class android.nfc.NdefMessage { *; }
+-keep class android.nfc.NdefRecord { *; }
+-keep class android.nfc.Tag { *; }
+-keep class android.nfc.tech.** { *; }
+
+# Сохраняем классы, которые могут использоваться через рефлексию
+-keepattributes Signature
+-keepattributes *Annotation*

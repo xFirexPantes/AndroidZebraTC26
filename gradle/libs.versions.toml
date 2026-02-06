@@ -1,20 +1,30 @@
 [versions]
 agp = "8.8.0"
+commonsIo = "2.19.0"
+coreSplashscreen = "1.2.0"
 emdk = "9.1.1"
-kotlin = "2.0.21"
+jcifs = "1.3.14-kohsuke-1"
+kotlin = "2.0.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
+kotlinReflect = "2.1.0"
+kotlinxSerializationJson = "1.7.1"
 lifecycleLivedataKtx = "2.8.7"
+loggingInterceptor = "3.12.2"
 material = "1.12.0"
 constraintlayout = "2.2.1"
 navigationFragmentKtx = "2.8.9"
 navigationUiKtx = "2.8.9"
+photoview = "1.0.3"
+picasso = "2.71828"
 retrofit = "2.9.0"
 rxkotlin = "3.0.0"
+safebox = "1.3.0"
 timber = "5.0.1"
+tinkAndroid = "1.20.0"
 treessence = "1.1.2"
 activity = "1.10.1"
 legacySupportV4 = "1.0.0"
@@ -23,23 +33,33 @@ annotation = "1.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleLivedataKtx" }
+commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 emdk = { module = "com.symbol:emdk", version.ref = "emdk" }
 
 
+jcifs = { module = "org.samba.jcifs:jcifs", version.ref = "jcifs" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinReflect" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
+photoview = { module = "io.getstream:photoview", version.ref = "photoview" }
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 rxkotlin = { module = "io.reactivex.rxjava3:rxkotlin", version.ref = "rxkotlin" }
+safebox = { module = "io.github.harrytmthy:safebox", version.ref = "safebox" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+tink-android = { module = "com.google.crypto.tink:tink-android", version.ref = "tinkAndroid" }
 treessence = { module = "com.github.bastienpaulfr:Treessence", version.ref = "treessence" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
@@ -50,4 +70,4 @@ androidx-annotation = { group = "androidx.annotation", name = "annotation", vers
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

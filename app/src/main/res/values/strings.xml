@@ -16,6 +16,7 @@
     <string name="button_isolator">Изолятор</string>
     <string name="button_incontrol">Входной контроль</string>
     <string name="button_update">Обновить приложение</string>
+    <string name="button_admin">Админ</string>
     <string name="button_search">Поиск</string>
     <string name="button_to_logs">Логи</string>
     <!-- Strings related to login -->

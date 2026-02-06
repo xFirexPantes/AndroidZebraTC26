@@ -12,6 +12,8 @@
     <color name="background2">#CAE6FF</color>
     <color name="yellow">#FFFF00</color>
     <color name="default_background">#FFFFFF</color>
+    <color name="green_border">#4CAF50</color>
+    <color name="yellow_highlight">#FFF9C4</color>
     <!--    <color name="base_background">#CAB7FB</color>-->
     <color name="base_background">#FAF8FF</color>
 </resources>

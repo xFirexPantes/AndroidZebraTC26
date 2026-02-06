@@ -1,10 +1,12 @@
 package com.example.scanner.ui.navigation
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
@@ -17,6 +19,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +46,7 @@ import com.example.scanner.ui.navigation_over.TransparentFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
@@ -71,6 +75,7 @@ class HomeFragment : BaseFragment() {
 
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -167,7 +172,7 @@ class HomeFragment : BaseFragment() {
                                 incontrol.button.setOnClickListener { forbiddenToast()}
                                 floatDisable
                             }
-                        update.button.alpha = if (state.incontrol || state.update) {
+                        update.button.alpha = if (state.update) {
                             update.button.setOnClickListener {
                                 checkForUpdates() // Вызываем проверку обновлений
                             }
@@ -176,6 +181,21 @@ class HomeFragment : BaseFragment() {
                             update.button.setOnClickListener { forbiddenToast() }
                             floatDisable
                         }
+
+                        admin.button.visibility = if (state.admin) {
+                            admin.button.setOnClickListener {
+                                homeViewModel.mainActivityRouter.navigate(
+                                    AdminFragment::class.java,
+                                    Bundle().apply { putSerializable("", "") } // Обратите внимание: ключ пустой!
+                                )
+                            }
+                            View.VISIBLE
+                        } else {
+                            admin.button.setOnClickListener { forbiddenToast() }
+                            View.GONE // или View.INVISIBLE — см. пояснение ниже
+                        }
+
+
 
 
 
@@ -206,8 +226,7 @@ class HomeFragment : BaseFragment() {
                 val packageInfo = requireActivity().packageManager.getPackageInfo(
                     requireActivity().packageName, 0
                 )
-                val versionName = packageInfo.versionName
-                versionTextView.text = "Версия: $versionName"
+
             } catch (e: PackageManager.NameNotFoundException) {
                 versionTextView.text = "Версия: не найдена"
             }
@@ -217,6 +236,53 @@ class HomeFragment : BaseFragment() {
 
     }
 
+    private fun startcheck(versionTextView: TextView,btn: Button) {
+        lifecycleScope.launch {
+            try {
+                // 1. Проверяем подключение
+                if (!isNetworkAvailable()) {
+                    versionTextView.text = "Версия: ${getCurrentVersion()} (нет интернета)"
+                    return@launch
+                }
+
+                // 2. Выполняем запрос в фоновом потоке
+                val isUpdateNeeded = withContext(Dispatchers.IO) {
+                    val url = URL("http://192.168.5.125/txrw/version.txt")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.connectTimeout = 5000
+                    connection.readTimeout = 5000
+
+                    val latestVersion = connection.inputStream.bufferedReader().use { it.readLine() }
+                    val currentVersion = getCurrentVersion()
+
+                    latestVersion != null && latestVersion != currentVersion
+                }
+
+                // 3. Обновляем TextView в UI-потоке
+                val currentVersion = getCurrentVersion()
+                versionTextView.text = "Версия: $currentVersion"
+                if (isUpdateNeeded) {
+                    btn.setBackgroundColor(Color.argb(255, 0, 255, 0))
+                    versionTextView.setBackgroundColor(Color.argb(255, 0, 255, 0))
+                }
+
+            } catch (e: Exception) {
+                Timber.tag("UpdateChecker").e(e, "Ошибка проверки обновлений")
+                versionTextView.text = "Версия: ${getCurrentVersion()} (ошибка проверки)"
+            }
+        }
+    }
+
+    // Вспомогательный метод для получения текущей версии
+    private fun getCurrentVersion(): String {
+        return try {
+            requireActivity().packageManager
+                .getPackageInfo(requireActivity().packageName, 0)
+                .versionName.toString()
+        } catch (e: PackageManager.NameNotFoundException) {
+            "не найдена"
+        }
+    }
     private fun checkForUpdates() {
         val networkPath = "http://192.168.5.125/txrw" // URL сервера с обновлениями
         val url = URL("$networkPath/version.txt")
@@ -250,7 +316,7 @@ class HomeFragment : BaseFragment() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("UpdateChecker", "Ошибка проверки обновлений: ${e.message}", e)
+                Timber.tag("UpdateChecker").e(e, "Ошибка проверки обновлений: ${e.message}")
                 handler.post {
                     showToast("Ошибка при проверке обновлений")
                 }
@@ -270,13 +336,7 @@ class HomeFragment : BaseFragment() {
             .show()
     }
 
-    private fun getCurrentVersion(): String? {
-        return try {
-            requireActivity().packageManager.getPackageInfo(requireActivity().packageName, 0).versionName
-        } catch (e: PackageManager.NameNotFoundException) {
-            null
-        }
-    }
+
 
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager = requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -562,7 +622,8 @@ class HomeFragment : BaseFragment() {
                             search = it.access.search,
                             isolator = it.access.isolator,
                             incontrol = it.access.incontrol,
-                            update = it.access.update
+                            update = it.access.update,
+                            admin = it.access.admin
                         )
                     }
                 }
@@ -572,4 +633,15 @@ class HomeFragment : BaseFragment() {
         }
 
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val versionTextView: TextView = view.findViewById(R.id.textVersion)
+        val btn: Button = view.findViewById(R.id.update)
+
+        // Сразу запускаем проверку обновлений
+        startcheck(versionTextView,btn)
+    }
+
 }

@@ -16,17 +16,29 @@ import timber.log.Timber
 import java.lang.ref.WeakReference
 
 abstract class ScanFragmentBase : BaseFragment(){
-        sealed class ScanFragmentBaseFormState<out T : Any> {
-            data class Error(val exception: Throwable?) : ScanFragmentBaseFormState<Nothing>()
-            data class ShowScanResult(private var _stringScanResult: String?,val isTypeInputScanner: Boolean) : ScanFragmentBaseFormState<Nothing>(){
-                val stringScanResult:String?
-                    get(){
-                        val result=_stringScanResult
-                        _stringScanResult=null
-                        return result
-                    }
-            }
+    sealed class ScanFragmentBaseFormState<out T : Any> {
+        data class Error(val exception: Throwable?) : ScanFragmentBaseFormState<Nothing>()
+
+        data class ShowScanResult(
+            private var _stringScanResult: String?,
+            val isTypeInputScanner: Boolean, // true = QR/ручной ввод, false = NFC
+            val sourceType: SourceType = SourceType.QR // доп. поле для гибкости
+        ) : ScanFragmentBaseFormState<Nothing>() {
+
+            val stringScanResult: String?
+                get() {
+                    val result = _stringScanResult
+                    _stringScanResult = null
+                    return result
+                }
         }
+
+        enum class SourceType {
+            QR,
+            NFC,
+            MANUAL
+        }
+    }
 
         class ScanViewModel(
             val pref: Pref
@@ -55,6 +67,7 @@ abstract class ScanFragmentBase : BaseFragment(){
 
             lateinit var scannerApiEmulator: IScannerApi
             lateinit var scannerApi: ScannerApi
+
 
             fun installScannerApi() {
 
@@ -132,6 +145,7 @@ abstract class ScanFragmentBase : BaseFragment(){
                 }
 
             }
+
 
         }
 

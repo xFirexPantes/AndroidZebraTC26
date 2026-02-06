@@ -43,7 +43,21 @@ class LoginFragment : BaseFragment(), TextView.OnEditorActionListener,TextWatche
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
 
         return binding.apply {
+            // 1. Проверка аргументов (безопасный доступ)
+            arguments?.apply {
+                val login = getString("login")
+                val password = getString("password")
 
+                if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
+                    user.setText(login)
+                    pass.setText(password)
+
+                    // 2. Запуск авторизации ТОЛЬКО если фрагмент активен
+                    if (isAdded) {
+                        loginViewModel.login(login, password)
+                    }
+                }
+            }
             userLayout.hint=getString(R.string.prompt_login)
             user.inputType= InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
             pass.setImeActionLabel("Далее",EditorInfo.IME_ACTION_DONE)

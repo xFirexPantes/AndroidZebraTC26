@@ -1,3 +1,5 @@
+import com.android.build.shrinker.usages.runResourceShrinkerAnalysis
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -11,16 +13,18 @@ android {
     defaultConfig {
         applicationId = "com.example.scanner"
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.5.6"
+        versionName = "1.6.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -37,6 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        //noinspection DataBindingWithoutKapt
         dataBinding = true
     }
 
@@ -63,17 +68,18 @@ dependencies {
 
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
-    implementation ("com.squareup.okhttp3:logging-interceptor:3.12.2")
-    implementation("org.samba.jcifs:jcifs:1.3.14-kohsuke-1")
-    implementation ("org.jetbrains.kotlin:kotlin-reflect:2.1.0")
-    implementation("androidx.core:core-splashscreen:1.0.1")
-    implementation("io.getstream:photoview:1.0.3")
-    implementation("com.squareup.picasso:picasso:2.71828")
-    implementation("commons-io:commons-io:2.19.0")
+    implementation (libs.logging.interceptor)
+    implementation(libs.jcifs)
+    implementation (libs.kotlin.reflect)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.photoview)
+    implementation(libs.picasso)
+    implementation(libs.commons.io)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
+    implementation(libs.tink.android)
+    implementation(libs.kotlinx.serialization.json)
 
 
 }

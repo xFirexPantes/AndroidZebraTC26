@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -44,8 +43,6 @@ import com.example.scanner.ui.base.BaseFragment
 import com.example.scanner.ui.base.BaseRecyclerAdapter
 import com.example.scanner.ui.base.BaseViewModel
 import com.example.scanner.ui.base.ScanFragmentBase
-import com.example.scanner.ui.navigation.ReceiveFragment.Companion.PARAM_STEP_1_VALUE
-import com.example.scanner.ui.navigation.ReceiveFragment.ReceiveFragmentFormState
 import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -69,14 +66,13 @@ class InControlFragment: BaseFragment() {
         Adapterincontrol()
     private lateinit var infoTextView : TextView
     private var msg: String = ""
-    private var prim: String = ""
-    private var box: Int = 0
+      private var box: Int = 0
     private var IDAll: String = ""
+    private var curIDAll: String = ""
+    private var curPrim: String = ""
     private var action15: Boolean = false
     private var action23: Boolean = false
-    //private lateinit var urgentSearchBut : Button
-    //private var isUrgent : Boolean = false
-   // private var isUrgentCompare : Boolean = false
+
 
     sealed class Back2SkladState<out T : Any> {
         data class Success(val message: String) : Back2SkladState<String>()
@@ -90,15 +86,15 @@ class InControlFragment: BaseFragment() {
     private val itemTouchHelper = ItemTouchHelper(
         object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
             // Отключаем автоматическое удаление
-            override fun getSwipeThreshold(viewHolder: RecyclerView.ViewHolder): Float = 1f
+            override fun getSwipeThreshold(viewHolder: ViewHolder): Float = 1f
 
             override fun onMove(
                 recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
+                viewHolder: ViewHolder,
+                target: ViewHolder
             ): Boolean = false
 
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            override fun onSwiped(viewHolder: ViewHolder, direction: Int) {
                 // НЕ удаляем элемент автоматически!
                 // Вместо этого — показываем диалог
                 val position = viewHolder.adapterPosition
@@ -112,7 +108,7 @@ class InControlFragment: BaseFragment() {
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
+                viewHolder: ViewHolder,
                 dX: Float,
                 dY: Float,
                 actionState: Int,
@@ -409,15 +405,11 @@ class InControlFragment: BaseFragment() {
                         when (result) {
                             is Result.Success -> {
                                 IDAll = result.data.IDAll
-                                if (IDAll != null) {
-                                    val position = adapterincontrol.findPosition(IDAll)
-                                    if (position != null && position != -1) {
-                                        adapterincontrol.scrollToPosition(position, recyclerView)
-                                    } else {
-                                        showResponse("Элемент с IDAll=$IDAll не найден в списке")
-                                    }
+                                val position = adapterincontrol.findPosition(IDAll)
+                                if (position != null && position != -1) {
+                                    adapterincontrol.scrollToPosition(position, recyclerView)
                                 } else {
-                                    showResponse("Получен пустой IDAll")
+                                    showResponse("Элемент с IDAll=$IDAll не найден в списке")
                                 }
                             }
                             is Result.Failure -> showError(result.exception)
@@ -524,7 +516,7 @@ class InControlFragment: BaseFragment() {
                 )
             }
 
-            if (box == 0 && (paramValue!="toIncontrol" || paramValue!="WHtoIncontrol")){
+            if (box == 0 && (paramValue!="toIncontrol" && paramValue!="WHtoIncontrol")){
                 Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
             }
         }
@@ -611,7 +603,7 @@ class InControlFragment: BaseFragment() {
                                         // 2. Вызываем WHtoBox()
 
                                         lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.WHtoBox(num, box, paramValue)
+                                            val putResult = incontrolViewModel.WHtoBox(num, box)
 
                                             when (putResult) {
                                                 is Result.Success<Unit> -> {
@@ -644,7 +636,7 @@ class InControlFragment: BaseFragment() {
                                     // 2. Вызываем put2Box()
 
                                     lifecycleScope.launch {
-                                        val putResult = incontrolViewModel.WHtoBox("bottle" + curNum, box, paramValue)
+                                        val putResult = incontrolViewModel.WHtoBox("bottle" + curNum, box)
 
                                         when (putResult) {
                                             is Result.Success<Unit> -> {
@@ -717,22 +709,42 @@ class InControlFragment: BaseFragment() {
 
 
                                                         if (msg.isEmpty()) {
-                                                            showPrimInputDialog { prim ->
-                                                                lifecycleScope.launch {
-                                                                    val putResult = incontrolViewModel.back2Sklad(num, prim)
-
-                                                                    when (putResult) {
-                                                                        is Result.Success -> {
-                                                                            // putResult.data — это уже готовая строка (isOk) от API
-                                                                            if (putResult.data != "") {
-                                                                                showResponse(
-                                                                                    putResult.data
-                                                                                )  // Показываем её
-                                                                            }
-                                                                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                            if (curIDAll == IDAll){
+                                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                                when (putResult) {
+                                                                    is Result.Success -> {
+                                                                        // putResult.data — это уже готовая строка (isOk) от API
+                                                                        if (putResult.data != "") {
+                                                                            showResponse(
+                                                                                putResult.data
+                                                                            )  // Показываем её
                                                                         }
-                                                                        is Result.Failure -> {
-                                                                            showError(putResult.exception)
+                                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                                    }
+                                                                    is Result.Failure -> {
+                                                                        showError(putResult.exception)
+                                                                    }
+                                                                }
+                                                            }
+                                                            else{
+                                                                showPrimInputDialog { prim ->
+                                                                    lifecycleScope.launch {
+                                                                        val putResult = incontrolViewModel.back2Sklad(num, prim)
+                                                                        curIDAll = IDAll
+                                                                        curPrim = prim
+                                                                        when (putResult) {
+                                                                            is Result.Success -> {
+                                                                                // putResult.data — это уже готовая строка (isOk) от API
+                                                                                if (putResult.data != "") {
+                                                                                    showResponse(
+                                                                                        putResult.data
+                                                                                    )  // Показываем её
+                                                                                }
+                                                                                incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                                            }
+                                                                            is Result.Failure -> {
+                                                                                showError(putResult.exception)
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -772,22 +784,42 @@ class InControlFragment: BaseFragment() {
 
 
                                                             if (msg.isEmpty()) {
-                                                                showPrimInputDialog { prim ->
-                                                                    lifecycleScope.launch {
-                                                                        val putResult = incontrolViewModel.back2Sklad("bottle"+num, prim)
-
-                                                                        when (putResult) {
-                                                                            is Result.Success -> {
-                                                                                // putResult.data — это уже готовая строка (isOk) от API
-                                                                                if (putResult.data != "") {
-                                                                                    showResponse(
-                                                                                        putResult.data
-                                                                                    )  // Показываем её
-                                                                                }
-                                                                                incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                                if (curIDAll == IDAll){
+                                                                    val putResult = incontrolViewModel.back2Sklad("bottle"+num, curPrim)
+                                                                    when (putResult) {
+                                                                        is Result.Success -> {
+                                                                            // putResult.data — это уже готовая строка (isOk) от API
+                                                                            if (putResult.data != "") {
+                                                                                showResponse(
+                                                                                    putResult.data
+                                                                                )  // Показываем её
                                                                             }
-                                                                            is Result.Failure -> {
-                                                                                showError(putResult.exception)
+                                                                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                                        }
+                                                                        is Result.Failure -> {
+                                                                            showError(putResult.exception)
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else{
+                                                                    showPrimInputDialog { prim ->
+                                                                        lifecycleScope.launch {
+                                                                            val putResult = incontrolViewModel.back2Sklad("bottle"+num, prim)
+                                                                            curIDAll = IDAll
+                                                                            curPrim = prim
+                                                                            when (putResult) {
+                                                                                is Result.Success -> {
+                                                                                    // putResult.data — это уже готовая строка (isOk) от API
+                                                                                    if (putResult.data != "") {
+                                                                                        showResponse(
+                                                                                            putResult.data
+                                                                                        )  // Показываем её
+                                                                                    }
+                                                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                                                }
+                                                                                is Result.Failure -> {
+                                                                                    showError(putResult.exception)
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
@@ -833,7 +865,7 @@ class InControlFragment: BaseFragment() {
                                             // 2. Вызываем put2Box()
 
                                             lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.put2Box(num, box, paramValue)
+                                                val putResult = incontrolViewModel.put2Box(num, box)
 
                                                 when (putResult) {
                                                     is Result.Success<Unit> -> {
@@ -866,7 +898,7 @@ class InControlFragment: BaseFragment() {
                                         // 2. Вызываем put2Box()
 
                                         lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.put2Box("bottle" + curNum, box, paramValue)
+                                            val putResult = incontrolViewModel.put2Box("bottle" + curNum, box)
 
                                             when (putResult) {
                                                 is Result.Success<Unit> -> {
@@ -988,7 +1020,7 @@ class InControlFragment: BaseFragment() {
 //                                                incontrolViewModel.put2WH(curNum!!,paramValue,box)
 //                                                incontrolViewModel.refreshListEvent.postValue(Unit)
                                                 lifecycleScope.launch {
-                                                    val putResult = incontrolViewModel.put2WH(curNum!!,  paramValue,box)
+                                                    val putResult = incontrolViewModel.put2WH(curNum!!)
 
                                                     when (putResult) {
                                                         is Result.Success<Unit> -> {
@@ -1028,7 +1060,7 @@ class InControlFragment: BaseFragment() {
                                         if (parts.size == 5) {
                                             curNum = parts[2]
                                             lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.put2WH("bottle"+curNum!!,  paramValue,box)
+                                                val putResult = incontrolViewModel.put2WH("bottle"+curNum!!)
 
                                                 when (putResult) {
                                                     is Result.Success<Unit> -> {
@@ -1377,7 +1409,7 @@ class InControlFragment: BaseFragment() {
                 }
             }
 
-        suspend fun put2Box(num: String, box: Int, paramValue: String?): Result<Unit> =
+        suspend fun put2Box(num: String, box: Int): Result<Unit> =
             withContext(Dispatchers.IO) {
                 val token = loginRepository.user?.token
                     ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)
@@ -1388,7 +1420,7 @@ class InControlFragment: BaseFragment() {
                 }
             }
 
-        suspend fun WHtoBox(num: String, box: Int, paramValue: String?): Result<Unit> =
+        suspend fun WHtoBox(num: String, box: Int): Result<Unit> =
             withContext(Dispatchers.IO) {
                 val token = loginRepository.user?.token
                     ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)
@@ -1452,7 +1484,7 @@ class InControlFragment: BaseFragment() {
 
             }
         }
-        suspend fun put2WH(num: String, paramValue: String?, box: Int): Result<Unit> =
+        suspend fun put2WH(num: String): Result<Unit> =
             withContext(Dispatchers.IO) {
                 val token = loginRepository.user?.token
                     ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)

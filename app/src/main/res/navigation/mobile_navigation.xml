@@ -10,6 +10,14 @@
         android:name="com.example.scanner.ui.navigation.login.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
+        <argument
+            android:name="login"
+            app:argType="string"
+            android:defaultValue="@null" />
+        <argument
+            android:name="password"
+            app:argType="string"
+            android:defaultValue="@null" />
         <action
             android:id="@+id/action_nav_login_fragment_to_nav_home"
             app:destination="@id/nav_home"
@@ -48,6 +56,10 @@
         android:id="@+id/nav_invoice_info_fragment"
         android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfo"
         android:label="InvoiceInfoFragment" />
+    <fragment
+        android:id="@+id/nav_admin_fragment"
+        android:name="com.example.scanner.ui.navigation.AdminFragment"
+        android:label="AdminFragment" />
     <!--invoice lines-->
     <fragment
         android:id="@+id/nav_invoice_lines_fragment"
@@ -66,7 +78,11 @@
         android:label="ComponentsFragment"
         />
 
-
+    <fragment
+        android:id="@+id/nav_dry_info_fragment"
+        android:name="com.example.scanner.ui.navigation.DryFragmentInfo"
+        android:label="DryFragmentInfo"
+        />
     <!--components info-->
     <fragment
         android:id="@+id/nav_components_info_fragment"
@@ -85,10 +101,7 @@
         android:id="@+id/nav_incontrol_fragment"
         android:name="com.example.scanner.ui.navigation.InControlFragment"
         android:label="InControlFragment" />
-    <fragment
-        android:id="@+id/nav_update_fragment"
-        android:name="com.example.scanner.ui.navigation.UpdateFragment"
-        android:label="UpdateFragment" />
+
     <!--incontrol info-->
     <fragment
         android:id="@+id/nav_incontrol_info_fragment"
@@ -123,6 +136,10 @@
         android:id="@+id/nav_isolator_minus_fragment"
         android:name="com.example.scanner.ui.navigation.IsolatorFragmentMinus"
         android:label="IsolatorMinusFragment" />
-
+    <fragment
+        android:id="@+id/nav_dry_fragment"
+        android:name="com.example.scanner.ui.navigation.DryFragment"
+        android:label="DryFragment"
+        />
 
 </navigation>

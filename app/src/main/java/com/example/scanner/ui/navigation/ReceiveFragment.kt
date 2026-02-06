@@ -3,10 +3,9 @@ package com.example.scanner.ui.navigation
 import android.content.Context
 import android.graphics.Color
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.media.SoundPool
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -22,11 +21,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.scanner.R
 import com.example.scanner.app.batch2
-import com.example.scanner.app.templateAttributeDataTextView
 import com.example.scanner.app.templateInputTextContainer
 import com.example.scanner.app.templateInputTextMyTextInput
 import com.example.scanner.app.templateInputTextTextLayout
@@ -54,6 +51,7 @@ import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class ReceiveFragment : BaseFragment() {
 
@@ -71,6 +69,8 @@ class ReceiveFragment : BaseFragment() {
     private var stelFromQR: String = ""
     private var yachFromQR: String = ""
     private var Nkat: String = ""
+    private var lastStel = ""
+    private var lastCell = ""
     private var isBottle: Boolean = false
 
     private lateinit var infoTextView :TextView
@@ -209,29 +209,11 @@ class ReceiveFragment : BaseFragment() {
                                     }
                                     else -> {
                                         containerVertical.visibility= View.VISIBLE
-                                        val currentStel = it.stel?.toString() ?: ""
-                                        val currentCell = it.cell?.toString() ?: ""
-                                        val isMatch = (stelFromQR == currentStel) && (yachFromQR == currentCell)
-                                        if (isMatch) {
-                                            containerVertical.setBackgroundColor(
-                                                ResourcesCompat.getColor(
-                                                    resources,
-                                                    android.R.color.holo_green_light,
-                                                    null
-                                                )
-                                            )
-                                        }
-                                            else{
-                                                containerVertical.setBackgroundColor(
-                                            ResourcesCompat.getColor(
-                                                resources,
-                                                R.color.background2,
-                                                null
-                                            )
-                                        )
 
-                                        }
 
+                                        if (containerVertical.childCount > 0) {
+                                            containerVertical.removeAllViews()
+                                        }
                                         arrayOf(
                                             Pair(arrayOf("name"),"Наим. "),
                                             Pair(arrayOf("id"),"#компонента "),
@@ -254,7 +236,9 @@ class ReceiveFragment : BaseFragment() {
                                         }
                                     }
                                 }
+
                             }
+
                         }
                         .root
                 )
@@ -567,113 +551,15 @@ class ReceiveFragment : BaseFragment() {
                 is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
                     stateScan.stringScanResult?.let { stringScanResult ->
 
-
-                            if(stringScanResult.substring(0, 3) == "3N0") {
-                                val parts = stringScanResult.split('$')
-                                // Номер катушки находится на 1‑й позиции (индекс 1)
-                                if (parts.size > 1) Nkat = parts[1]
-                                stelFromQR = ""
-                                yachFromQR = ""
-                                isBottle = false
-                                infoTextView.visibility = View.GONE
-                               requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
-                                step1.setText(stringScanResult)
-                                receiveViewModel.receiveFragmentFormState
-                                    .postValue(
-                                        ReceiveFragmentFormState.RequestSearch)
-                            }
-                            else  {
-
-                                if (stringScanResult.startsWith('C')) {
-                                    // Отбрасываем первый символ 'C'
-                                    val content = stringScanResult.substring(1)
-
-                                    // Проверяем, что осталось ровно 12 символов
-                                    if (content.length == 12) {
-                                        // Разбиваем на 3 части по 4 символа
-                                        val shelfPart = content.substring(0, 4)   // стеллаж
-                                        val levelPart = content.substring(4, 8)  // полка
-                                        val cellPart  = content.substring(8, 12) // ячейка
-
-                                        // Удаляем ведущие нули в каждой части
-                                        val stel = shelfPart.toIntOrNull()?.toString() ?: ""
-                                        val level = levelPart.toIntOrNull()?.toString() ?: "0"
-                                        val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
-
-                                        // Формируем yach = Полка + "." + Ячейка
-                                        val yach = if (level.isNotEmpty() && cell.isNotEmpty()) {
-                                            "${level}.${cell}"
-                                        } else {
-                                            ""
-                                        }
-
-                                        // Получаем текущие значения stel и cell из отображаемых данных
-                                        val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
-                                        if (currentItem != null) {
-                                            val currentStel = currentItem.stel?.toString() ?: ""
-                                            val currentCell = currentItem.cell?.toString() ?: ""
-
-                                            // Сравниваем
-                                            val isOk: Boolean
-                                            if (stel == currentStel && yach == currentCell) {
-                                                // Совпадение → зелёный фон
-                                                infoTextView.visibility = View.VISIBLE
-                                                infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
-                                                isOk = true
-                                            } else {
-                                                // Несовпадение → красный фон
-
-                                                infoTextView.visibility = View.VISIBLE
-                                                infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
-                                                val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                                audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
-                                                isOk = false
-                                            }
-                                            if (isBottle) {
-                                                receiveViewModel.putBottle2Sklad(
-                                                    stel,
-                                                    yach,
-                                                    Nkat,
-                                                    isOk
-                                                )
-                                            }
-                                            else {
-                                                receiveViewModel.putKat2Sklad(
-                                                    stel,
-                                                    yach,
-                                                    Nkat,
-                                                    isOk,
-                                                    currentItem.coil
-                                                )
-                                            }
-                                        } else {
-                                            showErrorMessage("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
-                                        }
-                                    } else {
-                                        showErrorMessage("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
-                                    }
-                                } else {
-                                    val parts = stringScanResult.split('$')
-                                    if (parts.size == 5)  {
-                                        // Номер катушки находится на 1‑й позиции (индекс 1)
-                                        Nkat = parts[2]
-                                        isBottle = true
-                                        stelFromQR = ""
-                                        yachFromQR = ""
-                                        infoTextView.visibility = View.GONE
-                                        requireArguments().putSerializable(PARAM_STEP_1_VALUE, Nkat)
-                                        step1.setText(stringScanResult)
-                                        receiveViewModel.receiveFragmentFormState
-                                            .postValue(
-                                                ReceiveFragmentFormState.RequestSearchBottle)
-                                    }
-                                    else{
-                                    // Другие случаи (можно оставить как есть или дополнить)
-                                    showErrorMessage("Неподдерживаемый формат QR-кода")
-                                        }
-                                }
+                            when {
+                                stringScanResult.startsWith("3N0") -> handle3N0Scan(stringScanResult)
+                                stringScanResult.startsWith('C') -> handleCScan(stringScanResult)
+                                (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
+                                else -> showErrorMessage("Неподдерживаемый формат QR-кода")
                             }
                         }
+
+
 
                 }
                 else->{}
@@ -681,9 +567,174 @@ class ReceiveFragment : BaseFragment() {
         }
 
     }
+    private fun extractCoilFromString(qrCode: String): String {
+        // Логика извлечения coil (зависит от формата QR)
+        return qrCode.split('$').getOrNull(2) ?: ""  // например, 3‑я часть
+    }
+    private fun handle3N0Scan(stringScanResult: String) {
+        val parts = stringScanResult.split('$')
+        if (parts.size > 1) Nkat = parts[1]
 
 
+        requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
+        step1.setText(stringScanResult)
 
+        // Запоминаем текущие данные ДО поиска
+        val oldResponse = receiveViewModel.receiveFragmentAcceptSearchResponse.value
+
+        // Запускаем поиск
+        receiveViewModel.receiveFragmentFormState.postValue(ReceiveFragmentFormState.RequestSearch)
+
+        // Наблюдаем за изменениями
+        receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner) { newResponse ->
+            // Проверяем, что данные действительно обновились
+            if (newResponse != null && newResponse != oldResponse) {
+               handleSearchResponse(newResponse, stringScanResult)
+            }
+        }
+    }
+    private fun handleSearchResponse(
+        response: AcceptSearchResponse,
+        stringScanResult: String
+    ) {
+        var ftime = false
+        val lastStel = receiveViewModel.lastStoredStel
+        val lastCell = receiveViewModel.lastStoredCell
+        if (lastStel == "") {
+           ftime = true
+        }
+        if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
+            val currentStel = response.stel
+            val currentCell = response.cell
+            val coilFromQR = extractCoilFromString(stringScanResult).toBoolean()
+            val isMatch = (lastStel == currentStel) && (lastCell == currentCell)
+
+            updateInfoTextView(isMatch, ftime)
+
+            if (isMatch) {
+                receiveViewModel.putKat2Sklad(
+                    currentStel,
+                    currentCell,
+                    Nkat,
+                    true,
+                    coilFromQR
+                )
+            } else {
+                receiveViewModel.clearStelAndCell()
+            }
+        } else {
+            infoTextView.setBackgroundColor(Color.WHITE)
+            infoTextView.visibility = View.VISIBLE
+        }
+    }
+    private fun handleCScan(stringScanResult: String) {
+        // Извлекаем 12 цифр после 'C'
+        val content = stringScanResult.substring(1)
+        if (content.length != 12) {
+            showErrorMessage("QR-код после 'C' должен содержать 12 цифр")
+            return
+        }
+
+        // Разбиваем на части
+        val shelfPart = content.substring(0, 4)   // стеллаж
+        val levelPart = content.substring(4, 8)  // полка
+        val cellPart  = content.substring(8, 12) // ячейка
+
+
+        // Удаляем ведущие нули
+        val stel = shelfPart.toIntOrNull()?.toString() ?: ""
+        val level = levelPart.toIntOrNull()?.toString() ?: "0"
+        val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
+
+
+        // Формируем yach = Полка + "." + Ячейка
+        val yach = if (level.isNotEmpty() && cell.isNotEmpty()) "${level}.${cell}" else ""
+        val coilFromQR = extractCoilFromString(stringScanResult).toBoolean()
+        // Сравниваем с текущим ответом
+        val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
+        if (currentItem != null) {
+            val currentStel = currentItem.stel
+            val currentCell = currentItem.cell
+
+
+            val isMatch = (stel == currentStel) && (yach == currentCell)
+            updateInfoTextView(isMatch,false)
+
+            if (isMatch) {
+                if (isBottle) {
+                    receiveViewModel.putBottle2Sklad(currentStel, currentCell, Nkat, true)
+                } else {
+                    receiveViewModel.putKat2Sklad(currentStel, currentCell, Nkat, true, coilFromQR)
+                }
+                // Сохраняем как эталон (если нужно)
+                receiveViewModel.saveStelAndCell(currentStel, currentCell)
+
+
+            } else {
+                receiveViewModel.clearStelAndCell()
+
+            }
+        } else {
+            showErrorMessage("Нет данных для сравнения (ответ пуст)")
+        }
+    }
+
+    private fun handleCScanBottle(stringScanResult: String) {
+        try {
+            val parts = stringScanResult.split('$')
+
+            // Проверяем, что частей ровно 5
+            if (parts.size != 5) {
+                showErrorMessage("Неверный формат QR-кода бутылки (ожидается 5 частей через $)")
+                return
+            }
+
+            // Номер катушки на 1‑й позиции (индекс 1)
+            Nkat = parts[2]
+            isBottle = true
+            stelFromQR = ""
+            yachFromQR = ""
+
+            // Обновляем UI
+            infoTextView.visibility = View.VISIBLE
+            requireArguments().putSerializable(PARAM_STEP_1_VALUE, Nkat)
+            step1.setText(stringScanResult)
+
+
+            // Отправляем запрос на поиск для бутылки
+            receiveViewModel.receiveFragmentFormState.postValue(
+                ReceiveFragmentFormState.RequestSearchBottle
+            )
+            receiveViewModel.putBottle2Sklad(
+                lastStel,
+                lastCell,
+                Nkat,
+                true  // isOk = true
+            )
+            Timber.tag("ReceiveFragment").d("Обработан QR бутылки: Nkat=$Nkat")
+
+        } catch (e: Exception) {
+            showErrorMessage("Ошибка обработки QR-кода бутылки: ${e.message}")
+            Timber.tag("ReceiveFragment").e(e, "Bottle scan error")
+        }
+    }
+
+    private fun updateInfoTextView(isMatch: Boolean,ftime: Boolean) {
+        if (!ftime) {
+            infoTextView.visibility = View.VISIBLE
+            if (isMatch) {
+                infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0)) // Зелёный
+
+            } else {
+                infoTextView.setBackgroundColor(Color.argb(255, 255, 0, 0)) // Красный
+                val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
+            }
+        }
+        else{
+            infoTextView.visibility = View.GONE
+        }
+    }
 
     private fun showErrorMessage(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
@@ -784,16 +835,7 @@ class ReceiveFragment : BaseFragment() {
                         TemplatePresenterBinding.inflate(layoutInflater,containerVertical,false)
                             .apply {
                                 setAttribute(it,dataItem)
-                                when(it.first[0]){
-                                    "id"->{
-                                        receiveViewModel.receiveFragmentAcceptSearchResponse.value?.let {receiveFragmentAcceptSearchResponse->
-                                            if(receiveFragmentAcceptSearchResponse.id==dataItem.id){
-                                                templateAttributeDataTextView.setTextColor(resources.getColor(android.R.color.holo_green_light,null))
-                                            }
-                                        }
-                                    }
-                                    else->{}
-                                }
+
                             }
                             .root
                     )
@@ -803,12 +845,26 @@ class ReceiveFragment : BaseFragment() {
 
     }
 
+
     class ReceiveViewModel(
         private val apiPantes: ApiPantes,
         private val loginRepository: LoginRepository,
         val pref: Pref
     ) : BaseViewModel()
     {
+
+        var lastStoredStel: String = ""
+        var lastStoredCell: String = ""
+
+        fun saveStelAndCell(stel: String, cell: String) {
+            lastStoredStel = stel
+            lastStoredCell = cell
+        }
+
+        fun clearStelAndCell() {
+            lastStoredStel = ""
+            lastStoredCell = ""
+        }
         fun step2AcceptScan(query: String, last:String) {
             ioCoroutineScope.launch {
                 receiveFragmentFormState.postValue(
@@ -845,7 +901,7 @@ class ReceiveFragment : BaseFragment() {
                                 is ApiPantes.ApiState.Error->
                                     ReceiveFragmentFormState.Error(
                                         if (result.exception is NonFatalExceptionShowDialogMessage){
-                                            NonFatalExceptionShowToaste(result.exception.message.toString())
+                                            NonFatalExceptionShowToaste(result.exception.message)
                                         }
                                         else{
                                             result.exception
@@ -857,6 +913,7 @@ class ReceiveFragment : BaseFragment() {
                 )
             }
         }
+
         fun step3AcceptSearch(query: String) {
             ioCoroutineScope.launch {
                 receiveFragmentFormState.postValue(
@@ -872,7 +929,7 @@ class ReceiveFragment : BaseFragment() {
                                 is ApiPantes.ApiState.Error->
                                     ReceiveFragmentFormState.Error(
                                         if (result.exception is NonFatalExceptionShowDialogMessage){
-                                            NonFatalExceptionShowToaste(result.exception.message.toString())
+                                            NonFatalExceptionShowToaste(result.exception.message)
                                         }
                                         else{
                                             result.exception

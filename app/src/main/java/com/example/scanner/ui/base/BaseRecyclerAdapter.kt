@@ -16,6 +16,7 @@ abstract class BaseRecyclerAdapter<T>(var data: T): RecyclerView.Adapter<Recycle
     val last
         get() = getLastId()
 
+
     protected abstract fun getLastId(): Any
 
     protected abstract fun cloneData():T
