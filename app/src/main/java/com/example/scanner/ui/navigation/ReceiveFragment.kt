@@ -81,6 +81,9 @@ class ReceiveFragment : BaseFragment() {
     private var isBottle: Boolean = false
     private var lastQR: String = ""
     private lateinit var infoTextView :TextView
+    var currentStel: String = ""
+    var currentYach : String = ""
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
@@ -358,6 +361,7 @@ class ReceiveFragment : BaseFragment() {
                                             // 6. Добавляем скролл с катушками ПОСЛЕ заголовков
                                             containerVertical.addView(horizontalScrollViewCoils)
                                         }
+
                                     }
                                 }
                                 isCoilsContainerReady = true
@@ -548,6 +552,7 @@ class ReceiveFragment : BaseFragment() {
                                     }
                                 }
 
+
                             }
                     )
 
@@ -561,6 +566,10 @@ class ReceiveFragment : BaseFragment() {
                 is ReceiveFragmentFormState.ResetScan-> {
                     adapterReceive.setContent(AcceptScanResponse())
                     adapterReceive.resetContent()
+                }
+                is ReceiveFragmentFormState.PutKatSuccess -> {
+                    // PUT выполнен, теперь обновляем поиск
+                    receiveViewModel.step1AcceptSearch(lastQR, Nkat)
                 }
                 is ReceiveFragmentFormState.Error ->{
                         if(state.exception is NonFatalExceptionShowToaste){
@@ -613,10 +622,52 @@ class ReceiveFragment : BaseFragment() {
 
                 }
                 is ReceiveFragmentFormState.SuccessSearch ->{
-                    receiveViewModel.receiveFragmentAcceptSearchResponse.value=
-                        state.data
-                    state.scrollToCoil?.let { coilNumber ->
-                        requestScrollToCoil(coilNumber)
+                    val response = state.data
+                    val scannedNkat = Nkat // сохраняем, т.к. Nkat может измениться при следующем сканировании
+
+                    Timber.d("SuccessSearch: stel=${response.stel}, cell=${response.cell}, lastStel=$lastStel, lastCell=$lastCell")
+                    receiveViewModel.receiveFragmentAcceptSearchResponse.value = response
+                    state.scrollToCoil?.let { Nkat ->
+                        requestScrollToCoil(Nkat)
+                    }
+
+                    // Если это не первое сканирование (lastStel не пуст)
+                    if (lastStel.isNotEmpty() && lastCell.isNotEmpty() &&
+                        response.stel == lastStel && response.cell == lastCell) {
+
+                        if (!receiveViewModel.skipNextPut) {
+                            // Это тот же компонент - выполняем put
+                            receiveViewModel.putKat2Sklad(
+                                stel = response.stel,
+                                shelf = response.cell,
+                                curKat = scannedNkat,
+                                isOk = true,
+                                coil = false
+                            )
+                            updateInfoTextView(isMatch = true)
+                            // Устанавливаем флаг, чтобы следующий SuccessSearch (после обновления) не вызвал put снова
+                            receiveViewModel.setSkipNextPut(true)
+                        } else {
+                            // Пропускаем put, так как он только что был выполнен
+                            receiveViewModel.setSkipNextPut(false) // сбрасываем для будущих
+                            // Просто обновляем UI
+                        }
+                    } else {
+                        // Новый элемент или первое сканирование
+                        if (lastStel!="") {
+                            updateInfoTextView(isMatch = false)
+                        }// или true, если первое?
+                        // Сбрасываем флаг на всякий случай
+                        receiveViewModel.setSkipNextPut(false)
+                    }
+
+
+                    // В любом случае обновляем последние значения
+
+                    // Обновляем UI с новыми данными
+                    receiveViewModel.receiveFragmentAcceptSearchResponse.value = response
+                    state.scrollToCoil?.let { Nkat ->
+                        requestScrollToCoil(Nkat)
                     }
                 }
                 is ReceiveFragmentFormState.RequestSearch->{
@@ -639,6 +690,8 @@ class ReceiveFragment : BaseFragment() {
                         getArgument(PARAM_STEP_1_VALUE)
                     )
                 }
+
+                ReceiveFragmentFormState.PutKatError -> TODO()
             }
 
             when{
@@ -763,35 +816,10 @@ class ReceiveFragment : BaseFragment() {
 
         requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
         step1.setText(stringScanResult)
-
-        // Получаем текущие данные из ViewModel
-        val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
         lastQR = stringScanResult
-        if (currentItem == null) {
-            // Первое сканирование: просто запускаем поиск
-            receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
-        } else {
-            // Повторное сканирование: проверяем совпадение
-            val currentStel = currentItem.stel
-            val currentYach = currentItem.cell // предполагаем, что cell = yach
 
-            if (currentStel == lastStel && currentYach == lastCell) {
-                // Совпадение: выполняем putKat2Sklad
-                receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
-                    isOk = true,
-                    coil = false
-                )
-
-                // После putKat2Sklad обновляем поиск
-                receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
-                updateInfoTextView(isMatch = true)
-
-            } else {
-                // Нет совпадения: просто обновляем поиск
-                updateInfoTextView(isMatch = false)
-                receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
-            }
-        }
+        // Всегда просто запускаем поиск
+        receiveViewModel.step1AcceptSearch(stringScanResult, Nkat)
     }
 
     private fun handleCScan(stringScanResult: String) {
@@ -815,6 +843,7 @@ class ReceiveFragment : BaseFragment() {
         // Получаем текущие данные
         val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
         if (currentItem != null) {
+            infoTextView.visibility = View.GONE
             val currentStel = currentItem.stel
             val currentYach = currentItem.cell
 
@@ -830,9 +859,8 @@ class ReceiveFragment : BaseFragment() {
                 lastStel = stel
                 lastCell = yach
 
-                // Обновляем поиск после putKat2Sklad
-                receiveViewModel.step1AcceptSearch(lastQR,Nkat)
                 updateInfoTextView(isMatch = true)
+                receiveViewModel.setSkipNextPut(true)
 
             } else {
                 updateInfoTextView(isMatch = false)
@@ -1088,7 +1116,11 @@ class ReceiveFragment : BaseFragment() {
         val pref: Pref
     ) : BaseViewModel()
     {
-
+        var skipNextPut = false
+            private set
+        fun setSkipNextPut(skip: Boolean) {
+            skipNextPut = skip
+        }
 //        var lastStoredStel: String = ""
 //        var lastStoredCell: String = ""
 
@@ -1192,10 +1224,14 @@ class ReceiveFragment : BaseFragment() {
                                 isOk = isOk,
                                 coil = coil
                             )){
-                                is ApiPantes.ApiState.Success->
-                                    ReceiveFragmentFormState.NoOp
-                                is ApiPantes.ApiState.Error->
-                                    ReceiveFragmentFormState.Error(result.exception)
+                                is ApiPantes.ApiState.Success -> {
+                                    receiveFragmentFormState.postValue(ReceiveFragmentFormState.PutKatSuccess)
+                                }
+                                is ApiPantes.ApiState.Error -> {
+                                    receiveFragmentFormState.postValue(
+                                        ReceiveFragmentFormState.Error(result.exception)
+                                    )
+                                }
                             }
                         }
                     }
@@ -1267,6 +1303,8 @@ class ReceiveFragment : BaseFragment() {
         data object RequestScan: ReceiveFragmentFormState<Nothing>()
         data object SetupForm: ReceiveFragmentFormState<Nothing>()
         data object NoOp : ReceiveFragmentFormState<Nothing>()
+        data object PutKatSuccess : ReceiveFragmentFormState<Nothing>() // сигнал, что PUT выполнен
+        data object PutKatError : ReceiveFragmentFormState<Nothing>()   // если нужно обработать ошибк
 
     }
 }
