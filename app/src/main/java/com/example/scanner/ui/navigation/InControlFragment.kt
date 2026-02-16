@@ -7,11 +7,14 @@ import android.graphics.Color
 import android.media.AudioManager
 import android.os.Bundle
 import android.text.InputType
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -58,7 +61,7 @@ class InControlFragment: BaseFragment() {
 
     private var paramValue: String? = ""
     private var curNum : String? = ""
-     private lateinit var toolbarlnk: androidx.appcompat.widget.Toolbar
+    private lateinit var toolbarlnk: androidx.appcompat.widget.Toolbar
     private lateinit var recyclerView: RecyclerView
     private val incontrolViewModel: InControlViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
@@ -66,12 +69,13 @@ class InControlFragment: BaseFragment() {
         Adapterincontrol()
     private lateinit var infoTextView : TextView
     private var msg: String = ""
-      private var box: Int = 0
+    private var box: Int = 0
     private var IDAll: String = ""
     private var curIDAll: String = ""
     private var curPrim: String = ""
     private var action15: Boolean = false
     private var action23: Boolean = false
+    private var isbottle: Boolean = false
 
 
     sealed class Back2SkladState<out T : Any> {
@@ -187,53 +191,6 @@ class InControlFragment: BaseFragment() {
                             }
                             .root
                     )
-                    //endregion
-                    //region button scan
-//                    iconContainer.addView(
-//                        TemplateCardBinding.inflate(inflater, root, false)
-//                            .apply {
-                                // Создаём TextView и добавляем в containerVertical
-//                                urgentSearchBut = Button(requireContext()).apply {
-//                                    id = View.generateViewId()  // генерируем ID
-//                                    visibility = View.VISIBLE  // изначально скрыт
-//                                    setPadding(8, 8, 8, 8)
-//                                    layoutParams = ViewGroup.LayoutParams(
-//                                        ViewGroup.LayoutParams.WRAP_CONTENT,
-//                                        ViewGroup.LayoutParams.WRAP_CONTENT
-//                                    )
-//                                }
-//                                urgentSearchBut.setText("срочно")
-//                                containerVertical.addView(urgentSearchBut , 0)  // добавляем в начало
-//
-//                                // Сохраняем ссылку (если нужно управлять позже)
-//                                // Например, через tag или поле во фрагменте
-//                                containerVertical.tag = urgentSearchBut  // или сохраните в поле фрагмента
-
-                                // ... остальная логика (наблюдатели и т.д.)
-//                                urgentSearchBut.setOnClickListener(){
-//                                    adapterincontrol.resetContent()
-//                                    isUrgent = !isUrgent
-//                                    if (isUrgent) {
-//                                        urgentSearchBut.setBackgroundColor(Color.argb(255,0,0,200))
-//                                        urgentSearchBut.setTextColor(Color.argb(255,255,255,255))
-//
-//                                        incontrolViewModel.incontrolUrgentSearch(
-//                                            getArgument(PARAM),"")
-//
-//
-//                                    }
-//                                    else{
-//                                        isUrgentCompare = false
-//                                        urgentSearchBut.setBackgroundColor(Color.argb(100,100,100,100))
-//                                        urgentSearchBut.setTextColor(Color.argb(255,0,0,0))
-//
-//                                    }
-//
-//
-//                                }
-//                            }
-//                            .root
-//                    )
 
                     iconContainer.addView(
                         TemplateIconBinding.inflate(inflater,toolbar,false)
@@ -326,7 +283,7 @@ class InControlFragment: BaseFragment() {
 
 
                 // Настраиваем RecyclerView
-                    //endregion
+                //endregion
 
             }.root
 
@@ -401,7 +358,13 @@ class InControlFragment: BaseFragment() {
             if (isCompleted && curNum!!.isNotEmpty()) {
                 lifecycleScope.launch {
                     try {
-                        val result = incontrolViewModel.checkst(curNum!!)
+                        val result :  Result< Back2SkladState. CheckST>
+                        if (isbottle) {
+                            result = incontrolViewModel.checkst("bottle"+curNum!!)
+                           }
+                        else{
+                            result  = incontrolViewModel.checkst(curNum!!)
+                        }
                         when (result) {
                             is Result.Success -> {
                                 IDAll = result.data.IDAll
@@ -521,584 +484,745 @@ class InControlFragment: BaseFragment() {
             }
         }
 
-        fun showPrimInputDialog( onConfirm: (String) -> Unit) {
-            val builder = AlertDialog.Builder(requireContext())
-            val input = EditText(requireContext())
-                    input.inputType = InputType.TYPE_CLASS_TEXT  // или нужный тип ввода
-            val dtValue = adapterincontrol.findDtByIdAll(IDAll)
-            var actions = ""
-            if (action15) {
-                actions += "\nТест на паяемость и теплостойкость при пайке"
-            }
-            if (action23) {
-                actions += "\nБаланс смачиваемости"
-            }
-            builder.setTitle("Укажите место хранения на ВК")
-            builder.setMessage("Проверить к: ${dtValue ?: "Не указано"}" + actions)
-            builder.setView(input)
-
-            builder.setPositiveButton("ОК") { dialog, _ ->
-                val text = input.text.toString().trim()
-                onConfirm(text)
-                dialog.dismiss()
-            }
-
-            builder.setNegativeButton("Отмена") { dialog, _ ->
-                dialog.cancel()
-            }
-
-            // Показываем диалог
-            builder.show()
-
-            // 1. Устанавливаем фокус на поле ввода
-            input.post {
-                // 1. Устанавливаем фокус на поле ввода
-                input.requestFocus()
-
-                // 2. Показываем клавиатуру
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-            }
-        }
-        fun handleIDAllList(idAllList: ArrayList<Int>) {
-            val firstIdAll = idAllList.firstOrNull()
-            IDAll = firstIdAll.toString()
-            if (firstIdAll != null) {
-                val position = adapterincontrol.findPosition(firstIdAll.toString())
-                if (position != null && position != -1) {
-                    adapterincontrol.scrollToPosition(position,recyclerView)
-                } else {
-                    showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
-                }
-            } else {
-                showResponse("Получен пустой список IDAll")
-            }
-        }
-        scanViewModel.scanFragmentBaseFormState.observe(viewLifecycleOwner)
-        {
-            when(val scanState=it){
-                is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
-                    scanState.stringScanResult?.let { stringScanResult ->
-                        when(paramValue) {
-                            "WHtoIncontrol" ->
-                        {   if (stringScanResult[0] == 'z') {
-                            val parts = stringScanResult.split('$')
-                            if (parts.size > 1) {
-                                box = parts[1].toInt()
-                                toolbarlnk.title= "В коробку $box"
-                                incontrolViewModel.incontrolSearch(paramValue!!, "", box)
-                            }
-                             }
-                            if (stringScanResult.substring(0, 3) == "3N0") {
-                                if (box == 0){
-                                    Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                }
-                                else {
-                                    val parts = stringScanResult.split('$')
-                                    if (parts.size > 1) {
-                                        val num = parts[1]
-                                        curNum = num
-
-
-                                        // 2. Вызываем WHtoBox()
-
-                                        lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.WHtoBox(num, box)
-
-                                            when (putResult) {
-                                                is Result.Success<Unit> -> {
-                                                    // Успех: запрашиваем обновление списка
-                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                }
-                                                is Result.Failure -> {
-                                                    // Ошибка: показываем сообщение
-                                                    showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                                }
-                                            }
-                                        }
 
 
 
-                                    }
-                                }
-                            }
-                            else {
-                                if (box == 0){
-                                    Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                }
-                                val parts = stringScanResult.split('$')
-                                if (parts.size == 5) {
-                                    // Номер катушки находится на 1‑й позиции (индекс 1)
-                                    val num = parts[2]
-                                    curNum = num
+        scanViewModel.scanFragmentBaseFormState.observe(viewLifecycleOwner) {
+            when (paramValue) {
+                "WHtoIncontrol" -> {
+                    when (val stateScan = it) {
+                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult -> {
+                            stateScan.stringScanResult?.let { stringScanResult ->
+                                when {
+                                    stringScanResult.startsWith("3N0") -> handle3N0Scan1(
+                                        stringScanResult
+                                    )
 
+                                    stringScanResult.startsWith('z') -> handleZScan1(
+                                        stringScanResult
+                                    )
 
-                                    // 2. Вызываем put2Box()
+                                    (stringScanResult.split('$')).size == 5 -> handleScanBottle1(
+                                        stringScanResult
+                                    )
 
-                                    lifecycleScope.launch {
-                                        val putResult = incontrolViewModel.WHtoBox("bottle" + curNum, box)
-
-                                        when (putResult) {
-                                            is Result.Success<Unit> -> {
-                                                // Успех: запрашиваем обновление списка
-                                                incontrolViewModel.refreshListEvent.postValue(Unit)
-                                            }
-                                            is Result.Failure -> {
-                                                // Ошибка: показываем сообщение
-                                                showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                            }
-                                        }
-                                    }
+                                    else -> showResponse("Неизвестный QR")
                                 }
                             }
                         }
-                             "toIncontrol" ->
-                            {
-                                if (stringScanResult[0] == 'z') {
 
-                                // Проверяем, есть ли элементы в адаптере
-                                if (adapterincontrol.itemCount > 0) {
-                                    // Показываем диалог подтверждения
-                                    MaterialAlertDialogBuilder(requireContext())
-                                        .setTitle("Подтверждение")
-                                        .setMessage("Взять другую коробку?")
-                                        .setPositiveButton("Да") { _, _ ->
-                                            val parts = stringScanResult.split('$')
-                                            if (parts.size > 1) {
-                                                box = parts[1].toInt()
-                                                toolbarlnk.title= "Коробка $box"
-                                            }
-                                            incontrolViewModel.takeboxfromWH(box)
+                        else -> {}
+                    }
+                }
 
-                                        }
-                                        .setNegativeButton("Нет") { dialog, _ ->
-                                            dialog.dismiss()
-                                        }
-                                        .show()
-                                } else {
+                "toIncontrol" -> {
+                    when (val stateScan = it) {
+                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult -> {
+                            stateScan.stringScanResult?.let { stringScanResult ->
+                                when {
+                                    stringScanResult.startsWith("3N0") -> handle3N0Scan2(
+                                        stringScanResult
+                                    )
 
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size > 1) {
-                                            box = parts[1].toInt()
-                                            toolbarlnk.title = "Коробка $box"
-                                        }
-                                        // Если список пуст — сразу вызываем takebox()
-                                        incontrolViewModel.takeboxfromWH(box)
+                                    stringScanResult.startsWith('z') -> handleZScan2(
+                                        stringScanResult
+                                    )
 
+                                    (stringScanResult.split('$')).size == 5 -> handleScanBottle2(
+                                        stringScanResult
+                                    )
+
+                                    else -> showResponse("Неизвестный QR")
                                 }
                             }
-                                if (stringScanResult.substring(0, 3) == "3N0") {
-                                    val parts = stringScanResult.split('$')
-                                    if (parts.size > 1) {
-                                        val num = parts[1]
+                        }
 
-                                        // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
-                                        lifecycleScope.launch {
-                                            try {
-                                                // 1. Вызываем checkst() и ждём результата
-                                                val result = incontrolViewModel.checkst(num)
+                        else -> {}
+                    }
+                }
 
-                                                when (result) {
-                                                    is Result.Success -> {
-                                                        msg = result.data.isOk
-                                                        IDAll = result.data.IDAll
-                                                        action15 = result.data.action15
-                                                        action23 = result.data.action23
+                "toBox" -> {
+                    when (val stateScan = it) {
+                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult -> {
+                            stateScan.stringScanResult?.let { stringScanResult ->
+                                when {
+                                    stringScanResult.startsWith("3N0") -> handle3N0Scan3(
+                                        stringScanResult
+                                    )
 
-                                                        // 2. Получаем DT по IDAll
+                                    stringScanResult.startsWith('z') -> handleZScan3(
+                                        stringScanResult
+                                    )
 
+                                    (stringScanResult.split('$')).size == 5 -> handleScanBottle3(
+                                        stringScanResult
+                                    )
 
-                                                        if (msg.isEmpty()) {
-                                                            if (curIDAll == IDAll){
-                                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
-                                                                when (putResult) {
-                                                                    is Result.Success -> {
-                                                                        // putResult.data — это уже готовая строка (isOk) от API
-                                                                        if (putResult.data != "") {
-                                                                            showResponse(
-                                                                                putResult.data
-                                                                            )  // Показываем её
-                                                                        }
-                                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                                    }
-                                                                    is Result.Failure -> {
-                                                                        showError(putResult.exception)
-                                                                    }
-                                                                }
-                                                            }
-                                                            else{
-                                                                showPrimInputDialog { prim ->
-                                                                    lifecycleScope.launch {
-                                                                        val putResult = incontrolViewModel.back2Sklad(num, prim)
-                                                                        curIDAll = IDAll
-                                                                        curPrim = prim
-                                                                        when (putResult) {
-                                                                            is Result.Success -> {
-                                                                                // putResult.data — это уже готовая строка (isOk) от API
-                                                                                if (putResult.data != "") {
-                                                                                    showResponse(
-                                                                                        putResult.data
-                                                                                    )  // Показываем её
-                                                                                }
-                                                                                incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                                            }
-                                                                            is Result.Failure -> {
-                                                                                showError(putResult.exception)
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        } else {
-                                                            showResponse(msg)
-                                                        }
-                                                    }
-
-                                                    is Result.Failure -> {
-                                                        showError(result.exception)
-                                                    }
-                                                }
-                                            } catch (e: Exception) {
-                                                showError(e)
-                                            }
-                                        }
-                                    }
-                                }else{
-
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size == 5)  {
-                                            // Номер катушки находится на 1‑й позиции (индекс 1)
-                                            val num = parts[2]
-                                            lifecycleScope.launch {
-                                                try {
-                                                    // 1. Вызываем checkst() и ждём результата
-                                                    val result = incontrolViewModel.checkst("bottle"+num)
-
-                                                    when (result) {
-                                                        is Result.Success -> {
-                                                            msg = result.data.isOk
-                                                            IDAll = result.data.IDAll
-                                                            action15 = result.data.action15
-                                                            action23 = result.data.action23
-                                                            // 2. Получаем DT по IDAll
-
-
-                                                            if (msg.isEmpty()) {
-                                                                if (curIDAll == IDAll){
-                                                                    val putResult = incontrolViewModel.back2Sklad("bottle"+num, curPrim)
-                                                                    when (putResult) {
-                                                                        is Result.Success -> {
-                                                                            // putResult.data — это уже готовая строка (isOk) от API
-                                                                            if (putResult.data != "") {
-                                                                                showResponse(
-                                                                                    putResult.data
-                                                                                )  // Показываем её
-                                                                            }
-                                                                            incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                                        }
-                                                                        is Result.Failure -> {
-                                                                            showError(putResult.exception)
-                                                                        }
-                                                                    }
-                                                                }
-                                                                else{
-                                                                    showPrimInputDialog { prim ->
-                                                                        lifecycleScope.launch {
-                                                                            val putResult = incontrolViewModel.back2Sklad("bottle"+num, prim)
-                                                                            curIDAll = IDAll
-                                                                            curPrim = prim
-                                                                            when (putResult) {
-                                                                                is Result.Success -> {
-                                                                                    // putResult.data — это уже готовая строка (isOk) от API
-                                                                                    if (putResult.data != "") {
-                                                                                        showResponse(
-                                                                                            putResult.data
-                                                                                        )  // Показываем её
-                                                                                    }
-                                                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                                                }
-                                                                                is Result.Failure -> {
-                                                                                    showError(putResult.exception)
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                showResponse(msg)
-                                                            }
-                                                        }
-
-                                                        is Result.Failure -> {
-                                                            showError(result.exception)
-                                                        }
-                                                    }
-                                                } catch (e: Exception) {
-                                                    showError(e)
-                                                }
-                                            }
-                                        }
-
+                                    else -> showResponse("Неизвестный QR")
                                 }
-
                             }
-                            "toBox" ->
-                            {   if (stringScanResult[0] == 'z') {
-                                    val parts = stringScanResult.split('$')
-                                    if (parts.size > 1) {
-                                        box = parts[1].toInt()
-                                        toolbarlnk.title= "В коробку $box"
-                                        incontrolViewModel.incontrolSearch(paramValue!!, "", box)
-                                    }
+                        }
+
+                        else -> {}
+                    }
+                }
+
+                "toWH" -> {
+                    when (val stateScan = it) {
+                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult -> {
+                            stateScan.stringScanResult?.let { stringScanResult ->
+                                when {
+                                    stringScanResult.startsWith("3N0") -> handle3N0Scan4(
+                                        stringScanResult
+                                    )
+
+                                    stringScanResult.startsWith('z') -> handleZScan4(
+                                        stringScanResult
+                                    )
+                                    stringScanResult.startsWith('C') -> handleCScan4(
+                                        stringScanResult
+                                    )
+
+                                    (stringScanResult.split('$')).size == 5 -> handleScanBottle4(
+                                        stringScanResult
+                                    )
+
+                                    else -> showResponse("Неизвестный QR")
                                 }
-                                if (stringScanResult.substring(0, 3) == "3N0") {
-                                    if (box == 0){
-                                        Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                    }
-                                    else {
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size > 1) {
-                                            val num = parts[1]
-                                            curNum = num
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
+
+                else -> {}
+            }
+
+            incontrolViewModel.incontrolFragmentState.postValue(
+                InControlFragmentState.Idle
+            )
+
+        }
+        incontrolViewModel.incontrolSearch(paramValue!!,"",box)
+    }
+    fun showPrimInputDialog( onConfirm: (String) -> Unit) {
+        val builder = AlertDialog.Builder(requireContext())
+        val input = EditText(requireContext())
+        input.inputType = InputType.TYPE_CLASS_TEXT  // или нужный тип ввода
+        val dtValue = adapterincontrol.findDtByIdAll(IDAll)
+        var actions = ""
+        if (action15) {
+            actions += "\nТест на паяемость и теплостойкость при пайке"
+        }
+        if (action23) {
+            actions += "\nБаланс смачиваемости"
+        }
+        builder.setTitle("Укажите место хранения на ВК")
+        builder.setMessage("Проверить к: ${dtValue ?: "Не указано"}" + actions)
+        builder.setView(input)
+
+        builder.setPositiveButton("ОК") { dialog, _ ->
+            val text = input.text.toString().trim()
+            onConfirm(text)
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Отмена") { dialog, _ ->
+            dialog.cancel()
+        }
+
+        // Показываем диалог
+        builder.show()
+
+        // 1. Устанавливаем фокус на поле ввода
+        input.post {
+            // 1. Устанавливаем фокус на поле ввода
+            input.requestFocus()
+
+            // 2. Показываем клавиатуру
+            val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+    fun handleIDAllList(idAllList: ArrayList<Int>) {
+        val lastStel = incontrolViewModel.lastStoredStel
+        val lastCell = incontrolViewModel.lastStoredCell
+        val firstIdAll = idAllList.firstOrNull()
+        IDAll = firstIdAll.toString()
+        val currentItem = adapterincontrol.findByIdAll(IDAll)
+        if (currentItem == null) {
+            showResponse("Элемент не найден")
+            return
+        }
+        val stel = currentItem.rack
+        val cell = currentItem.cell
+        if (firstIdAll != null) {
+            val position = adapterincontrol.findPosition(firstIdAll.toString())
+            if (position != null && position != -1) {
+                adapterincontrol.scrollToPosition(position,recyclerView)
+            } else {
+                showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
+            }
+        } else {
+            showResponse("Получен пустой список IDAll")
+        }
+        if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
+            if(lastStel == stel.toString() && (lastCell == cell)) {
+                infoTextView.visibility = View.VISIBLE
+                infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0))
+
+                lifecycleScope.launch {
+                    val putResult:   Result<Unit>
+                    if (isbottle){
+                        putResult  = incontrolViewModel.put2WH("bottle"+curNum!!)
+                    }
+                    else {
+                        putResult =  incontrolViewModel.put2WH(curNum!!)
+                    }
 
 
-                                            // 2. Вызываем put2Box()
+                    when (putResult) {
+                        is Result.Success<Unit> -> {
+                            // Успех: запрашиваем обновление списка
+                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                        }
 
-                                            lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.put2Box(num, box)
+                        is Result.Failure -> {
+                            // Ошибка: показываем сообщение
+                            showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                        }
+                    }
 
-                                                when (putResult) {
-                                                    is Result.Success<Unit> -> {
-                                                        // Успех: запрашиваем обновление списка
-                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                    }
-                                                    is Result.Failure -> {
-                                                        // Ошибка: показываем сообщение
-                                                        showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                                    }
-                                                }
+                }
+            }
+            else {
+                infoTextView.visibility = View.VISIBLE
+                infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
+                val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
+                incontrolViewModel.clearStelAndCell()
+            }
+
+        }
+
+
+    }
+    private fun handle3N0Scan1(stringScanResult: String) {
+        isbottle = false
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                val num = parts[1]
+                curNum = num
+
+
+                // 2. Вызываем WHtoBox()
+
+                lifecycleScope.launch {
+                    val putResult = incontrolViewModel.WHtoBox(num, box)
+
+                    when (putResult) {
+                        is Result.Success<Unit> -> {
+                            // Успех: запрашиваем обновление списка
+                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                        }
+                        is Result.Failure -> {
+                            // Ошибка: показываем сообщение
+                            showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                        }
+                    }
+                }
+
+
+
+            }
+        }
+    }
+
+    private fun handleZScan1(stringScanResult: String) {
+        val parts = stringScanResult.split('$')
+        if (parts.size > 1) {
+            box = parts[1].toInt()
+            toolbarlnk.title= "В коробку $box"
+            incontrolViewModel.incontrolSearch(paramValue!!, "", box)
+        }
+    }
+
+    private fun handleScanBottle1(stringScanResult: String) {
+        isbottle = true
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        val parts = stringScanResult.split('$')
+        // Номер катушки находится на 1‑й позиции (индекс 1)
+        val num = parts[2]
+        curNum = num
+
+
+        // 2. Вызываем put2Box()
+
+        lifecycleScope.launch {
+            val putResult = incontrolViewModel.WHtoBox("bottle" + curNum, box)
+
+            when (putResult) {
+                is Result.Success<Unit> -> {
+                    // Успех: запрашиваем обновление списка
+                    incontrolViewModel.refreshListEvent.postValue(Unit)
+                }
+                is Result.Failure -> {
+                    // Ошибка: показываем сообщение
+                    showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                }
+            }
+        }
+    }
+    private fun handle3N0Scan2(stringScanResult: String) {
+        isbottle = false
+        val parts = stringScanResult.split('$')
+        if (parts.size > 1) {
+            val num = parts[1]
+
+            // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
+            lifecycleScope.launch {
+                try {
+                    // 1. Вызываем checkst() и ждём результата
+                    val result = incontrolViewModel.checkst(num)
+
+                    when (result) {
+                        is Result.Success -> {
+                            msg = result.data.isOk
+                            IDAll = result.data.IDAll
+                            action15 = result.data.action15
+                            action23 = result.data.action23
+
+                            // 2. Получаем DT по IDAll
+
+
+                            if (msg.isEmpty()) {
+                                if (curIDAll == IDAll){
+                                    val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                    when (putResult) {
+                                        is Result.Success -> {
+                                            // putResult.data — это уже готовая строка (isOk) от API
+                                            if (putResult.data != "") {
+                                                showResponse(
+                                                    putResult.data
+                                                )  // Показываем её
                                             }
-
-
-
+                                            incontrolViewModel.refreshListEvent.postValue(Unit)
                                         }
-                                    }
-                                }
-                                else {
-                                    if (box == 0){
-                                        Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                    }
-                                    val parts = stringScanResult.split('$')
-                                    if (parts.size == 5) {
-                                        // Номер катушки находится на 1‑й позиции (индекс 1)
-                                        val num = parts[2]
-                                        curNum = num
-
-
-                                        // 2. Вызываем put2Box()
-
-                                        lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.put2Box("bottle" + curNum, box)
-
-                                            when (putResult) {
-                                                is Result.Success<Unit> -> {
-                                                    // Успех: запрашиваем обновление списка
-                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                }
-                                                is Result.Failure -> {
-                                                    // Ошибка: показываем сообщение
-                                                    showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                              }
-                            "toWH" ->
-                            {
-                                if (stringScanResult[0] == 'z') {
-
-                                    // Проверяем, есть ли элементы в адаптере
-                                    if (adapterincontrol.itemCount > 0) {
-                                        // Показываем диалог подтверждения
-                                        MaterialAlertDialogBuilder(requireContext())
-                                            .setTitle("Подтверждение")
-                                            .setMessage("Взять другую коробку?")
-                                            .setPositiveButton("Да") { _, _ ->
-                                                val parts = stringScanResult.split('$')
-                                                if (parts.size > 1) {
-                                                    box = parts[1].toInt()
-                                                    toolbarlnk.title= "Коробка $box"
-                                                }
-                                                incontrolViewModel.takebox(box)
-
-                                            }
-                                            .setNegativeButton("Нет") { dialog, _ ->
-                                                dialog.dismiss()
-                                            }
-                                            .show()
-                                    } else {
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size > 1) {
-                                            box = parts[1].toInt()
-                                            toolbarlnk.title= "Коробка $box"
-                                        }
-                                        // Если список пуст — сразу вызываем takebox()
-                                        incontrolViewModel.takebox(box)
-                                    }
-                                }
-                                if (stringScanResult.substring(0, 3) == "3N0") {
-                                    if (box == 0){
-                                        Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                    }
-                                    else {
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size > 1) {
-                                            val num = parts[1]
-                                            curNum = num
-                                            lifecycleScope.launch {
-                                                val result = incontrolViewModel.getAllID(num)
-                                                when (result) {
-                                                    is Result.Success -> {
-                                                        val IDAllList = result.data
-                                                        // Теперь можно работать с полученным списком
-                                                        handleIDAllList(IDAllList)
-                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                    }
-
-                                                    is Result.Failure -> {
-                                                        showError(result.exception)
-                                                    }
-                                                }
-
-                                            }
-
+                                        is Result.Failure -> {
+                                            showError(putResult.exception)
                                         }
                                     }
                                 }
                                 else{
-                                if (stringScanResult.startsWith('C')) {
-                                    // Отбрасываем первый символ 'C'
-                                    if (curNum == "") {
-                                        Toast.makeText(requireContext(), "Сначала отсканируйте компонент", Toast.LENGTH_SHORT).show()
-                                    }
-                                    else{
-                                    val content = stringScanResult.substring(1)
-
-                                    // Проверяем, что осталось ровно 12 символов
-                                    if (content.length == 12) {
-                                        // Разбиваем на 3 части по 4 символа
-                                        val shelfPart = content.substring(0, 4)   // стеллаж
-                                        val levelPart = content.substring(4, 8)  // полка
-                                        val cellPart  = content.substring(8, 12) // ячейка
-
-                                        // Удаляем ведущие нули в каждой части
-                                        val stel = shelfPart.toIntOrNull()?.toString() ?: ""
-                                        val level = levelPart.toIntOrNull()?.toString() ?: "0"
-                                        val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
-
-                                        // Формируем yach = Полка + "." + Ячейка
-                                        val yach = if (level.isNotEmpty() && cell.isNotEmpty()) {
-                                            "${level}.${cell}"
-                                        } else {
-                                            ""
-                                        }
-
-                                        // Получаем текущие значения stel и cell из отображаемых данных
-                                        val currentItem =  adapterincontrol.getItemByIdAll(IDAll.toInt())
-                                        if (currentItem != null) {
-                                            val currentStel = currentItem.rack.toString()
-                                            val currentCell = currentItem.cell
-
-                                            // Сравниваем
-
-                                            if (stel == currentStel && yach == currentCell) {
-                                                // Совпадение → зелёный фон
-                                                infoTextView.visibility = View.VISIBLE
-                                                infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
-//                                                adapterincontrol.resetContent()
-//                                                incontrolViewModel.put2WH(curNum!!,paramValue,box)
-//                                                incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                lifecycleScope.launch {
-                                                    val putResult = incontrolViewModel.put2WH(curNum!!)
-
-                                                    when (putResult) {
-                                                        is Result.Success<Unit> -> {
-                                                            // Успех: запрашиваем обновление списка
-                                                            incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                        }
-                                                        is Result.Failure -> {
-                                                            // Ошибка: показываем сообщение
-                                                            showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                                        }
+                                    showPrimInputDialog { prim ->
+                                        lifecycleScope.launch {
+                                            val putResult = incontrolViewModel.back2Sklad(num, prim)
+                                            curIDAll = IDAll
+                                            curPrim = prim
+                                            when (putResult) {
+                                                is Result.Success -> {
+                                                    // putResult.data — это уже готовая строка (isOk) от API
+                                                    if (putResult.data != "") {
+                                                        showResponse(
+                                                            putResult.data
+                                                        )  // Показываем её
                                                     }
+                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
                                                 }
-                                                curNum = ""
-                                            } else {
-                                                // Несовпадение → красный фон
-
-                                                infoTextView.visibility = View.VISIBLE
-                                                infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
-                                                val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                                                audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
-
-                                            }
-                                        } else {
-                                            showResponse("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
-                                        }
-                                    } else {
-                                        showResponse("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
-                                    }
-                                    }
-                                }
-                                else {
-                                    if (box == 0){
-                                        Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
-                                    }
-                                    else {
-                                        val parts = stringScanResult.split('$')
-                                        if (parts.size == 5) {
-                                            curNum = parts[2]
-                                            lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.put2WH("bottle"+curNum!!)
-
-                                                when (putResult) {
-                                                    is Result.Success<Unit> -> {
-                                                        // Успех: запрашиваем обновление списка
-                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                    }
-                                                    is Result.Failure -> {
-                                                        // Ошибка: показываем сообщение
-                                                        showError(putResult.exception) // Или putResult.exception — см. примечание ниже
-                                                    }
+                                                is Result.Failure -> {
+                                                    showError(putResult.exception)
                                                 }
                                             }
-
                                         }
-                                        curNum = ""
                                     }
                                 }
-                                    }
+                            } else {
+                                showResponse(msg)
                             }
                         }
 
-
+                        is Result.Failure -> {
+                            showError(result.exception)
+                        }
                     }
+                } catch (e: Exception) {
+                    showError(e)
                 }
-                else->{}
             }
         }
-
-//        if (!getArgument<String?>(PARAM).isNullOrEmpty() && adapterincontrol.itemCount==0){
-//            incontrolViewModel.incontrolSearch(
-//                getArgument(PARAM),"", box)
-//        }
-
-        incontrolViewModel.incontrolFragmentState.postValue(
-            InControlFragmentState.Idle
-        )
-       // incontrolViewModel.incontrolSearch(paramValue!!,"")
     }
+
+    private fun handleZScan2(stringScanResult: String) {
+        // Проверяем, есть ли элементы в адаптере
+        if (adapterincontrol.itemCount > 0) {
+            // Показываем диалог подтверждения
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Подтверждение")
+                .setMessage("Взять другую коробку?")
+                .setPositiveButton("Да") { _, _ ->
+                    val parts = stringScanResult.split('$')
+                    if (parts.size > 1) {
+                        box = parts[1].toInt()
+                        toolbarlnk.title= "Коробка $box"
+                    }
+                    incontrolViewModel.takeboxfromWH(box)
+
+                }
+                .setNegativeButton("Нет") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        } else {
+
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                box = parts[1].toInt()
+                toolbarlnk.title = "Коробка $box"
+            }
+            // Если список пуст — сразу вызываем takebox()
+            incontrolViewModel.takeboxfromWH(box)
+
+        }
+    }
+
+    private fun handleScanBottle2(stringScanResult: String) {
+        isbottle = true
+        val parts = stringScanResult.split('$')
+        if (parts.size == 5)  {
+            // Номер катушки находится на 1‑й позиции (индекс 1)
+            val num = parts[2]
+            lifecycleScope.launch {
+                try {
+                    // 1. Вызываем checkst() и ждём результата
+                    val result = incontrolViewModel.checkst("bottle"+num)
+
+                    when (result) {
+                        is Result.Success -> {
+                            msg = result.data.isOk
+                            IDAll = result.data.IDAll
+                            action15 = result.data.action15
+                            action23 = result.data.action23
+                            // 2. Получаем DT по IDAll
+
+
+                            if (msg.isEmpty()) {
+                                if (curIDAll == IDAll){
+                                    val putResult = incontrolViewModel.back2Sklad("bottle"+num, curPrim)
+                                    when (putResult) {
+                                        is Result.Success -> {
+                                            // putResult.data — это уже готовая строка (isOk) от API
+                                            if (putResult.data != "") {
+                                                showResponse(
+                                                    putResult.data
+                                                )  // Показываем её
+                                            }
+                                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                                        }
+                                        is Result.Failure -> {
+                                            showError(putResult.exception)
+                                        }
+                                    }
+                                }
+                                else{
+                                    showPrimInputDialog { prim ->
+                                        lifecycleScope.launch {
+                                            val putResult = incontrolViewModel.back2Sklad("bottle"+num, prim)
+                                            curIDAll = IDAll
+                                            curPrim = prim
+                                            when (putResult) {
+                                                is Result.Success -> {
+                                                    // putResult.data — это уже готовая строка (isOk) от API
+                                                    if (putResult.data != "") {
+                                                        showResponse(
+                                                            putResult.data
+                                                        )  // Показываем её
+                                                    }
+                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                }
+                                                is Result.Failure -> {
+                                                    showError(putResult.exception)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                showResponse(msg)
+                            }
+                        }
+
+                        is Result.Failure -> {
+                            showError(result.exception)
+                        }
+                    }
+                } catch (e: Exception) {
+                    showError(e)
+                }
+            }
+        }
+    }
+    private fun handle3N0Scan3(stringScanResult: String) {
+        isbottle = false
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                val num = parts[1]
+                curNum = num
+
+
+                // 2. Вызываем put2Box()
+
+                lifecycleScope.launch {
+                    val putResult = incontrolViewModel.put2Box(num, box)
+
+                    when (putResult) {
+                        is Result.Success<Unit> -> {
+                            // Успех: запрашиваем обновление списка
+                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                        }
+                        is Result.Failure -> {
+                            // Ошибка: показываем сообщение
+                            showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                        }
+                    }
+                }
+
+
+
+            }
+        }
+    }
+
+    private fun handleZScan3(stringScanResult: String) {
+        val parts = stringScanResult.split('$')
+        if (parts.size > 1) {
+            box = parts[1].toInt()
+            toolbarlnk.title= "В коробку $box"
+            incontrolViewModel.incontrolSearch(paramValue!!, "", box)
+        }
+    }
+
+    private fun handleScanBottle3(stringScanResult: String) {
+        isbottle = true
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        val parts = stringScanResult.split('$')
+        if (parts.size == 5) {
+            // Номер катушки находится на 1‑й позиции (индекс 1)
+            val num = parts[2]
+            curNum = num
+
+
+            // 2. Вызываем put2Box()
+
+            lifecycleScope.launch {
+                val putResult = incontrolViewModel.put2Box("bottle" + curNum, box)
+
+                when (putResult) {
+                    is Result.Success<Unit> -> {
+                        // Успех: запрашиваем обновление списка
+                        incontrolViewModel.refreshListEvent.postValue(Unit)
+                    }
+                    is Result.Failure -> {
+                        // Ошибка: показываем сообщение
+                        showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                    }
+                }
+            }
+        }
+    }
+    private fun handle3N0Scan4(stringScanResult: String) {
+        isbottle = false
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                val num = parts[1]
+                curNum = num
+                lifecycleScope.launch {
+                    val result = incontrolViewModel.getAllID(num)
+                    when (result) {
+                        is Result.Success -> {
+                            val IDAllList = result.data
+                            // Теперь можно работать с полученным списком
+                            handleIDAllList(IDAllList)
+                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                        }
+
+                        is Result.Failure -> {
+                            showError(result.exception)
+                        }
+                    }
+
+                }
+
+            }
+        }
+    }
+
+    private fun handleZScan4(stringScanResult: String) {
+
+        // Проверяем, есть ли элементы в адаптере
+        if (adapterincontrol.itemCount > 0) {
+            // Показываем диалог подтверждения
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Подтверждение")
+                .setMessage("Взять другую коробку?")
+                .setPositiveButton("Да") { _, _ ->
+                    val parts = stringScanResult.split('$')
+                    if (parts.size > 1) {
+                        box = parts[1].toInt()
+                        toolbarlnk.title= "Коробка $box"
+                    }
+                    incontrolViewModel.takebox(box)
+
+                }
+                .setNegativeButton("Нет") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        } else {
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                box = parts[1].toInt()
+                toolbarlnk.title= "Коробка $box"
+            }
+            // Если список пуст — сразу вызываем takebox()
+            incontrolViewModel.takebox(box)
+        }
+    }
+
+    private fun handleScanBottle4(stringScanResult: String) {
+        isbottle = true
+        if (box == 0){
+            Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+        }
+        else {
+            val parts = stringScanResult.split('$')
+            if (parts.size == 5) {
+                curNum = parts[2]
+                lifecycleScope.launch {
+                    val result = incontrolViewModel.getAllID(curNum!!)
+                    when (result) {
+                        is Result.Success -> {
+                            val IDAllList = result.data
+                            // Теперь можно работать с полученным списком
+                            handleIDAllList(IDAllList)
+                            //incontrolViewModel.refreshListEvent.postValue(Unit)
+                        }
+
+                        is Result.Failure -> {
+                            showError(result.exception)
+                        }
+                    }
+
+                }
+
+            }
+
+        }
+    }
+    private fun handleCScan4(stringScanResult: String) {
+        // Отбрасываем первый символ 'C'
+        if (curNum == "") {
+            Toast.makeText(requireContext(), "Сначала отсканируйте компонент", Toast.LENGTH_SHORT).show()
+        }
+        else{
+            val content = stringScanResult.substring(1)
+
+            // Проверяем, что осталось ровно 12 символов
+            if (content.length == 12) {
+                // Разбиваем на 3 части по 4 символа
+                val shelfPart = content.substring(0, 4)   // стеллаж
+                val levelPart = content.substring(4, 8)  // полка
+                val cellPart  = content.substring(8, 12) // ячейка
+
+                // Удаляем ведущие нули в каждой части
+                val stel = shelfPart.toIntOrNull()?.toString() ?: ""
+                val level = levelPart.toIntOrNull()?.toString() ?: "0"
+                val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
+
+                // Формируем yach = Полка + "." + Ячейка
+                val yach = if (level.isNotEmpty() && cell.isNotEmpty()) {
+                    "${level}.${cell}"
+                } else {
+                    ""
+                }
+
+                // Получаем текущие значения stel и cell из отображаемых данных
+                val currentItem =  adapterincontrol.getItemByIdAll(IDAll.toInt())
+                if (currentItem != null) {
+                    val currentStel = currentItem.rack.toString()
+                    val currentCell = currentItem.cell
+
+                    // Сравниваем
+
+                    if (stel == currentStel && yach == currentCell) {
+                        // Совпадение → зелёный фон
+                        infoTextView.visibility = View.VISIBLE
+                        infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
+//                                                adapterincontrol.resetContent()
+//                                                incontrolViewModel.put2WH(curNum!!,paramValue,box)
+//                                                incontrolViewModel.refreshListEvent.postValue(Unit)
+                        lifecycleScope.launch {
+                            val putResult : Result<Unit>
+                            if (isbottle)
+                            {
+                                putResult = incontrolViewModel.put2WH("bottle"+curNum!!)
+                            }
+                            else
+                            {
+                                putResult = incontrolViewModel.put2WH(curNum!!)
+                            }
+
+
+                            when (putResult) {
+                                is Result.Success<Unit> -> {
+                                    // Успех: запрашиваем обновление списка
+                                    incontrolViewModel.refreshListEvent.postValue(Unit)
+                                }
+                                is Result.Failure -> {
+                                    // Ошибка: показываем сообщение
+                                    showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                                }
+                            }
+
+                        }
+                        curNum = ""
+                        incontrolViewModel.saveStelAndCell(stel,yach)
+                    } else {
+                        // Несовпадение → красный фон
+                        infoTextView.visibility = View.VISIBLE
+                        infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
+                        val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
+                        incontrolViewModel.clearStelAndCell()
+                    }
+                } else {
+                    showResponse("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
+                }
+            } else {
+                showResponse("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
+            }
+        }
+    }
+
+
+
+
 
     inner class Adapterincontrol: BaseRecyclerAdapter<InControlSearchResponse>(InControlSearchResponse()) {
 
@@ -1154,6 +1278,11 @@ class InControlFragment: BaseFragment() {
             return data.found
                 .firstOrNull { it.IDAll == idAll.toInt() }  // ищем первый элемент с совпадающим id
                 ?.DT                                   // предполагаем, что у InControlSearchResponse.found.item есть поле dt
+        }
+        fun findByIdAll(idAll: String): InControlSearchResponse.Item? {
+            return data.found
+                .firstOrNull { it.IDAll == idAll.toInt() }  // ищем первый элемент с совпадающим id
+                                     // предполагаем, что у InControlSearchResponse.found.item есть поле dt
         }
         @SuppressLint("NotifyDataSetChanged")
         override fun appendData(dataNew: InControlSearchResponse) {
@@ -1212,12 +1341,12 @@ class InControlFragment: BaseFragment() {
                     .w("Cannot scroll to position $position. Valid range: 0–${itemCount - 1}")
             }
         }
-        @SuppressLint("SuspiciousIndentation")
+        @SuppressLint("SuspiciousIndentation", "SetTextI18n")
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val itemBinding =TemplateCardBinding.bind(holder.itemView)
             val itemData =
                 data.found[position]
-                 itemBinding.containerVertical.removeAllViews()
+            itemBinding.containerVertical.removeAllViews()
             itemBinding.containerHorizon.removeAllViews()
             //region content
             arrayOf(
@@ -1228,7 +1357,7 @@ class InControlFragment: BaseFragment() {
                 Pair(arrayOf("horizontalDivider"),""),
                 Pair(arrayOf("amount"),"На складе "),
                 Pair(arrayOf("kolpacks"),"Упаковок "),
-                    //Pair(arrayOf("isolated"),"В изоляторе "),
+                //Pair(arrayOf("isolated"),"В изоляторе "),
             )
                 .filter { pair ->
                     !pair.first.contains("DT") // Дополнительная фильтрация
@@ -1256,13 +1385,72 @@ class InControlFragment: BaseFragment() {
             } else {
                 holder.itemView.setBackgroundColor(Color.TRANSPARENT)
             }
+            if (itemData.coils.isNotEmpty()) {
+                // Создаём HorizontalScrollView
+                val horizontalScrollView = HorizontalScrollView(holder.itemView.context)
+                horizontalScrollView.layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                horizontalScrollView.setPadding(0, 16, 0, 0)
+
+                // Контейнер для катушек
+                val coilsContainer = LinearLayout(holder.itemView.context)
+                coilsContainer.orientation = LinearLayout.HORIZONTAL
+                coilsContainer.layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+
+                // Для каждой катушки создаём View
+                itemData.coils.forEach { coil ->
+                    val coilView = LinearLayout(holder.itemView.context)
+                    coilView.orientation = LinearLayout.VERTICAL
+                    coilView.setPadding(8, 4, 8, 4)
+
+                    // TextView для type
+                    val tvType = TextView(holder.itemView.context).apply {
+                        text = coil.type
+                        setTextColor(Color.BLACK)
+                        textSize = 14f
+                        gravity = Gravity.CENTER_HORIZONTAL
+                    }
+
+                    // TextView для num
+                    val tvNum = TextView(holder.itemView.context).apply {
+                        text = "№${coil.num}"
+                        setTextColor(Color.GRAY)
+                        textSize = 12f
+                        gravity = Gravity.CENTER_HORIZONTAL
+                    }
+
+                    // region Логика подсветки катушки
+                    if (coil.isScanned) {
+                        coilView.setBackgroundColor(
+                            ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
+                        )
+                        // tvNum.setTextColor(ContextCompat.getColor(tvNum.context, R.color.red_text)) // доп. акцент
+                    } else {
+                        coilView.background = null
+                        tvNum.setTextColor(Color.GRAY)
+                    }
+                    // endregion
+
+                    coilView.addView(tvType)
+                    coilView.addView(tvNum)
+                    coilsContainer.addView(coilView)
+                }
+
+                horizontalScrollView.addView(coilsContainer)
+                itemBinding.containerVertical.addView(horizontalScrollView)
+            }
             itemBinding.containerVertical.setOnClickListener {
                 incontrolViewModel.mainActivityRouter.navigate(
                     ComponentFragmentInfo::class.java,
-                        Bundle().apply {
-                            putSerializable(ComponentFragmentInfo.PARAM, itemData.id)
-                        }
-                    )
+                    Bundle().apply {
+                        putSerializable(ComponentFragmentInfo.PARAM, itemData.id)
+                    }
+                )
 
             }
 
@@ -1301,6 +1489,18 @@ class InControlFragment: BaseFragment() {
 
     ) : BaseViewModel() {
 
+        var lastStoredStel: String = ""
+        var lastStoredCell: String = ""
+
+        fun saveStelAndCell(stel: String, cell: String) {
+            lastStoredStel = stel
+            lastStoredCell = cell
+        }
+
+        fun clearStelAndCell() {
+            lastStoredStel = ""
+            lastStoredCell = ""
+        }
 
         fun incontrolSearch(param: String, last: String, box: Int) {
             ioCoroutineScope.launch {
@@ -1403,7 +1603,7 @@ class InControlFragment: BaseFragment() {
                 )) {
                     is ApiPantes.ApiState.Success -> {
                         // Предполагаем, что result.data содержит поле isOk
-                                 Result.Success(result.data) // Возвращаем isOk
+                        Result.Success(result.data) // Возвращаем isOk
                     }
                     is ApiPantes.ApiState.Error -> Result.Failure(result.exception)
                 }
@@ -1570,8 +1770,8 @@ class InControlFragment: BaseFragment() {
     }
 
     // Для удобства: расширения
- //   val Result<*>.isSuccess: Boolean get() = this is Result.Success
-  //  val Result<*>.isFailure: Boolean get() = this is Result.Failure
+    //   val Result<*>.isSuccess: Boolean get() = this is Result.Success
+    //  val Result<*>.isFailure: Boolean get() = this is Result.Failure
 
 //    inline fun <R : Any> Result<R>.onSuccess(action: (R) -> Unit): Result<R> {
 //        if (this is Result.Success) action(data)

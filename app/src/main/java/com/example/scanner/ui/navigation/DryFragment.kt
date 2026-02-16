@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.media.AudioManager
+
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -21,7 +22,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DiffUtil
@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.scanner.R
 import com.example.scanner.app.SessionViewModel
+import com.example.scanner.app.SoundHelper
 import com.example.scanner.app.setAttribute
 import com.example.scanner.databinding.TemplateCardBinding
 import com.example.scanner.databinding.TemplateFragmentBinding
@@ -75,6 +76,9 @@ class DryFragment: BaseFragment() {
     private var curNum : String? = ""
     var oldSize = 0
 
+    private lateinit var soundHelper: SoundHelper
+
+    // Инициализация (один раз)
 
 
 
@@ -398,10 +402,7 @@ class DryFragment: BaseFragment() {
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-//        dryViewModel.back2SkladState.observe(viewLifecycleOwner) { state ->
-//            //handleBack2SkladState(state)
-//        }
+        soundHelper = SoundHelper(requireContext())
         dryViewModel.refreshListEvent.observe(viewLifecycleOwner) {
             // Перезагружаем данные списка
             adapterdry.resetContent()
@@ -625,10 +626,10 @@ class DryFragment: BaseFragment() {
             lifecycleScope.launch {
                 when (val result = dryViewModel.getAllID(num)) {
                     is Result.Success -> {
-                        val IDAllList = result.data
+                        IDAll = result.data.toString()
                         // Теперь можно работать с полученным списком
 
-                        handleIDAllList(IDAllList, curNum!!.toInt())
+                        handleIDAllList(IDAll.toInt() , curNum!!.toInt())
                             // dryViewModel.refreshListEvent.postValue(Unit)
                     }
 
@@ -681,6 +682,7 @@ class DryFragment: BaseFragment() {
                                 oldSize = adapterdry.itemCount
                                 if (currentItem != null) {
                                     dryViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
+                                   soundHelper.playSuccessSound()
                                 }
                                     dryViewModel.refreshListEvent.postValue(Unit)
                             }
@@ -782,6 +784,7 @@ class DryFragment: BaseFragment() {
 
             if (isMatch) {
                 dryViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
+                soundHelper.playSuccessSound()
             } else {
                 dryViewModel.clearStelAndCell()
             }

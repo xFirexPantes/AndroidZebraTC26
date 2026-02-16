@@ -4,9 +4,7 @@ data class AcceptScanResponse(
     val found: ArrayList<FoundItem> = ArrayList(),
     var last: String = "",
     val total: Long =0,
-){
-
-}
+) {
     data class FoundItem(
         val batch: String,
         val case: String,
@@ -16,5 +14,14 @@ data class AcceptScanResponse(
         val nominal: String,
         val stel: String,
         val cell: String,
-    )
+        val coils: ArrayList<Coil> = ArrayList()
+    ) {
+        data class Coil(
+            val type: String,
+            val num: Int,
+            val st: Int = 1,
+            var isScanned: Boolean = false
+        )
+    }
+}
 

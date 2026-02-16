@@ -1,4 +1,3 @@
-import com.android.build.shrinker.usages.runResourceShrinkerAnalysis
 
 plugins {
     alias(libs.plugins.android.application)
@@ -16,7 +15,7 @@ android {
         //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.6.3"
+        versionName = "1.6.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

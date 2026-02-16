@@ -1,20 +1,23 @@
 package com.example.scanner.ui.navigation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -80,6 +83,7 @@ class ReceiveFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -233,6 +237,88 @@ class ReceiveFragment : BaseFragment() {
                                                     .root
                                             )
 
+                                        }
+                                        if (it.coils.isNotEmpty()) {
+                                            // Создаём HorizontalScrollView
+                                            val horizontalScrollView = HorizontalScrollView(context)
+                                            horizontalScrollView.layoutParams = LinearLayout.LayoutParams(
+                                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                                LinearLayout.LayoutParams.WRAP_CONTENT
+                                            )
+                                            horizontalScrollView.setPadding(0, 16, 0, 0)
+
+                                            // Контейнер для катушек
+                                            val coilsContainer = LinearLayout(context)
+                                            coilsContainer.orientation = LinearLayout.HORIZONTAL
+                                            coilsContainer.layoutParams = LinearLayout.LayoutParams(
+                                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                LinearLayout.LayoutParams.WRAP_CONTENT
+                                            )
+
+                                            // Для каждой катушки создаём View
+                                            it.coils.forEach { coil ->
+                                                val coilView = LinearLayout(context)
+                                                coilView.orientation = LinearLayout.VERTICAL
+                                                coilView.setPadding(8, 4, 8, 4)
+
+                                                // TextView для type
+                                                val tvType = TextView(context).apply {
+                                                    text = coil.type
+                                                    setTextColor(Color.BLACK)
+                                                    textSize = 14f
+                                                    gravity = Gravity.CENTER_HORIZONTAL
+                                                }
+
+                                                // TextView для num
+                                                val tvNum = TextView(context).apply {
+                                                    text = "№${coil.num}"
+                                                    setTextColor(Color.GRAY)
+                                                    textSize = 12f
+                                                    gravity = Gravity.CENTER_HORIZONTAL
+                                                }
+
+                                                // region Логика подсветки катушки
+                                                if (coil.isScanned) {
+                                                    coilView.setBackgroundColor(
+                                                        ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
+                                                    )
+                                                    // tvNum.setTextColor(ContextCompat.getColor(tvNum.context, R.color.red_text)) // доп. акцент
+                                                } else {
+                                                    coilView.background = null
+                                                    tvNum.setTextColor(Color.GRAY)
+                                                }
+                                                // endregion
+
+                                                coilView.addView(tvType)
+                                                coilView.addView(tvNum)
+                                                coilsContainer.addView(coilView)
+                                                when (coil.st) {
+                                                    1 -> {
+                                                        coilView.setBackgroundColor(
+                                                            ContextCompat.getColor(coilView.context, R.color.red_half)
+                                                        )
+                                                    }
+                                                    2 -> {
+                                                        coilView.setBackgroundColor(
+                                                            ContextCompat.getColor(coilView.context, R.color.red_half)
+                                                        )
+                                                    }
+                                                    3 -> {
+                                                        coilView.setBackgroundColor(
+                                                            ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
+                                                        )
+                                                    }
+                                                    else
+                                                        -> {
+                                                        coilView.background = null
+                                                        tvNum.setTextColor(Color.GRAY)
+                                                    }
+                                                }
+                                            }
+
+
+                                            horizontalScrollView.addView(coilsContainer)
+                                            containerVertical.addView(horizontalScrollView)
                                         }
                                     }
                                 }
@@ -805,6 +891,7 @@ class ReceiveFragment : BaseFragment() {
             return data.found.size
         }
 
+        @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val bindingItem=
                 TemplateCardBinding.bind(holder.itemView)
@@ -839,6 +926,78 @@ class ReceiveFragment : BaseFragment() {
                             }
                             .root
                     )
+                }
+                if (dataItem.coils.isNotEmpty()) {
+                    // Создаём HorizontalScrollView
+                    val horizontalScrollView = HorizontalScrollView(holder.itemView.context)
+                    horizontalScrollView.layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    horizontalScrollView.setPadding(0, 16, 0, 0)
+
+                    // Контейнер для катушек
+                    val coilsContainer = LinearLayout(holder.itemView.context)
+                    coilsContainer.orientation = LinearLayout.HORIZONTAL
+                    coilsContainer.layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+
+                    // Для каждой катушки создаём View
+                    dataItem.coils.forEach { coil ->
+                        val coilView = LinearLayout(holder.itemView.context)
+                        coilView.orientation = LinearLayout.VERTICAL
+                        coilView.setPadding(8, 4, 8, 4)
+
+                        // TextView для type
+                        val tvType = TextView(holder.itemView.context).apply {
+                            text = coil.type
+                            setTextColor(Color.BLACK)
+                            textSize = 14f
+                            gravity = Gravity.CENTER_HORIZONTAL
+                        }
+
+                        // TextView для num
+                        val tvNum = TextView(holder.itemView.context).apply {
+                            text = "№${coil.num}"
+                            setTextColor(Color.GRAY)
+                            textSize = 12f
+                            gravity = Gravity.CENTER_HORIZONTAL
+                        }
+
+                        // region Логика подсветки катушки
+                        when (coil.st) {
+                            1 -> {
+                                coilView.setBackgroundColor(
+                                    ContextCompat.getColor(coilView.context, R.color.red_half)
+                                )
+                            }
+                            2 -> {
+                                coilView.setBackgroundColor(
+                                    ContextCompat.getColor(coilView.context, R.color.red_half)
+                                )
+                            }
+                            3 -> {
+                                coilView.setBackgroundColor(
+                                    ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
+                                )
+                            }
+                            else
+                            -> {
+                                coilView.background = null
+                                tvNum.setTextColor(Color.GRAY)
+                            }
+                        }
+                        // endregion
+
+                        coilView.addView(tvType)
+                        coilView.addView(tvNum)
+                        coilsContainer.addView(coilView)
+                    }
+
+                    horizontalScrollView.addView(coilsContainer)
+                    bindingItem.containerVertical.addView(horizontalScrollView)
                 }
             }
         }

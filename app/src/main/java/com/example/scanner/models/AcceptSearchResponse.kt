@@ -1,5 +1,7 @@
 package com.example.scanner.models
 
+
+
 data class AcceptSearchResponse(
     val batch: String,
     val case: String,
@@ -9,5 +11,16 @@ data class AcceptSearchResponse(
     val nominal: String,
     val stel: String,
     val cell: String,
-    val coil: Boolean
+    val coil: Boolean,
+    val coils: ArrayList<Coil> = ArrayList()
 )
+{
+    data class Coil(
+        val type: String,
+        val num: Int,
+        val st: Int = 1,
+        var isScanned: Boolean = false
+    )
+}
+
+

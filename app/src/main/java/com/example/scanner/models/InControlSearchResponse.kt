@@ -1,5 +1,7 @@
 package com.example.scanner.models
 
+
+
 data class InControlSearchResponse(
     val found:ArrayList<Item> = ArrayList(),
     var last:String = "",
@@ -18,5 +20,14 @@ data class InControlSearchResponse(
         val inBox:Boolean,
         val NumNakl: String,
         val kolpacks:Int,
+        val coils:ArrayList<Coil> = ArrayList(),
+        var isScanned: Boolean = false
+    )
+    data class Coil(
+        val type:String,
+        val num: Int,
+        val ost: Int,
+        val st: Int = 1,
+        var isScanned: Boolean = false
     )
 }
