@@ -205,63 +205,92 @@ class ReceiveFragment : BaseFragment() {
                 root.addView(
                     TemplateCardBinding.inflate(inflater,root,false)
                         .apply {
-                            receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner){
+                            receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner) {
                                 containerVertical.removeAllViews()
-                                when(it){
-                                    null->{
-                                        containerVertical.visibility= View.GONE
+
+                                when (it) {
+                                    null -> {
+                                        containerVertical.visibility = View.GONE
                                     }
                                     else -> {
-                                        containerVertical.visibility= View.VISIBLE
+                                        containerVertical.visibility = View.VISIBLE
 
-
-                                        if (containerVertical.childCount > 0) {
-                                            containerVertical.removeAllViews()
-                                        }
+                                        // 1. Добавляем колонки таблицы (как было)
                                         arrayOf(
-                                            Pair(arrayOf("name"),"Наим. "),
-                                            Pair(arrayOf("id"),"#компонента "),
-                                            Pair(arrayOf("batch"),"Серия "),
-                                            Pair(arrayOf("case"),"Корпус "),
-                                            Pair(arrayOf("element"),"Элемент "),
-                                            Pair(arrayOf("nominal"),"Номинал "),
-                                            Pair(arrayOf("stel"),"Ст. "),
-                                            Pair(arrayOf("cell"),"Яч. "),
-                                            Pair(arrayOf("coil"),"Кат. "),
-                                        ).forEach {pair->
+                                            Pair(arrayOf("name"), "Наим. "),
+                                            Pair(arrayOf("id"), "#компонента "),
+                                            Pair(arrayOf("batch"), "Серия "),
+                                            Pair(arrayOf("case"), "Корпус "),
+                                            Pair(arrayOf("element"), "Элемент "),
+                                            Pair(arrayOf("nominal"), "Номинал "),
+                                            Pair(arrayOf("stel"), "Ст. "),
+                                            Pair(arrayOf("cell"), "Яч. "),
+                                            Pair(arrayOf("coil"), "Кат. ")
+                                        ).forEach { pair ->
                                             containerVertical.addView(
-                                                TemplatePresenterBinding.inflate(inflater,containerVertical,false)
-                                                    .apply {
-                                                        setAttribute(pair,it)
-                                                    }
+                                                TemplatePresenterBinding.inflate(inflater, containerVertical, false)
+                                                    .apply { setAttribute(pair, it) }
                                                     .root
                                             )
-
                                         }
+
+                                        // 2. Контейнер для заголовков (БЕЗ HorizontalScrollView!)
+                                        val headerContainer = LinearLayout(context).apply {
+                                            orientation = LinearLayout.HORIZONTAL
+                                            layoutParams = LinearLayout.LayoutParams(
+                                                LinearLayout.LayoutParams.MATCH_PARENT,  // ВАЖНО: вся ширина экрана
+                                                LinearLayout.LayoutParams.WRAP_CONTENT
+                                            )
+                                            setPadding(0, 16, 0, 0)  // отступы сверху/снизу
+                                        }
+
+                                        // 3. Создаём заголовки с весами
+                                        listOf(
+                                            "ВК" to R.color.red_half,
+                                            "Сушка" to R.color.yellow_highlight,
+                                            "Принято" to R.color.green_border
+                                        ).forEachIndexed { index, (text, colorRes) ->
+                                            val tv = TextView(context).apply {
+                                                setText(text)
+                                                setTextColor(if (index == 0 || index == 2) Color.WHITE else Color.BLACK)
+                                                setBackgroundColor(ContextCompat.getColor(context, colorRes))
+                                                textSize = 14f
+                                                gravity = Gravity.CENTER_HORIZONTAL
+                                            }
+                                            val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                                                weight = 1f  // равномерное распределение
+                                            }
+                                            tv.layoutParams = lp
+                                            headerContainer.addView(tv)
+                                        }
+
+                                        // 4. Добавляем headerContainer в containerVertical (без HorizontalScrollView!)
+                                        containerVertical.addView(headerContainer)
+
+                                        // 5. Горизонтальный скролл для катушек (если есть данные)
                                         if (it.coils.isNotEmpty()) {
-                                            // Создаём HorizontalScrollView
-                                            val horizontalScrollView = HorizontalScrollView(context)
-                                            horizontalScrollView.layoutParams = LinearLayout.LayoutParams(
-                                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                                LinearLayout.LayoutParams.WRAP_CONTENT
-                                            )
-                                            horizontalScrollView.setPadding(0, 16, 0, 0)
+                                            val horizontalScrollViewCoils = HorizontalScrollView(context).apply {
+                                                layoutParams = LinearLayout.LayoutParams(
+                                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                                                )
+                                                setPadding(0, 16, 0, 0)
+                                            }
 
-                                            // Контейнер для катушек
-                                            val coilsContainer = LinearLayout(context)
-                                            coilsContainer.orientation = LinearLayout.HORIZONTAL
-                                            coilsContainer.layoutParams = LinearLayout.LayoutParams(
-                                                LinearLayout.LayoutParams.WRAP_CONTENT,
-                                                LinearLayout.LayoutParams.WRAP_CONTENT
-                                            )
+                                            val coilsContainer = LinearLayout(context).apply {
+                                                orientation = LinearLayout.HORIZONTAL
+                                                layoutParams = LinearLayout.LayoutParams(
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                                                )
+                                            }
 
-                                            // Для каждой катушки создаём View
                                             it.coils.forEach { coil ->
-                                                val coilView = LinearLayout(context)
-                                                coilView.orientation = LinearLayout.VERTICAL
-                                                coilView.setPadding(8, 4, 8, 4)
+                                                val coilView = LinearLayout(context).apply {
+                                                    orientation = LinearLayout.VERTICAL
+                                                    setPadding(8, 4, 8, 4)
+                                                }
 
-                                                // TextView для type
                                                 val tvType = TextView(context).apply {
                                                     text = coil.type
                                                     setTextColor(Color.BLACK)
@@ -269,7 +298,6 @@ class ReceiveFragment : BaseFragment() {
                                                     gravity = Gravity.CENTER_HORIZONTAL
                                                 }
 
-                                                // TextView для num
                                                 val tvNum = TextView(context).apply {
                                                     text = "№${coil.num}"
                                                     setTextColor(Color.GRAY)
@@ -277,52 +305,56 @@ class ReceiveFragment : BaseFragment() {
                                                     gravity = Gravity.CENTER_HORIZONTAL
                                                 }
 
-                                                // region Логика подсветки катушки
+                                                // Логика подсветки
                                                 if (coil.isScanned) {
                                                     coilView.setBackgroundColor(
                                                         ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
                                                     )
-                                                    // tvNum.setTextColor(ContextCompat.getColor(tvNum.context, R.color.red_text)) // доп. акцент
                                                 } else {
                                                     coilView.background = null
                                                     tvNum.setTextColor(Color.GRAY)
                                                 }
-                                                // endregion
 
                                                 coilView.addView(tvType)
                                                 coilView.addView(tvNum)
                                                 coilsContainer.addView(coilView)
+
                                                 when (coil.st) {
                                                     1 -> {
                                                         coilView.setBackgroundColor(
                                                             ContextCompat.getColor(coilView.context, R.color.red_half)
                                                         )
+                                                        tvNum.setTextColor(Color.WHITE)
+                                                        tvType.setTextColor(Color.WHITE)
                                                     }
                                                     2 -> {
                                                         coilView.setBackgroundColor(
-                                                            ContextCompat.getColor(coilView.context, R.color.red_half)
+                                                            ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
                                                         )
+                                                        tvNum.setTextColor(Color.BLACK)
+                                                        tvType.setTextColor(Color.BLACK)
                                                     }
                                                     3 -> {
                                                         coilView.setBackgroundColor(
-                                                            ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
+                                                            ContextCompat.getColor(coilView.context, R.color.green_border)
                                                         )
+                                                        tvNum.setTextColor(Color.WHITE)
+                                                        tvType.setTextColor(Color.WHITE)
                                                     }
-                                                    else
-                                                        -> {
+                                                    else -> {
                                                         coilView.background = null
-                                                        tvNum.setTextColor(Color.GRAY)
+                                                        tvNum.setTextColor(Color.BLACK)
+                                                        tvType.setTextColor(Color.BLACK)
                                                     }
                                                 }
                                             }
 
-
-                                            horizontalScrollView.addView(coilsContainer)
-                                            containerVertical.addView(horizontalScrollView)
+                                            horizontalScrollViewCoils.addView(coilsContainer)
+                                            // 6. Добавляем скролл с катушками ПОСЛЕ заголовков
+                                            containerVertical.addView(horizontalScrollViewCoils)
                                         }
                                     }
                                 }
-
                             }
 
                         }
