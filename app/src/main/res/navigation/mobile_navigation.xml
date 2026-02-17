@@ -95,7 +95,16 @@
         android:name="com.example.scanner.ui.navigation.InControlMenuFragment"
         android:label="InControlMenuFragment"
         />
-
+    <fragment
+        android:id="@+id/nav_invoice_menu_fragment"
+        android:name="com.example.scanner.ui.navigation.InvoiceMenuFragment"
+        android:label="InvoiceMenuFragment"
+        />
+    <fragment
+        android:id="@+id/nav_return_fragment"
+        android:name="com.example.scanner.ui.navigation.ReturnFragment"
+        android:label="ReturnFragment"
+        />
     <!--incontrol (добавляем сюда!)-->
     <fragment
         android:id="@+id/nav_incontrol_fragment"

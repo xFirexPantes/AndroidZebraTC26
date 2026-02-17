@@ -302,7 +302,7 @@ class ApiPantes(
             @Query("isOk") isOk:Boolean,
             @Query("coil") coil:Boolean,
             @Query("token") token: String,
-        ):Call<AcceptPutkatResponse>
+        ):Call<Int>
         @GET("accept/putbottle")
         @Headers("Content-Type: application/json")
         fun acceptPutbottle(
@@ -679,7 +679,7 @@ class ApiPantes(
                 api.componentSearch( "Bearer $token",last,query,token).execute()
             emit(
                 when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!! as ComponentsSearchResponse)
+                    true->ApiState.Success(response.body()!!)
                     else->ApiState.Error(buildException(response))
                 }
             )
@@ -691,7 +691,7 @@ class ApiPantes(
                 api.componentSearch( "Bearer $token",last,"U",token).execute()
             emit(
                 when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!! as ComponentsSearchResponse)
+                    true->ApiState.Success(response.body()!! )
                     else->ApiState.Error(buildException(response))
                 }
             )
@@ -896,9 +896,9 @@ class ApiPantes(
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
 
-    suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean): ApiState<AcceptPutkatResponse> {
+    suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean): ApiState<Int> {
         return flow {
-            val response:Response<AcceptPutkatResponse> =
+            val response:Response<Int> =
                 api.acceptPutkat( "Bearer $token",Stel,Shelf,curKat,isOk,coil,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
@@ -937,7 +937,7 @@ class ApiPantes(
                 api.incontrolSearch( "Bearer $token",last,query,box,token).execute()
             emit(
                 when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!! as InControlSearchResponse)
+                    true->ApiState.Success(response.body()!! )
                     else->ApiState.Error(buildException(response))
                 }
             )
@@ -957,7 +957,7 @@ class ApiPantes(
                     token
                 ).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> {
@@ -968,8 +968,8 @@ class ApiPantes(
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -980,16 +980,16 @@ class ApiPantes(
                 val response: Response<InControlCheckStResponse> =
                     api.incontrolCheckst("Bearer $token", num, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1001,16 +1001,16 @@ class ApiPantes(
                 val response: Response<ArrayList<Int>> =
                     api.incontrolGetIDAll("Bearer $token", num, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1021,16 +1021,16 @@ class ApiPantes(
                 val response: Response<Int> =
                     api.dryGetID("Bearer $token", num, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1041,7 +1041,7 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolPut2box("Bearer $token", num,box, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
@@ -1049,8 +1049,8 @@ class ApiPantes(
                 }
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1061,16 +1061,16 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolWHtoBox("Bearer $token", num,box, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1088,9 +1088,9 @@ class ApiPantes(
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1101,15 +1101,15 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolRemoveFromBox("Bearer $token",IDAll,box, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
                 Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
@@ -1121,16 +1121,16 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolTakeboxFromWH("Bearer $token",box, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1161,9 +1161,9 @@ class ApiPantes(
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1174,16 +1174,16 @@ class ApiPantes(
                 val response: Response<String> =
                     api.dryPut2WH("Bearer $token", IdresSub,id,num, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
-                Log.e("API_ERROR", "Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
