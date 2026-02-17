@@ -1,12 +1,9 @@
 package com.example.scanner.ui
 
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.MifareClassic
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -40,7 +37,6 @@ import com.example.scanner.ui.navigation.InControlFragment
 import com.example.scanner.ui.navigation.InControlFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragment
 import com.example.scanner.ui.navigation.HomeFragment
-import com.example.scanner.ui.navigation.HomeFragment.HomeViewModel
 import com.example.scanner.ui.navigation.InControlMenuFragment
 import com.example.scanner.ui.navigation.InvoiceFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragmentInfoLine
@@ -53,6 +49,8 @@ import com.example.scanner.ui.navigation_setting.LogsFragment
 import com.example.scanner.ui.navigation_over.ProgressFragment
 import com.example.scanner.ui.navigation.ReceiveFragment
 import com.example.scanner.ui.navigation.ReceiveFragmentInfo
+import com.example.scanner.ui.navigation.InvoiceMenuFragment
+import com.example.scanner.ui.navigation.ReturnFragment
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
 import com.example.scanner.ui.navigation_setting.SettingFragment
@@ -60,7 +58,6 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.io.IOException
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -222,6 +219,12 @@ class MainActivity : BaseActivity() {
                 ReceiveFragmentInfo::class.java ->
                     navControllerMain?.navigate(R.id.nav_receive_info_fragment, route.params)
 
+                InvoiceMenuFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_invoice_menu_fragment, route.params)
+
+                ReturnFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_return_fragment, route.params)
+                //endregion
                 //endregion
                 //region InControl
                 InControlFragment::class.java ->

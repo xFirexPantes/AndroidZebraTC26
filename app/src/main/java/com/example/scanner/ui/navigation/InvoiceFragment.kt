@@ -159,13 +159,16 @@ class InvoiceFragment : BaseFragment() {
                                             .observe(viewLifecycleOwner){
                                                 root.visibility=it
                                             }
+                                        title = "Контроль"
                                     }
+
                                     .root
                             )
                             //endregion
 
                         }
                         .root
+
                 )
                 //endregion
 
@@ -175,7 +178,6 @@ class InvoiceFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         mutableOnFragmentDetached.observe(viewLifecycleOwner){
 
             when(val f=it.data){
@@ -272,8 +274,7 @@ class InvoiceFragment : BaseFragment() {
                 )
             }
             invoicesViewModel.invoicesFragmentTitle
-                .postValue(
-                    getString(R.string.button_invoice)
+                .postValue("Контроль"
                 )
 
 

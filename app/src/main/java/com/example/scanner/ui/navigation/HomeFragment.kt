@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,8 +97,8 @@ class HomeFragment : BaseFragment() {
                             if(state.issuance) {
                                 issuance.button.setOnClickListener {
                                     homeViewModel.mainActivityRouter.navigate(
-                                        InvoiceFragment::class.java,
-                                        Bundle().apply { putSerializable(InvoiceFragment.PARAM,"") }
+                                        InvoiceMenuFragment::class.java,
+                                        Bundle().apply { putSerializable(InvoiceMenuFragment.PARAM_STEP_1_VALUE,"") }
                                     )
                                 }
                                 floatEnable
@@ -221,22 +220,15 @@ class HomeFragment : BaseFragment() {
             })
             val versionTextView: TextView = root.findViewById(R.id.textVersion)
 
-            // Получаем версию приложения
-            try {
-                val packageInfo = requireActivity().packageManager.getPackageInfo(
-                    requireActivity().packageName, 0
-                )
 
-            } catch (e: PackageManager.NameNotFoundException) {
-                versionTextView.text = "Версия: не найдена"
-            }
 
         }
         .root
 
     }
 
-    private fun startcheck(versionTextView: TextView,btn: Button) {
+    @SuppressLint("SetTextI18n")
+    private fun startcheck(versionTextView: TextView, btn: Button) {
         lifecycleScope.launch {
             try {
                 // 1. Проверяем подключение
@@ -491,8 +483,7 @@ class HomeFragment : BaseFragment() {
             if (Build.VERSION.SDK_INT >= 30) {
                 if (requireActivity().packageManager.canRequestPackageInstalls()) {
                     // Повторный запуск загрузки после получения разрешения
-                    val currentNetworkPath =
-                    downloadAndInstallUpdate("http://192.168.5.125/txrw/trxw.apk")
+
                 } else {
                     handler.post {
                         showToast("Разрешение не получено")

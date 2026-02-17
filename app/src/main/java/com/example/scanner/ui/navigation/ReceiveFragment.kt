@@ -62,7 +62,11 @@ class ReceiveFragment : BaseFragment() {
         const val PARAM_STEP_1_VALUE="param"
         const val PARAM_STEP_2_VALUE="param2"
     }
-
+    private var pendingScrollAttempts = 0
+    private var isCoilsContainerReady = false
+    private var pendingCoilScroll: String? = null
+    private var horizontalScrollViewCoils: HorizontalScrollView? = null
+    private var coilsContainer: LinearLayout? = null
     private val receiveViewModel: ReceiveViewModel by viewModels{ viewModelFactory}
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private val adapterReceive=AdapterReceive()
@@ -75,7 +79,7 @@ class ReceiveFragment : BaseFragment() {
     private var lastStel = ""
     private var lastCell = ""
     private var isBottle: Boolean = false
-
+    private var lastQR: String = ""
     private lateinit var infoTextView :TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -205,6 +209,7 @@ class ReceiveFragment : BaseFragment() {
                 root.addView(
                     TemplateCardBinding.inflate(inflater,root,false)
                         .apply {
+                            var currentComponentId = ""
                             receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner) {
                                 containerVertical.removeAllViews()
 
@@ -230,10 +235,11 @@ class ReceiveFragment : BaseFragment() {
                                             containerVertical.addView(
                                                 TemplatePresenterBinding.inflate(inflater, containerVertical, false)
                                                     .apply { setAttribute(pair, it) }
+
                                                     .root
                                             )
                                         }
-
+                                        currentComponentId = it.id
                                         // 2. Контейнер для заголовков (БЕЗ HorizontalScrollView!)
                                         val headerContainer = LinearLayout(context).apply {
                                             orientation = LinearLayout.HORIZONTAL
@@ -269,7 +275,7 @@ class ReceiveFragment : BaseFragment() {
 
                                         // 5. Горизонтальный скролл для катушек (если есть данные)
                                         if (it.coils.isNotEmpty()) {
-                                            val horizontalScrollViewCoils = HorizontalScrollView(context).apply {
+                                            horizontalScrollViewCoils = HorizontalScrollView(context).apply {
                                                 layoutParams = LinearLayout.LayoutParams(
                                                     LinearLayout.LayoutParams.MATCH_PARENT,
                                                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -277,15 +283,14 @@ class ReceiveFragment : BaseFragment() {
                                                 setPadding(0, 16, 0, 0)
                                             }
 
-                                            val coilsContainer = LinearLayout(context).apply {
+                                            coilsContainer = LinearLayout(context).apply {
                                                 orientation = LinearLayout.HORIZONTAL
                                                 layoutParams = LinearLayout.LayoutParams(
                                                     LinearLayout.LayoutParams.WRAP_CONTENT,
                                                     LinearLayout.LayoutParams.WRAP_CONTENT
                                                 )
                                             }
-
-                                            it.coils.forEach { coil ->
+                                                         it.coils.forEach { coil ->
                                                 val coilView = LinearLayout(context).apply {
                                                     orientation = LinearLayout.VERTICAL
                                                     setPadding(8, 4, 8, 4)
@@ -317,7 +322,7 @@ class ReceiveFragment : BaseFragment() {
 
                                                 coilView.addView(tvType)
                                                 coilView.addView(tvNum)
-                                                coilsContainer.addView(coilView)
+                                                coilsContainer!!.addView(coilView)
 
                                                 when (coil.st) {
                                                     1 -> {
@@ -349,14 +354,25 @@ class ReceiveFragment : BaseFragment() {
                                                 }
                                             }
 
-                                            horizontalScrollViewCoils.addView(coilsContainer)
+                                            horizontalScrollViewCoils!!.addView(coilsContainer)
                                             // 6. Добавляем скролл с катушками ПОСЛЕ заголовков
                                             containerVertical.addView(horizontalScrollViewCoils)
                                         }
                                     }
                                 }
+                                isCoilsContainerReady = true
+                                //tryExecutePendingScroll()
                             }
 
+                            containerVertical.setOnClickListener {
+                                receiveViewModel.mainActivityRouter.navigate(
+                                    ReceiveFragmentInfo::class.java,
+                                    Bundle().apply {
+                                        putSerializable(ReceiveFragmentInfo.PARAM, currentComponentId)
+                                    }
+                                )
+
+                            }
                         }
                         .root
                 )
@@ -599,10 +615,13 @@ class ReceiveFragment : BaseFragment() {
                 is ReceiveFragmentFormState.SuccessSearch ->{
                     receiveViewModel.receiveFragmentAcceptSearchResponse.value=
                         state.data
+                    state.scrollToCoil?.let { coilNumber ->
+                        requestScrollToCoil(coilNumber)
+                    }
                 }
                 is ReceiveFragmentFormState.RequestSearch->{
                         receiveViewModel.step1AcceptSearch(
-                            getArgument<String>(PARAM_STEP_1_VALUE)
+                            getArgument(PARAM_STEP_1_VALUE)
                         )
                 }
                 is ReceiveFragmentFormState.RequestScan->{
@@ -617,7 +636,7 @@ class ReceiveFragment : BaseFragment() {
 
                 ReceiveFragmentFormState.RequestSearchBottle -> {
                     receiveViewModel.step3AcceptSearch(
-                        getArgument<String>(PARAM_STEP_1_VALUE)
+                        getArgument(PARAM_STEP_1_VALUE)
                     )
                 }
             }
@@ -685,112 +704,139 @@ class ReceiveFragment : BaseFragment() {
         }
 
     }
-    private fun extractCoilFromString(qrCode: String): String {
-        // Логика извлечения coil (зависит от формата QR)
-        return qrCode.split('$').getOrNull(2) ?: ""  // например, 3‑я часть
+    private fun requestScrollToCoil(coilNumber: String) {
+        pendingCoilScroll = coilNumber
+        // Если данные уже есть — пробуем прокрутить сразу
+        if (receiveViewModel.receiveFragmentAcceptSearchResponse.value != null) {
+            tryExecutePendingScroll()
+        }
     }
+
+    // Вызывается при обновлении данных
+    private fun tryExecutePendingScroll() {
+        val coilToScroll = pendingCoilScroll ?: return
+        val response = receiveViewModel.receiveFragmentAcceptSearchResponse.value ?: return
+
+
+        // Проверяем готовность контейнера
+        if (!isCoilsContainerReady) {
+
+            return
+        }
+
+        val scrollView = horizontalScrollViewCoils ?: return
+        val container = coilsContainer ?: return
+
+        // Ищем катушку
+        val coilIndex = response.coils.indexOfFirst { it.num == coilToScroll.toIntOrNull() }
+        if (coilIndex == -1) {
+            showErrorMessage("Катушка $coilToScroll не найдена")
+            pendingCoilScroll = null
+            return
+        }
+
+        // Получаем View (может быть null, если ещё не отрисована)
+        val coilView = container.getChildAt(coilIndex)
+        if (coilView == null) {
+            // Если View нет — ждём следующего кадра
+            scrollView.post {
+                tryExecutePendingScroll()
+            }
+            return
+        }
+
+        // Выполняем прокрутку
+        scrollView.post {
+            scrollView.scrollTo(coilView.left, 0)
+
+        }
+
+        pendingCoilScroll = null
+        isCoilsContainerReady = false
+        pendingScrollAttempts = 0
+    // сбрасываем для следующего обновления
+    }
+
     private fun handle3N0Scan(stringScanResult: String) {
         val parts = stringScanResult.split('$')
         if (parts.size > 1) Nkat = parts[1]
 
-
         requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
         step1.setText(stringScanResult)
 
-        // Запоминаем текущие данные ДО поиска
-        val oldResponse = receiveViewModel.receiveFragmentAcceptSearchResponse.value
-
-        // Запускаем поиск
-        receiveViewModel.receiveFragmentFormState.postValue(ReceiveFragmentFormState.RequestSearch)
-
-        // Наблюдаем за изменениями
-        receiveViewModel.receiveFragmentAcceptSearchResponse.observe(viewLifecycleOwner) { newResponse ->
-            // Проверяем, что данные действительно обновились
-            if (newResponse != null && newResponse != oldResponse) {
-               handleSearchResponse(newResponse, stringScanResult)
-            }
-        }
-    }
-    private fun handleSearchResponse(
-        response: AcceptSearchResponse,
-        stringScanResult: String
-    ) {
-        var ftime = false
-        val lastStel = receiveViewModel.lastStoredStel
-        val lastCell = receiveViewModel.lastStoredCell
-        if (lastStel == "") {
-           ftime = true
-        }
-        if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
-            val currentStel = response.stel
-            val currentCell = response.cell
-            val coilFromQR = extractCoilFromString(stringScanResult).toBoolean()
-            val isMatch = (lastStel == currentStel) && (lastCell == currentCell)
-
-            updateInfoTextView(isMatch, ftime)
-
-            if (isMatch) {
-                receiveViewModel.putKat2Sklad(
-                    currentStel,
-                    currentCell,
-                    Nkat,
-                    true,
-                    coilFromQR
-                )
-            } else {
-                receiveViewModel.clearStelAndCell()
-            }
+        // Получаем текущие данные из ViewModel
+        val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
+        lastQR = stringScanResult
+        if (currentItem == null) {
+            // Первое сканирование: просто запускаем поиск
+            receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
         } else {
-            infoTextView.setBackgroundColor(Color.WHITE)
-            infoTextView.visibility = View.VISIBLE
+            // Повторное сканирование: проверяем совпадение
+            val currentStel = currentItem.stel
+            val currentYach = currentItem.cell // предполагаем, что cell = yach
+
+            if (currentStel == lastStel && currentYach == lastCell) {
+                // Совпадение: выполняем putKat2Sklad
+                receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
+                    isOk = true,
+                    coil = false
+                )
+
+                // После putKat2Sklad обновляем поиск
+                receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
+                updateInfoTextView(isMatch = true)
+
+            } else {
+                // Нет совпадения: просто обновляем поиск
+                updateInfoTextView(isMatch = false)
+                receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
+            }
         }
     }
+
     private fun handleCScan(stringScanResult: String) {
-        // Извлекаем 12 цифр после 'C'
+        // Извлекаем данные из QR-кода
         val content = stringScanResult.substring(1)
         if (content.length != 12) {
             showErrorMessage("QR-код после 'C' должен содержать 12 цифр")
             return
         }
 
-        // Разбиваем на части
-        val shelfPart = content.substring(0, 4)   // стеллаж
-        val levelPart = content.substring(4, 8)  // полка
-        val cellPart  = content.substring(8, 12) // ячейка
+        val shelfPart = content.substring(0, 4)
+        val levelPart = content.substring(4, 8)
+        val cellPart = content.substring(8, 12)
 
-
-        // Удаляем ведущие нули
         val stel = shelfPart.toIntOrNull()?.toString() ?: ""
         val level = levelPart.toIntOrNull()?.toString() ?: "0"
-        val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
-
-
-        // Формируем yach = Полка + "." + Ячейка
+        val cell = cellPart.toIntOrNull()?.toString() ?: "0"
         val yach = if (level.isNotEmpty() && cell.isNotEmpty()) "${level}.${cell}" else ""
-        val coilFromQR = extractCoilFromString(stringScanResult).toBoolean()
-        // Сравниваем с текущим ответом
+
+
+        // Получаем текущие данные
         val currentItem = receiveViewModel.receiveFragmentAcceptSearchResponse.value
         if (currentItem != null) {
             val currentStel = currentItem.stel
-            val currentCell = currentItem.cell
+            val currentYach = currentItem.cell
 
 
-            val isMatch = (stel == currentStel) && (yach == currentCell)
-            updateInfoTextView(isMatch,false)
+            if (stel == currentStel && yach == currentYach) {
+                // Совпадение: выполняем putKat2Sklad
+                receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
+                    isOk = true,
+                    coil = false
+                )
 
-            if (isMatch) {
-                if (isBottle) {
-                    receiveViewModel.putBottle2Sklad(currentStel, currentCell, Nkat, true)
-                } else {
-                    receiveViewModel.putKat2Sklad(currentStel, currentCell, Nkat, true, coilFromQR)
-                }
-                // Сохраняем как эталон (если нужно)
-                receiveViewModel.saveStelAndCell(currentStel, currentCell)
+                // Сохраняем stel и yach
+                lastStel = stel
+                lastCell = yach
 
+                // Обновляем поиск после putKat2Sklad
+                receiveViewModel.step1AcceptSearch(lastQR,Nkat)
+                updateInfoTextView(isMatch = true)
 
             } else {
-                receiveViewModel.clearStelAndCell()
-
+                updateInfoTextView(isMatch = false)
+                showErrorMessage("Данные не совпадают с текущим элементом")
             }
         } else {
             showErrorMessage("Нет данных для сравнения (ответ пуст)")
@@ -817,7 +863,7 @@ class ReceiveFragment : BaseFragment() {
             infoTextView.visibility = View.VISIBLE
             requireArguments().putSerializable(PARAM_STEP_1_VALUE, Nkat)
             step1.setText(stringScanResult)
-
+            lastQR = stringScanResult
 
             // Отправляем запрос на поиск для бутылки
             receiveViewModel.receiveFragmentFormState.postValue(
@@ -829,6 +875,8 @@ class ReceiveFragment : BaseFragment() {
                 Nkat,
                 true  // isOk = true
             )
+            receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
+            updateInfoTextView(isMatch = true)
             Timber.tag("ReceiveFragment").d("Обработан QR бутылки: Nkat=$Nkat")
 
         } catch (e: Exception) {
@@ -837,8 +885,8 @@ class ReceiveFragment : BaseFragment() {
         }
     }
 
-    private fun updateInfoTextView(isMatch: Boolean,ftime: Boolean) {
-        if (!ftime) {
+    private fun updateInfoTextView(isMatch: Boolean) {
+
             infoTextView.visibility = View.VISIBLE
             if (isMatch) {
                 infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0)) // Зелёный
@@ -848,10 +896,7 @@ class ReceiveFragment : BaseFragment() {
                 val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                 audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
             }
-        }
-        else{
-            infoTextView.visibility = View.GONE
-        }
+
     }
 
     private fun showErrorMessage(message: String) {
@@ -870,7 +915,7 @@ class ReceiveFragment : BaseFragment() {
         }
     }
 
-    inner class AdapterReceive():BaseRecyclerAdapter<AcceptScanResponse>(AcceptScanResponse()){
+    inner class AdapterReceive:BaseRecyclerAdapter<AcceptScanResponse>(AcceptScanResponse()){
         override fun getCallback(dataOld: AcceptScanResponse?): DiffUtil.Callback {
             return object :DiffUtil.Callback(){
                 override fun getOldListSize(): Int {
@@ -1044,18 +1089,18 @@ class ReceiveFragment : BaseFragment() {
     ) : BaseViewModel()
     {
 
-        var lastStoredStel: String = ""
-        var lastStoredCell: String = ""
+//        var lastStoredStel: String = ""
+//        var lastStoredCell: String = ""
 
-        fun saveStelAndCell(stel: String, cell: String) {
-            lastStoredStel = stel
-            lastStoredCell = cell
-        }
-
-        fun clearStelAndCell() {
-            lastStoredStel = ""
-            lastStoredCell = ""
-        }
+//        fun saveStelAndCell(stel: String, cell: String) {
+//            lastStoredStel = stel
+//            lastStoredCell = cell
+//        }
+//
+//        fun clearStelAndCell() {
+//            lastStoredStel = ""
+//            lastStoredCell = ""
+//        }
         fun step2AcceptScan(query: String, last:String) {
             ioCoroutineScope.launch {
                 receiveFragmentFormState.postValue(
@@ -1077,7 +1122,7 @@ class ReceiveFragment : BaseFragment() {
                 )
             }
         }
-        fun step1AcceptSearch(query: String) {
+        fun step1AcceptSearch(query: String, scrollToCoil: String? = null) {
             ioCoroutineScope.launch {
                 receiveFragmentFormState.postValue(
                     when(val token=loginRepository.user?.token){
@@ -1088,7 +1133,8 @@ class ReceiveFragment : BaseFragment() {
                                 query = query,
                             )){
                                 is ApiPantes.ApiState.Success->
-                                    ReceiveFragmentFormState.SuccessSearch(result.data)
+                                    ReceiveFragmentFormState.SuccessSearch(result.data,
+                                        scrollToCoil)
                                 is ApiPantes.ApiState.Error->
                                     ReceiveFragmentFormState.Error(
                                         if (result.exception is NonFatalExceptionShowDialogMessage){
@@ -1105,7 +1151,7 @@ class ReceiveFragment : BaseFragment() {
             }
         }
 
-        fun step3AcceptSearch(query: String) {
+        fun step3AcceptSearch(query: String, scrollToCoil: String? = null) {
             ioCoroutineScope.launch {
                 receiveFragmentFormState.postValue(
                     when(val token=loginRepository.user?.token){
@@ -1116,7 +1162,7 @@ class ReceiveFragment : BaseFragment() {
                                 query = query,
                             )){
                                 is ApiPantes.ApiState.Success->
-                                    ReceiveFragmentFormState.SuccessSearch(result.data)
+                                    ReceiveFragmentFormState.SuccessSearch(result.data,scrollToCoil)
                                 is ApiPantes.ApiState.Error->
                                     ReceiveFragmentFormState.Error(
                                         if (result.exception is NonFatalExceptionShowDialogMessage){
@@ -1213,7 +1259,7 @@ class ReceiveFragment : BaseFragment() {
 
         data class Error(var exception: Throwable): ReceiveFragmentFormState<Nothing>()
         data class SuccessScan<out T : Any>(val data:T): ReceiveFragmentFormState<T>()
-        data class SuccessSearch<out T : Any>(val data: AcceptSearchResponse): ReceiveFragmentFormState<T>()
+        data class SuccessSearch<out T : Any>(val data: AcceptSearchResponse,val scrollToCoil: String? ): ReceiveFragmentFormState<T>()
         data object ResetSearch: ReceiveFragmentFormState<Nothing>()
         data object ResetScan: ReceiveFragmentFormState<Nothing>()
         data object RequestSearch: ReceiveFragmentFormState<Nothing>()
