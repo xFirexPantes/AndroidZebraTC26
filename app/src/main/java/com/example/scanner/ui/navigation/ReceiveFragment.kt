@@ -572,7 +572,13 @@ class ReceiveFragment : BaseFragment() {
                 }
                 is ReceiveFragmentFormState.PutKatSuccess -> {
                     // PUT выполнен, теперь обновляем поиск
-                    receiveViewModel.step1AcceptSearch(lastQR, Nkat)
+                    if (isBottle){
+                        receiveViewModel.step3AcceptSearch(Nkat, Nkat)
+                    }
+                    else {
+                        receiveViewModel.step1AcceptSearch(lastQR, Nkat)
+                    }
+
                 }
                 is ReceiveFragmentFormState.Error ->{
                         if(state.exception is NonFatalExceptionShowToaste){
@@ -640,16 +646,16 @@ class ReceiveFragment : BaseFragment() {
 
                         if (!receiveViewModel.skipNextPut) {
                             // Это тот же компонент - выполняем put
-                            if (isBottle) {
+                            if (isBottle){
                                 receiveViewModel.putBottle2Sklad(
-                                    response.stel,
-                                    response.cell,
-                                    Nkat,
-                                    true,  // isOk = true,
+                                    stel = response.stel,
+                                    shelf = response.cell,
+                                    curKat = scannedNkat,
+                                    isOk = true,
                                     rgmValue
                                 )
-                            }
-                            else {
+                            }else
+                            {
                                 receiveViewModel.putKat2Sklad(
                                     stel = response.stel,
                                     shelf = response.cell,
@@ -659,6 +665,7 @@ class ReceiveFragment : BaseFragment() {
                                     rgmValue
                                 )
                             }
+
                             updateInfoTextView(isMatch = true)
                             // Устанавливаем флаг, чтобы следующий SuccessSearch (после обновления) не вызвал put снова
                             receiveViewModel.setSkipNextPut(true)
@@ -828,7 +835,7 @@ class ReceiveFragment : BaseFragment() {
     private fun handle3N0Scan(stringScanResult: String) {
         val parts = stringScanResult.split('$')
         if (parts.size > 1) Nkat = parts[1]
-
+        isBottle = false
         requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
         step1.setText(stringScanResult)
         lastQR = stringScanResult
@@ -864,17 +871,16 @@ class ReceiveFragment : BaseFragment() {
 
 
             if (stel == currentStel && yach == currentYach) {
-                if (isBottle)
-                {
+                // Совпадение: выполняем putKat2Sklad
+                if (isBottle) {
                     receiveViewModel.putBottle2Sklad(
-                        lastStel,
-                        lastCell,
+                        currentStel, currentYach,
                         Nkat,
                         true,  // isOk = true,
                         rgmValue
                     )
                 }
-                else{
+                else {
                     receiveViewModel.putKat2Sklad(
                         currentStel, currentYach, Nkat,
                         isOk = true,
@@ -882,9 +888,6 @@ class ReceiveFragment : BaseFragment() {
                         rgmValue
                     )
                 }
-                // Совпадение: выполняем putKat2Sklad
-
-
                 // Сохраняем stel и yach
                 lastStel = stel
                 lastCell = yach
@@ -914,16 +917,14 @@ class ReceiveFragment : BaseFragment() {
             // Номер катушки на 1‑й позиции (индекс 1)
             Nkat = parts[2]
             isBottle = true
-            stelFromQR = ""
-            yachFromQR = ""
-
-            // Обновляем UI
-            infoTextView.visibility = View.VISIBLE
-            requireArguments().putSerializable(PARAM_STEP_1_VALUE, Nkat)
+            requireArguments().putSerializable(PARAM_STEP_1_VALUE, stringScanResult)
             step1.setText(stringScanResult)
             lastQR = stringScanResult
 
-            receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
+            // Всегда просто запускаем поиск
+
+            receiveViewModel.step3AcceptSearch(Nkat,Nkat)
+
             Timber.tag("ReceiveFragment").d("Обработан QR бутылки: Nkat=$Nkat")
 
         } catch (e: Exception) {

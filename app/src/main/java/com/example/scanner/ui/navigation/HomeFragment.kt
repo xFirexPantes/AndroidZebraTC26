@@ -37,6 +37,8 @@ import com.example.scanner.ui.base.BaseFragment
 import com.example.scanner.modules.viewModelFactory
 import com.example.scanner.ui.base.BaseViewModel
 import com.example.scanner.ui.base.ScanFragmentBase
+import com.example.scanner.ui.navigation.InvoiceMenuFragment.Companion.PARAM_STEP_1_VALUE
+import com.example.scanner.ui.navigation.ReceiveFragment.Companion.EXTRA_RGM
 import com.example.scanner.ui.navigation.login.LoginFragment
 import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
@@ -146,7 +148,10 @@ class HomeFragment : BaseFragment() {
     //                                ScanReceiveFragment::class.java)
                                     homeViewModel.mainActivityRouter.navigate(
                                         ReceiveFragment::class.java,
-                                        Bundle().apply { putSerializable(ReceiveFragment.PARAM_STEP_1_VALUE,"") }
+                                        Bundle().apply {
+                                            putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
+                                            putSerializable(EXTRA_RGM, "first")              // или putSerializable
+                                        }
                                     )
                                 }
                                 floatEnable

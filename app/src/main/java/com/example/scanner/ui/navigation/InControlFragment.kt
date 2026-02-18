@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.HorizontalScrollView
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -88,7 +89,7 @@ class InControlFragment: BaseFragment() {
         data object Idle : Back2SkladState<Nothing>()
     }
     private val itemTouchHelper = ItemTouchHelper(
-        object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+        object : ItemTouchHelper.SimpleCallback(0, 0) {
             // Отключаем автоматическое удаление
             override fun getSwipeThreshold(viewHolder: ViewHolder): Float = 1f
 
@@ -481,6 +482,9 @@ class InControlFragment: BaseFragment() {
 
             if (box == 0 && (paramValue!="toIncontrol" && paramValue!="WHtoIncontrol")){
                 Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
+            }
+            adapterincontrol.onRemoveClick = { item, position ->
+                showRemoveFromBoxDialog(item, position)
             }
         }
 
@@ -1227,7 +1231,7 @@ class InControlFragment: BaseFragment() {
     inner class Adapterincontrol: BaseRecyclerAdapter<InControlSearchResponse>(InControlSearchResponse()) {
 
         private var selectedPosition: Int = -1 // -1 = ничего не выделено
-
+        var onRemoveClick: ((item: InControlSearchResponse.Item, position: Int) -> Unit)? = null
 
         override fun getCallback(dataOld: InControlSearchResponse?): DiffUtil.Callback {
             return object :DiffUtil.Callback(){
@@ -1385,6 +1389,7 @@ class InControlFragment: BaseFragment() {
             } else {
                 holder.itemView.setBackgroundColor(Color.TRANSPARENT)
             }
+
             if (itemData.coils.isNotEmpty()) {
                 // Создаём HorizontalScrollView
                 val horizontalScrollView = HorizontalScrollView(holder.itemView.context)
@@ -1443,6 +1448,22 @@ class InControlFragment: BaseFragment() {
 
                 horizontalScrollView.addView(coilsContainer)
                 itemBinding.containerVertical.addView(horizontalScrollView)
+            }
+            if (paramValue in listOf("toBox", "WHtoIncontrol")) {
+                val deleteIcon = ImageView(holder.itemView.context).apply {
+                    setImageResource(android.R.drawable.ic_menu_close_clear_cancel) // или свой ресурс
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        gravity = Gravity.END
+                    }
+                    setPadding(16, 16, 16, 16)
+                    setOnClickListener {
+                        onRemoveClick?.invoke(itemData, position)
+                    }
+                }
+                itemBinding.containerHorizon.addView(deleteIcon)
             }
             itemBinding.containerVertical.setOnClickListener {
                 incontrolViewModel.mainActivityRouter.navigate(
