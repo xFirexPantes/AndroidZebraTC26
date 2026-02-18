@@ -779,7 +779,8 @@ class ReturnFragment : BaseFragment() {
                 // Совпадение: выполняем putKat2Sklad
                 receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
                     isOk = true,
-                    coil = false
+                    coil = false,
+                    rgm = PARAM_STEP_1_VALUE
                 )
 
                 // После putKat2Sklad обновляем поиск
@@ -823,7 +824,8 @@ class ReturnFragment : BaseFragment() {
                 // Совпадение: выполняем putKat2Sklad
                 receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
                     isOk = true,
-                    coil = false
+                    coil = false,
+                    rgm = PARAM_STEP_1_VALUE
                 )
 
                 // Сохраняем stel и yach
@@ -1178,7 +1180,7 @@ class ReturnFragment : BaseFragment() {
                 )
             }
         }
-        fun putKat2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,coil: Boolean) {
+        fun putKat2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,coil: Boolean,rgm:String) {
             ioCoroutineScope.launch {
 
                     when(val token=loginRepository.user?.token){
@@ -1190,7 +1192,8 @@ class ReturnFragment : BaseFragment() {
                                 Shelf = shelf,
                                 curKat= curKat,
                                 isOk = isOk,
-                                coil = coil
+                                coil = coil,
+                                rgm = rgm
                             )){
                                 is ApiPantes.ApiState.Success->
                                     ReceiveFragmentFormState.NoOp
@@ -1213,7 +1216,8 @@ class ReturnFragment : BaseFragment() {
                             Stel= stel,
                             Shelf = shelf,
                             curKat= curKat,
-                            isOk = isOk
+                            isOk = isOk,
+                            rgm = PARAM_STEP_1_VALUE
                         )){
                             is ApiPantes.ApiState.Success->
                                 ReceiveFragmentFormState.NoOp

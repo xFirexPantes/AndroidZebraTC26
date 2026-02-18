@@ -11,6 +11,7 @@ import com.example.scanner.R
 import com.example.scanner.databinding.FragmentInvoiceMenuBinding
 import com.example.scanner.modules.viewModelFactory
 import com.example.scanner.ui.navigation.HomeFragment.HomeViewModel
+import com.example.scanner.ui.navigation.ReceiveFragment.Companion.EXTRA_RGM
 
 class InvoiceMenuFragment : Fragment() {
     private val homeViewModel: HomeViewModel by viewModels{ viewModelFactory }
@@ -50,9 +51,9 @@ class InvoiceMenuFragment : Fragment() {
                         if (state.accept) View.VISIBLE else View.GONE
                     binding?.toControl?.isEnabled = state.accept
 
-                    binding?.toReturn?.alpha = 0.5f
-                       // if (state.accept) View.VISIBLE else View.GONE
-                    binding?.toReturn?.isEnabled = false
+                    binding?.toReturn?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.toReturn?.isEnabled = state.accept
 
                 }
             }
@@ -65,8 +66,11 @@ class InvoiceMenuFragment : Fragment() {
         }
         binding?.toReturn?.setOnClickListener {
             homeViewModel.mainActivityRouter.navigate(
-                ReturnFragment::class.java,
-                Bundle().apply { putSerializable(ReturnFragment.PARAM_STEP_1_VALUE, "") }
+                ReceiveFragment::class.java,
+                Bundle().apply {
+                    putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
+                    putSerializable(EXTRA_RGM, "back")              // или putSerializable
+                }
             )
         }
     }

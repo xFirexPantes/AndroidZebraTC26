@@ -61,7 +61,9 @@ class ReceiveFragment : BaseFragment() {
     companion object{
         const val PARAM_STEP_1_VALUE="param"
         const val PARAM_STEP_2_VALUE="param2"
+        const val EXTRA_RGM = "rgm"
     }
+    private var rgmValue: String = ""
     private var pendingScrollAttempts = 0
     private var isCoilsContainerReady = false
     private var pendingCoilScroll: String? = null
@@ -88,6 +90,7 @@ class ReceiveFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
         super.onCreate(savedInstanceState)
+        rgmValue = arguments?.getString(EXTRA_RGM) ?: "first"
     }
 
     @SuppressLint("SetTextI18n")
@@ -642,7 +645,8 @@ class ReceiveFragment : BaseFragment() {
                                 shelf = response.cell,
                                 curKat = scannedNkat,
                                 isOk = true,
-                                coil = false
+                                coil = false,
+                                rgmValue
                             )
                             updateInfoTextView(isMatch = true)
                             // Устанавливаем флаг, чтобы следующий SuccessSearch (после обновления) не вызвал put снова
@@ -850,9 +854,11 @@ class ReceiveFragment : BaseFragment() {
 
             if (stel == currentStel && yach == currentYach) {
                 // Совпадение: выполняем putKat2Sklad
-                receiveViewModel.putKat2Sklad(currentStel, currentYach, Nkat,
+                receiveViewModel.putKat2Sklad(
+                    currentStel, currentYach, Nkat,
                     isOk = true,
-                    coil = false
+                    coil = false,
+                    rgmValue
                 )
 
                 // Сохраняем stel и yach
@@ -901,7 +907,8 @@ class ReceiveFragment : BaseFragment() {
                 lastStel,
                 lastCell,
                 Nkat,
-                true  // isOk = true
+                true,  // isOk = true,
+                rgmValue
             )
             receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
             updateInfoTextView(isMatch = true)
@@ -1210,7 +1217,14 @@ class ReceiveFragment : BaseFragment() {
                 )
             }
         }
-        fun putKat2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,coil: Boolean) {
+        fun putKat2Sklad(
+            stel: String,
+            shelf: String,
+            curKat: String,
+            isOk: Boolean,
+            coil: Boolean,
+            rgm: String
+        ) {
             ioCoroutineScope.launch {
 
                     when(val token=loginRepository.user?.token){
@@ -1222,7 +1236,8 @@ class ReceiveFragment : BaseFragment() {
                                 Shelf = shelf,
                                 curKat= curKat,
                                 isOk = isOk,
-                                coil = coil
+                                coil = coil,
+                                rgm = rgm
                             )){
                                 is ApiPantes.ApiState.Success -> {
                                     receiveFragmentFormState.postValue(ReceiveFragmentFormState.PutKatSuccess)
@@ -1238,7 +1253,7 @@ class ReceiveFragment : BaseFragment() {
 
             }
         }
-        fun putBottle2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean) {
+        fun putBottle2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,rgm: String) {
             ioCoroutineScope.launch {
 
                 when(val token=loginRepository.user?.token){
@@ -1249,10 +1264,11 @@ class ReceiveFragment : BaseFragment() {
                             Stel= stel,
                             Shelf = shelf,
                             curKat= curKat,
-                            isOk = isOk
+                            isOk = isOk,
+                            rgm = rgm
                         )){
                             is ApiPantes.ApiState.Success->
-                                ReceiveFragmentFormState.NoOp
+                                receiveFragmentFormState.postValue(ReceiveFragmentFormState.PutKatSuccess)
                             is ApiPantes.ApiState.Error->
                                 ReceiveFragmentFormState.Error(result.exception)
                         }

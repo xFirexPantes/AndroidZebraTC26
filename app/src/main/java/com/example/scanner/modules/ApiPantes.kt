@@ -301,6 +301,7 @@ class ApiPantes(
             @Query("curKat") curKat:String,
             @Query("isOk") isOk:Boolean,
             @Query("coil") coil:Boolean,
+            @Query("rgm") rgm:String,
             @Query("token") token: String,
         ):Call<Int>
         @GET("accept/putbottle")
@@ -311,6 +312,7 @@ class ApiPantes(
             @Query("Shelf") Shelf:String,
             @Query("curKat") curKat:String,
             @Query("isOk") isOk:Boolean,
+            @Query("rgm") rgm:String,
             @Query("token") token: String,
         ):Call<AcceptPutkatResponse>
         //endregion
@@ -896,20 +898,20 @@ class ApiPantes(
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
 
-    suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean): ApiState<Int> {
+    suspend fun acceptPutkat(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,coil: Boolean,rgm: String): ApiState<Int> {
         return flow {
             val response:Response<Int> =
-                api.acceptPutkat( "Bearer $token",Stel,Shelf,curKat,isOk,coil,token).execute()
+                api.acceptPutkat( "Bearer $token",Stel,Shelf,curKat,isOk,coil,rgm,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 else->emit(ApiState.Error(buildException(response)))
             }
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun acceptPutbottle(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean): ApiState<AcceptPutkatResponse> {
+    suspend fun acceptPutbottle(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,rgm:String): ApiState<AcceptPutkatResponse> {
         return flow {
             val response:Response<AcceptPutkatResponse> =
-                api.acceptPutbottle( "Bearer $token",Stel,Shelf,curKat,isOk,token).execute()
+                api.acceptPutbottle( "Bearer $token",Stel,Shelf,curKat,isOk,rgm,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 else->emit(ApiState.Error(buildException(response)))
