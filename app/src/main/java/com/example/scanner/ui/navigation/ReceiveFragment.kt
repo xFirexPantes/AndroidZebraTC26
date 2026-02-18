@@ -640,14 +640,25 @@ class ReceiveFragment : BaseFragment() {
 
                         if (!receiveViewModel.skipNextPut) {
                             // Это тот же компонент - выполняем put
-                            receiveViewModel.putKat2Sklad(
-                                stel = response.stel,
-                                shelf = response.cell,
-                                curKat = scannedNkat,
-                                isOk = true,
-                                coil = false,
-                                rgmValue
-                            )
+                            if (isBottle) {
+                                receiveViewModel.putBottle2Sklad(
+                                    response.stel,
+                                    response.cell,
+                                    Nkat,
+                                    true,  // isOk = true,
+                                    rgmValue
+                                )
+                            }
+                            else {
+                                receiveViewModel.putKat2Sklad(
+                                    stel = response.stel,
+                                    shelf = response.cell,
+                                    curKat = scannedNkat,
+                                    isOk = true,
+                                    coil = false,
+                                    rgmValue
+                                )
+                            }
                             updateInfoTextView(isMatch = true)
                             // Устанавливаем флаг, чтобы следующий SuccessSearch (после обновления) не вызвал put снова
                             receiveViewModel.setSkipNextPut(true)
@@ -853,13 +864,26 @@ class ReceiveFragment : BaseFragment() {
 
 
             if (stel == currentStel && yach == currentYach) {
+                if (isBottle)
+                {
+                    receiveViewModel.putBottle2Sklad(
+                        lastStel,
+                        lastCell,
+                        Nkat,
+                        true,  // isOk = true,
+                        rgmValue
+                    )
+                }
+                else{
+                    receiveViewModel.putKat2Sklad(
+                        currentStel, currentYach, Nkat,
+                        isOk = true,
+                        coil = false,
+                        rgmValue
+                    )
+                }
                 // Совпадение: выполняем putKat2Sklad
-                receiveViewModel.putKat2Sklad(
-                    currentStel, currentYach, Nkat,
-                    isOk = true,
-                    coil = false,
-                    rgmValue
-                )
+
 
                 // Сохраняем stel и yach
                 lastStel = stel
@@ -899,19 +923,7 @@ class ReceiveFragment : BaseFragment() {
             step1.setText(stringScanResult)
             lastQR = stringScanResult
 
-            // Отправляем запрос на поиск для бутылки
-            receiveViewModel.receiveFragmentFormState.postValue(
-                ReceiveFragmentFormState.RequestSearchBottle
-            )
-            receiveViewModel.putBottle2Sklad(
-                lastStel,
-                lastCell,
-                Nkat,
-                true,  // isOk = true,
-                rgmValue
-            )
             receiveViewModel.step1AcceptSearch(stringScanResult,Nkat)
-            updateInfoTextView(isMatch = true)
             Timber.tag("ReceiveFragment").d("Обработан QR бутылки: Nkat=$Nkat")
 
         } catch (e: Exception) {

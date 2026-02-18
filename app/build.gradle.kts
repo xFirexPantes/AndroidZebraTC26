@@ -15,23 +15,12 @@ android {
         //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.7.0"
+        versionName = "1.7.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     // 1. Определяем измерение для версий
-    flavorDimensions.add("version")
 
-    productFlavors {
-        create("version170") {
-            dimension = "version"
-            versionName = "1.7.0"
-        }
-        create("version171") {
-            dimension = "version"
-            versionName = "1.7.1"
-        }
-    }
     buildTypes {
         release {
             isMinifyEnabled = true

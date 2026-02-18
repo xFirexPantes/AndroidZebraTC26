@@ -50,7 +50,6 @@ import com.example.scanner.ui.navigation_over.ProgressFragment
 import com.example.scanner.ui.navigation.ReceiveFragment
 import com.example.scanner.ui.navigation.ReceiveFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceMenuFragment
-import com.example.scanner.ui.navigation.ReturnFragment
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
 import com.example.scanner.ui.navigation_setting.SettingFragment
@@ -222,8 +221,6 @@ class MainActivity : BaseActivity() {
                 InvoiceMenuFragment::class.java ->
                     navControllerMain?.navigate(R.id.nav_invoice_menu_fragment, route.params)
 
-                ReturnFragment::class.java ->
-                    navControllerMain?.navigate(R.id.nav_return_fragment, route.params)
                 //endregion
                 //endregion
                 //region InControl
