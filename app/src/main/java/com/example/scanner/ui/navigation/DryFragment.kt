@@ -61,7 +61,8 @@ class DryFragment: BaseFragment() {
         const val PARAM="param"
     }
     private var paramValue: String = ""
-     private lateinit var toolbarlnk: androidx.appcompat.widget.Toolbar
+    private var needscroll: Boolean = true
+    private lateinit var toolbarlnk: androidx.appcompat.widget.Toolbar
     private lateinit var recyclerView: RecyclerView
     private val dryViewModel: DryViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
@@ -97,7 +98,7 @@ class DryFragment: BaseFragment() {
                 target: ViewHolder
             ): Boolean = false
 
-              // Визуально выделяем элемент при свайпе
+            // Визуально выделяем элемент при свайпе
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
@@ -117,7 +118,7 @@ class DryFragment: BaseFragment() {
     private fun handleScan(id: Int) {
         sViewModel.addItem(id)
     }
-//    private fun showRemoveFromBoxDialog(item: InControlSearchResponse.Item, position: Int) {
+    //    private fun showRemoveFromBoxDialog(item: InControlSearchResponse.Item, position: Int) {
 //        MaterialAlertDialogBuilder(requireContext())
 //            .setTitle("Убрать из коробки?")
 //            .setMessage("Вы уверены, что хотите убрать элемент из коробки?")
@@ -163,7 +164,7 @@ class DryFragment: BaseFragment() {
 
 
         return TemplateFragmentBinding.inflate(inflater, container, false)
-                .apply {
+            .apply {
 
                 toolbar.apply {
                     setNavigationOnClickListener {
@@ -212,10 +213,10 @@ class DryFragment: BaseFragment() {
                     .observe(viewLifecycleOwner){
                         toolbar.subtitle=it
                     }
-                    root.addView(
-                        TemplateCardBinding.inflate(inflater,root,false)
-                            .apply
-                    {
+                root.addView(
+                    TemplateCardBinding.inflate(inflater,root,false)
+                        .apply
+                        {
                             if (paramValue=="listDry" || paramValue=="fromDry") {
                                 val filterButton = Button(requireContext()).apply {
                                     text = "Фильтры"
@@ -225,9 +226,9 @@ class DryFragment: BaseFragment() {
                                 }
                                 containerVertical.addView(filterButton, 0)
                             }
-                    }
-                            .root
-                    )
+                        }
+                        .root
+                )
                 root.addView(
                     TemplateCardBinding.inflate(inflater, root, false)
                         .apply {
@@ -291,7 +292,7 @@ class DryFragment: BaseFragment() {
 
 
                 // Настраиваем RecyclerView
-                    //endregion
+                //endregion
 
             }.root
 
@@ -413,27 +414,33 @@ class DryFragment: BaseFragment() {
             adapterdry.updateItems(scanned) // Перекрашиваем все элементы
         }
         dryViewModel.searchCompleted.observe(viewLifecycleOwner) { isCompleted ->
-            if (isCompleted && curNum!!.isNotEmpty()) {
-                lifecycleScope.launch {
-                    try {
-                        when (val result = dryViewModel.getAllID(curNum!!)) {
-                            is Result.Success -> {
-                                IDAll = result.data.toString()
-                                val position = adapterdry.findPosition(IDAll)
-                                if (position != null && position != -1) {
-                                    adapterdry.scrollToPosition(position, recyclerView)
-                                } else {
-                                   // showResponse("Элемент с IDAll=$IDAll не найден в списке")
+            if  (needscroll) {
+                if (isCompleted && curNum!!.isNotEmpty()) {
+                    lifecycleScope.launch {
+                        try {
+                            when (val result = dryViewModel.getAllID(curNum!!)) {
+                                is Result.Success -> {
+                                    IDAll = result.data.toString()
+                                    val position = adapterdry.findPosition(IDAll)
+                                    if (position != null && position != -1) {
+
+                                        adapterdry.scrollToPosition(position, recyclerView)
+
+                                    } else {
+                                        // showResponse("Элемент с IDAll=$IDAll не найден в списке")
+                                    }
                                 }
+
+                                is Result.Failure -> showError(result.exception)
                             }
-                            is Result.Failure -> showError(result.exception)
+                        } catch (e: Exception) {
+                            showError(e)
                         }
-                    } catch (e: Exception) {
-                        showError(e)
+                        // Сброс флага для будущих вызовов
+                        dryViewModel.resetSearchCompleted()
                     }
-                    // Сброс флага для будущих вызовов
-                    dryViewModel.resetSearchCompleted()
                 }
+
             }
         }
         dryViewModel.dryFragmentState.observe(viewLifecycleOwner)
@@ -466,12 +473,11 @@ class DryFragment: BaseFragment() {
                             )
                             adapterdry.setContent(drySearchResponse)
                             // ОБЯЗАТЕЛЬНО: уведомить адаптер об обновлении
-                            adapterdry.notifyDataSetChanged()
+                            //adapterdry.notifyDataSetChanged()
                         } else {
                             adapterdry.appendContent(drySearchResponse)
-                            adapterdry.notifyDataSetChanged()
+                            //adapterdry.notifyDataSetChanged()
                         }
-
 
                     }
 
@@ -516,7 +522,7 @@ class DryFragment: BaseFragment() {
                                 when {
                                     stringScanResult.startsWith("3N0") -> handle3N0ScanTo(stringScanResult)
                                     stringScanResult.startsWith('d') -> handleDScanTo(stringScanResult)
-                                  //  (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
+                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
                                     else -> showErrorMessageQR()
                                 }
                             }
@@ -532,7 +538,7 @@ class DryFragment: BaseFragment() {
                                     stringScanResult.startsWith("3N0") -> handle3N0ScanFrom(stringScanResult)
                                     stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
                                     stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
-                                  //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
+                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
                                     else -> showErrorMessageQR()
                                 }
                             }
@@ -546,8 +552,8 @@ class DryFragment: BaseFragment() {
                             stateScan.stringScanResult?.let { stringScanResult ->
                                 when {
                                     stringScanResult.startsWith("3N0") -> handle3N0ScanTo(stringScanResult)
-                              //      stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
-                              //      stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
+                                    //      stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
+                                    //      stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
                                     //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
                                     else -> showErrorMessageQR()
                                 }
@@ -612,7 +618,7 @@ class DryFragment: BaseFragment() {
                     dryViewModel.drySearch(currentItem.IDAll, "", 0, "", paramValue)
                 }
             }
-    }
+        }
     }
 
     private fun handle3N0ScanFrom(stringScanResult: String) {
@@ -622,6 +628,7 @@ class DryFragment: BaseFragment() {
         if (parts.size > 1) {
             val num = parts[1]
             curNum = num
+            needscroll = true
             // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
             lifecycleScope.launch {
                 when (val result = dryViewModel.getAllID(num)) {
@@ -630,7 +637,7 @@ class DryFragment: BaseFragment() {
                         // Теперь можно работать с полученным списком
 
                         handleIDAllList(IDAll.toInt() , curNum!!.toInt())
-                            // dryViewModel.refreshListEvent.postValue(Unit)
+                        // dryViewModel.refreshListEvent.postValue(Unit)
                     }
 
                     is Result.Failure -> {
@@ -671,20 +678,22 @@ class DryFragment: BaseFragment() {
                 // Получаем текущие значения stel и cell из отображаемых данных
                 val currentItem =  adapterdry.getItemByID(IDAll.toInt())
 
-                    val isMatch = (currentItem?.Stel.toString() == stel) && (currentItem?.Yach  == yach)
+                val isMatch = (currentItem?.Stel.toString() == stel) && (currentItem?.Yach  == yach)
 
-                    updateInfoTextView(isMatch, false)
+                updateInfoTextView(isMatch, false)
 
                 if (isMatch) {
+                    needscroll = false
                     lifecycleScope.launch {
                         when (val result = curNum?.let { dryViewModel.getAllID(it) }) {
-                            is Result.Success -> {
+                            is Result.Success<*> -> {
                                 oldSize = adapterdry.itemCount
                                 if (currentItem != null) {
                                     dryViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
-                                   soundHelper.playSuccessSound()
+                                    soundHelper.playSuccessSound()
                                 }
-                                    dryViewModel.refreshListEvent.postValue(Unit)
+                                dryViewModel.refreshListEvent.postValue(Unit)
+                                resetScanState()
                             }
 
                             is Result.Failure -> {
@@ -714,7 +723,11 @@ class DryFragment: BaseFragment() {
             dryViewModel.drySearch(0, "", box, "",paramValue)
         }
     }
-
+    private fun resetScanState() {
+        IDAll = ""
+        curNum = ""
+        needscroll = true
+    }
     private fun updateInfoTextView(isMatch: Boolean,ftime: Boolean) {
         if (!ftime) {
             infoTextView.visibility = View.VISIBLE
@@ -763,33 +776,28 @@ class DryFragment: BaseFragment() {
         }
         val stel = currentItem.Stel.toString()
         val cell = currentItem.Yach
-        if (lastStel == "") {
-            ftime = true
-        }
+        if (lastStel == "") ftime = true
+
         val position = adapterdry.findPosition(IDAll.toString())
         if (position != null && position != -1) {
-            adapterdry.scrollToPosition(position,recyclerView)
-
-                handleScan(num)
-
-
-
-        } else {
-           // showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
+            adapterdry.scrollToPosition(position, recyclerView)
+            handleScan(num)
         }
+
         if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
             val isMatch = (lastStel == stel) && (lastCell == cell)
-
             updateInfoTextView(isMatch, ftime)
 
             if (isMatch) {
-                dryViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
+                dryViewModel.putFromDry2WH(currentItem.IDResSub, currentItem.id, curNum!!.toInt())
                 soundHelper.playSuccessSound()
+                dryViewModel.refreshListEvent.postValue(Unit)
+                resetScanState()
+                return  // <-- выходим, так как список скоро обновится
             } else {
                 dryViewModel.clearStelAndCell()
             }
         }
-        adapterdry.notifyDataSetChanged()
     }
     inner class Adapterdry: BaseRecyclerAdapter<DrySearchResponse>(DrySearchResponse()) {
         private var hasItemCountDecreased = false
@@ -798,8 +806,10 @@ class DryFragment: BaseFragment() {
 
 
         override fun setContent(dataNew: DrySearchResponse) {
+            selectedPosition = -1
             val newSize = getNewSize(dataNew)  // Получаем размер нового списка
             val scanned = sViewModel.scannedItems.value ?: emptySet()
+
             hasItemCountDecreased = newSize < oldSize
             oldSize = newSize // Устанавливаем флаг
             if (hasItemCountDecreased) {
@@ -859,7 +869,7 @@ class DryFragment: BaseFragment() {
             selectedPosition = position
             notifyDataSetChanged() // перерисовываем все элементы
         }
-//        fun findPosition(idAll: String): Int? {
+        //        fun findPosition(idAll: String): Int? {
 //            val targetId = idAll.toInt()
 //            val index = data.found.indexOfFirst { it.IDAll == targetId }
 //            return if (index != -1) index else null
@@ -944,7 +954,10 @@ class DryFragment: BaseFragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val itemBinding = TemplateCardBinding.bind(holder.itemView)
             val itemData = data.found[position]
-
+            if (position >= data.found.size) {
+                Timber.e("Invalid position $position, size=${data.found.size}")
+                return
+            }
             // Очищаем контейнеры
             itemBinding.containerVertical.removeAllViews()
             itemBinding.containerHorizon.removeAllViews()
@@ -1017,7 +1030,7 @@ class DryFragment: BaseFragment() {
                         coilView.setBackgroundColor(
                             ContextCompat.getColor(coilView.context, R.color.yellow_highlight)
                         )
-                            // tvNum.setTextColor(ContextCompat.getColor(tvNum.context, R.color.red_text)) // доп. акцент
+                        // tvNum.setTextColor(ContextCompat.getColor(tvNum.context, R.color.red_text)) // доп. акцент
                     } else {
                         coilView.background = null
                         tvNum.setTextColor(Color.GRAY)
@@ -1131,8 +1144,8 @@ class DryFragment: BaseFragment() {
                     else->{
                         when (val result = apiPantes.dryPut2WH(IdresSub, id, num, token)){
                             is ApiPantes.ApiState.Success->
-                                refreshListEvent.postValue(Unit)
 
+                                dryFragmentState.postValue(DryFragmentState.Success(result.data))
                             is ApiPantes.ApiState.Error->
                                 DryFragmentFormState.Error(result.exception)
                         }
