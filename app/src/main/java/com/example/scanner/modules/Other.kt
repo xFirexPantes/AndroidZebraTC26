@@ -78,7 +78,7 @@ class Other {
         }
     }
 
-    val picasso= Picasso.get()
+    val picasso: Picasso = Picasso.get()
 
 }
 

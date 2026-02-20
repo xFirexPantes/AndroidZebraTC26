@@ -124,7 +124,7 @@ class ComponentFragmentInfo: BaseFragment() {
                                                 ErrorsFragment::class.java,
                                                 Bundle().apply {
                                                     putSerializable(
-                                                        ErrorsFragment.Companion.PARAM,
+                                                        ErrorsFragment.PARAM,
                                                         state.exception
                                                     )
                                                 })
@@ -141,7 +141,7 @@ class ComponentFragmentInfo: BaseFragment() {
 
 
                 componentsInfoViewModel.requestComponentInfo(
-                    Other.Companion.getInstanceSingleton().parseArguments(requireArguments(), PARAM))
+                    Other.getInstanceSingleton().parseArguments(requireArguments(), PARAM))
 
             }
             .root
@@ -158,7 +158,7 @@ class ComponentFragmentInfo: BaseFragment() {
             ioCoroutineScope.launch {
                 componentsInfoFormState.postValue(
                     when(val token=loginRepository.user?.token) {
-                        null -> ComponentsInfoFormState.Error(ErrorsFragment.Companion.nonFatalExceptionShowToasteToken)
+                        null -> ComponentsInfoFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
                         else -> when(val result=apiPantes.componentInfo(token,id)){
                             is ApiPantes.ApiState.Success->
                                 ComponentsInfoFormState.SuccessComponentInfo(result.data)
@@ -173,8 +173,8 @@ class ComponentFragmentInfo: BaseFragment() {
         companion object {
             fun getInstance(context: Context): ComponentsInfoViewModel {
                 return ComponentsInfoViewModel(
-                    ApiPantes.Companion.getInstanceSingleton(),
-                    LoginRepository.Companion.getInstanceSingleton(context)
+                    ApiPantes.getInstanceSingleton(),
+                    LoginRepository.getInstanceSingleton(context)
                 )
             }
         }
@@ -198,10 +198,10 @@ class ComponentFragmentInfo: BaseFragment() {
             savedInstanceState: Bundle?
         ): View {
             val componentInfoResponse: ComponentInfoResponse =
-                Other.Companion.getInstanceSingleton()
+                Other.getInstanceSingleton()
                     .parseArguments(requireArguments(),PARAM)
             val tabNumber:Int=
-                Other.Companion.getInstanceSingleton()
+                Other.getInstanceSingleton()
                     .parseArguments(requireArguments(),PARAM1)
 
 

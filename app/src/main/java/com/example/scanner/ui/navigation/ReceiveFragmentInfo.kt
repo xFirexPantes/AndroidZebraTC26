@@ -115,7 +115,7 @@ class ReceiveFragmentInfo:BaseFragment() {
                                                                             TemplatePresenterBinding.inflate(inflater,this.root,false)
                                                                                 .apply {
                                                                                     setAttribute(
-                                                                                        Pair(arrayOf(it.type,it.name),it.name.toString()),
+                                                                                        Pair(arrayOf(it.type,it.name),it.name),
                                                                                         acceptInfoResponse
                                                                                     )
                                                                                 }

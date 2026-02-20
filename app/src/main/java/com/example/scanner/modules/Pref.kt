@@ -12,12 +12,7 @@ import com.example.scanner.models.LoggedInUserResponse
 import java.lang.ref.WeakReference
 
 class Pref(context: Context,private val gson: Gson) {
-    enum class ScannerType {
-        AUTO,    // Автоопределение (по наличию SDK)
-        ZEBRA,   // Явно Zebra (EMDK)
-        OTHER,   // Явно другой сканер (ScanManager)
-        NONE     // Нет доступного сканера
-    }
+
     companion object{
         private var _pref: WeakReference<Pref>? = null
         fun getInstanceSingleton(context: Context): Pref {
@@ -42,7 +37,7 @@ class Pref(context: Context,private val gson: Gson) {
         private const val PREF_ENABLE_MANUAL_INPUT="pref_enable_manual_input1"
         private const val PREF_FILE_SERVER_NAME="pref_file_server_name"
         private const val PREF_PANTES_SERVER_NAME="pref_pantes_server_name"
-        private const val PREF_SCANNER_TYPE = "pref_scanner_type"
+
     }
 
 
@@ -56,16 +51,8 @@ class Pref(context: Context,private val gson: Gson) {
     var pantesServerName: String
         get() = preferences.getString(PREF_PANTES_SERVER_NAME,"109.73.192.152")?:"109.73.192.152"
         set(value) = preferences.edit { putString(PREF_PANTES_SERVER_NAME,value) }
-    var scannerType: ScannerType
-        get() = runCatching {
-            val typeStr = preferences.getString(PREF_SCANNER_TYPE, null)
-            if (typeStr != null) {
-                ScannerType.valueOf(typeStr)
-            } else {
-                ScannerType.AUTO  // Значение по умолчанию
-            }
-        }.getOrDefault(ScannerType.AUTO)
-        set(value) = preferences.edit { putString(PREF_SCANNER_TYPE, value.name) }
+
+
     var manualInputHistory: ArrayList<String>
         get() {
             return gson.fromJson<ArrayList<String>>(preferences.getString(PREF_HISTORY_MANUAL_INPUT_SCAN_CODES, "[]"),ArrayList::class.java)
@@ -91,7 +78,7 @@ class Pref(context: Context,private val gson: Gson) {
         }
 
     val enableManualInputMutableLiveData=
-        MutableLiveData<Int>(manualInputIsEnable)
+        MutableLiveData(manualInputIsEnable)
 
     var orderLines:String?
         get() = preferences.getString(PREF_ORDER_LINES,null)

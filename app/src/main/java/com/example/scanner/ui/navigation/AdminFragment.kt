@@ -1,8 +1,8 @@
 package com.example.scanner.ui.navigation
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,9 +44,7 @@ class AdminFragment : BaseFragment() {
         storage = SecureStorage(requireContext())
 
         // Инициализация адаптера
-        adapter = UsersAdapter(mutableListOf()) { user ->
-            deleteUser(user)
-        }
+        adapter = UsersAdapter(mutableListOf())
         rvUsers.adapter = adapter
         rvUsers.layoutManager = LinearLayoutManager(requireContext())
 
@@ -59,6 +57,7 @@ class AdminFragment : BaseFragment() {
         btnClearStorage.setOnClickListener { showClearStorageDialog() }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun loadUsers() {
         val allUids = storage.debugGetAllUids()
         val users = allUids.map { uid ->
@@ -107,7 +106,7 @@ class AdminFragment : BaseFragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Очистить хранилище")
             .setMessage("Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.")
-            .setPositiveButton("Удалить", { _, _ -> clearStorage() })
+            .setPositiveButton("Удалить") { _, _ -> clearStorage() }
             .setNegativeButton("Отмена", null)
             .show()
     }
@@ -129,8 +128,7 @@ class AdminFragment : BaseFragment() {
 
 
 class UsersAdapter(
-    val users: MutableList<UserItem>,
-    private val onDelete: (UserItem) -> Unit
+    val users: MutableList<UserItem>
 ) : RecyclerView.Adapter<UsersAdapter.UserViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
@@ -156,6 +154,7 @@ class UsersAdapter(
         private val tvPassword: TextView = itemView.findViewById(R.id.tvPassword)
 
 
+        @SuppressLint("SetTextI18n")
         fun bind(user: UserItem) {
             tvUid.text = "UID: ${user.uid}"
             tvLogin.text = "Логин: ${user.login ?: "—"}"

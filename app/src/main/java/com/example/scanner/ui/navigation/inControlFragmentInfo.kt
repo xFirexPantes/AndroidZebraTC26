@@ -81,16 +81,16 @@ class InControlFragmentInfo: BaseFragment() {
 //                                                                            }
 //                                                                }
 
-                                                            else->incontrolInfoFragmentTabOther()
+                                                            else->IncontrolInfoFragmentTabOther()
                                                                 .apply {
                                                                     arguments=
                                                                         Bundle()
                                                                             .apply {
                                                                                 putSerializable(
-                                                                                    incontrolInfoFragmentTabOther.PARAM,
+                                                                                    IncontrolInfoFragmentTabOther.PARAM,
                                                                                     state.data)
                                                                                 putSerializable(
-                                                                                    incontrolInfoFragmentTabOther.PARAM1,
+                                                                                    IncontrolInfoFragmentTabOther.PARAM1,
                                                                                     tab.position)
                                                                                     //tab.position-1)
                                                                             }
@@ -124,7 +124,7 @@ class InControlFragmentInfo: BaseFragment() {
                                                 ErrorsFragment::class.java,
                                                 Bundle().apply {
                                                     putSerializable(
-                                                        ErrorsFragment.Companion.PARAM,
+                                                        ErrorsFragment.PARAM,
                                                         state.exception
                                                     )
                                                 })
@@ -141,7 +141,7 @@ class InControlFragmentInfo: BaseFragment() {
 
 
                 incontrolInfoViewModel.requestincontrolInfo(
-                    Other.Companion.getInstanceSingleton().parseArguments(requireArguments(), PARAM))
+                    Other.getInstanceSingleton().parseArguments(requireArguments(), PARAM))
 
             }
             .root
@@ -158,7 +158,7 @@ class InControlFragmentInfo: BaseFragment() {
             ioCoroutineScope.launch {
                 incontrolInfoFormState.postValue(
                     when(val token=loginRepository.user?.token) {
-                        null -> InControlInfoFormState.Error(ErrorsFragment.Companion.nonFatalExceptionShowToasteToken)
+                        null -> InControlInfoFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
                         else -> when(val result=apiPantes.incontrolInfo(token,id)){
                             is ApiPantes.ApiState.Success->
                                 InControlInfoFormState.SuccessInControlInfo(result.data)
@@ -173,8 +173,8 @@ class InControlFragmentInfo: BaseFragment() {
         companion object {
             fun getInstance(context: Context): InControlInfoViewModel {
                 return InControlInfoViewModel(
-                    ApiPantes.Companion.getInstanceSingleton(),
-                    LoginRepository.Companion.getInstanceSingleton(context)
+                    ApiPantes.getInstanceSingleton(),
+                    LoginRepository.getInstanceSingleton(context)
                 )
             }
         }
@@ -184,7 +184,7 @@ class InControlFragmentInfo: BaseFragment() {
 
     }
 
-    class incontrolInfoFragmentTabOther: BaseFragment() {
+    class IncontrolInfoFragmentTabOther: BaseFragment() {
         private val incontrolInfoViewModel:InControlInfoViewModel by viewModels { viewModelFactory }
 
         companion object{
@@ -198,10 +198,10 @@ class InControlFragmentInfo: BaseFragment() {
             savedInstanceState: Bundle?
         ): View {
             val incontrolInfoResponse: InControlInfoResponse =
-                Other.Companion.getInstanceSingleton()
+                Other.getInstanceSingleton()
                     .parseArguments(requireArguments(),PARAM)
             val tabNumber:Int=
-                Other.Companion.getInstanceSingleton()
+                Other.getInstanceSingleton()
                     .parseArguments(requireArguments(),PARAM1)
 
 

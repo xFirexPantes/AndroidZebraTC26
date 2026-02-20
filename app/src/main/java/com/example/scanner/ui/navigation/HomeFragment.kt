@@ -58,7 +58,7 @@ import java.net.URL
 private const val REQUEST_INSTALL_PERMISSION = 1001
 
 class HomeFragment : BaseFragment() {
-    val handler = Handler(Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private val homeViewModel: HomeViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private var networkPath: String = ""
@@ -85,95 +85,111 @@ class HomeFragment : BaseFragment() {
 
         return FragmentHomeBinding.inflate(inflater, container, false)
         .apply {
-            homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner,{
-                when(val state=it){
-                    is HomeFragmentFormState.SetView ->{
-                        userViewText.text=state.username
+            homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) {
+                when (val state = it) {
+                    is HomeFragmentFormState.SetView -> {
+                        userViewText.text = state.username
 
-                        fun forbiddenToast(){
-                            Toast.makeText(requireContext(),"Доступ к данному разделу запрещен",
-                                Toast.LENGTH_SHORT).show()
+                        fun forbiddenToast() {
+                            Toast.makeText(
+                                requireContext(), "Доступ к данному разделу запрещен",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
-                        issuance.button.alpha=
-                            if(state.issuance) {
+                        issuance.button.alpha =
+                            if (state.issuance) {
                                 issuance.button.setOnClickListener {
                                     homeViewModel.mainActivityRouter.navigate(
                                         InvoiceMenuFragment::class.java,
-                                        Bundle().apply { putSerializable(InvoiceMenuFragment.PARAM_STEP_1_VALUE,"") }
+                                        Bundle().apply { putSerializable(PARAM_STEP_1_VALUE, "") }
                                     )
                                 }
                                 floatEnable
                             } else {
-                                issuance.button.setOnClickListener { forbiddenToast()}
+                                issuance.button.setOnClickListener { forbiddenToast() }
                                 floatDisable
                             }
 
-                        search.button.alpha=
-                            if(state.search) {
+                        search.button.alpha =
+                            if (state.search) {
                                 search.button.setOnClickListener {
                                     homeViewModel.mainActivityRouter.navigate(
                                         ComponentFragment::class.java,
-                                        Bundle().apply { putSerializable(ComponentFragment.PARAM,"") }
-                                    )
-                                }
-                                floatEnable
-                            }
-                            else{
-                                search.button.setOnClickListener { forbiddenToast()}
-                                floatDisable
-                            }
-
-                        isolator.button.alpha=
-                            if(state.isolator) {
-                                isolator.button.setOnClickListener {
-                                    //homeViewModel.mainActivityRouter.navigate(ScanIsolatorFragment::class.java)
-                                    homeViewModel.mainActivityRouter.navigate(
-                                        IsolatorFragment::class.java,
-                                        Bundle().apply { putSerializable(IsolatorFragment.PARAM,"") }
-                                    )
-                                }
-                                floatEnable
-                            }
-                            else{
-                                isolator.button.setOnClickListener { forbiddenToast()}
-                                floatDisable
-                            }
-
-
-                        accept.button.alpha=
-                            if(state.accept) {
-                                accept.button.setOnClickListener {
-    //                            homeViewModel.mainActivityRouter.navigate(
-    //                                ScanReceiveFragment::class.java)
-                                    homeViewModel.mainActivityRouter.navigate(
-                                        ReceiveFragment::class.java,
                                         Bundle().apply {
-                                            putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
-                                            putSerializable(EXTRA_RGM, "first")              // или putSerializable
+                                            putSerializable(
+                                                ComponentFragment.PARAM,
+                                                ""
+                                            )
                                         }
                                     )
                                 }
                                 floatEnable
-                            }
-                            else{
-                                accept.button.setOnClickListener { forbiddenToast()}
+                            } else {
+                                search.button.setOnClickListener { forbiddenToast() }
                                 floatDisable
                             }
-                        incontrol.button.alpha=
-                            if(state.incontrol or state.accept) {
+
+                        isolator.button.alpha =
+                            if (state.isolator) {
+                                isolator.button.setOnClickListener {
+                                    //homeViewModel.mainActivityRouter.navigate(ScanIsolatorFragment::class.java)
+                                    homeViewModel.mainActivityRouter.navigate(
+                                        IsolatorFragment::class.java,
+                                        Bundle().apply {
+                                            putSerializable(
+                                                IsolatorFragment.PARAM,
+                                                ""
+                                            )
+                                        }
+                                    )
+                                }
+                                floatEnable
+                            } else {
+                                isolator.button.setOnClickListener { forbiddenToast() }
+                                floatDisable
+                            }
+
+
+                        accept.button.alpha =
+                            if (state.accept) {
+                                accept.button.setOnClickListener {
+                                    //                            homeViewModel.mainActivityRouter.navigate(
+                                    //                                ScanReceiveFragment::class.java)
+                                    homeViewModel.mainActivityRouter.navigate(
+                                        ReceiveFragment::class.java,
+                                        Bundle().apply {
+                                            putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
+                                            putSerializable(
+                                                EXTRA_RGM,
+                                                "first"
+                                            )              // или putSerializable
+                                        }
+                                    )
+                                }
+                                floatEnable
+                            } else {
+                                accept.button.setOnClickListener { forbiddenToast() }
+                                floatDisable
+                            }
+                        incontrol.button.alpha =
+                            if (state.incontrol or state.accept) {
                                 incontrol.button.setOnClickListener {
                                     //                            homeViewModel.mainActivityRouter.navigate(
                                     //                                ScanReceiveFragment::class.java)
                                     homeViewModel.mainActivityRouter.navigate(
                                         InControlMenuFragment::class.java,
-                                        Bundle().apply { putSerializable(InControlMenuFragment.PARAM_STEP_1_VALUE,"") }
+                                        Bundle().apply {
+                                            putSerializable(
+                                                InControlMenuFragment.PARAM_STEP_1_VALUE,
+                                                ""
+                                            )
+                                        }
                                     )
                                 }
                                 floatEnable
-                            }
-                            else{
-                                incontrol.button.setOnClickListener { forbiddenToast()}
+                            } else {
+                                incontrol.button.setOnClickListener { forbiddenToast() }
                                 floatDisable
                             }
                         update.button.alpha = if (state.update) {
@@ -190,7 +206,12 @@ class HomeFragment : BaseFragment() {
                             admin.button.setOnClickListener {
                                 homeViewModel.mainActivityRouter.navigate(
                                     AdminFragment::class.java,
-                                    Bundle().apply { putSerializable("", "") } // Обратите внимание: ключ пустой!
+                                    Bundle().apply {
+                                        putSerializable(
+                                            "",
+                                            ""
+                                        )
+                                    } // Обратите внимание: ключ пустой!
                                 )
                             }
                             View.VISIBLE
@@ -206,14 +227,17 @@ class HomeFragment : BaseFragment() {
                         userViewContainer.setOnClickListener {
                             PopupMenu(requireContext(), it)
                                 .apply {
-                                    setOnMenuItemClickListener { item->
-                                        when(item.itemId){
-                                            R.id.menu_logout-> {
+                                    setOnMenuItemClickListener { item ->
+                                        when (item.itemId) {
+                                            R.id.menu_logout -> {
                                                 homeViewModel.loginRepository.logout()
-                                                homeViewModel.mainActivityRouter.navigate(LoginFragment::class.java)
+                                                homeViewModel.mainActivityRouter.navigate(
+                                                    LoginFragment::class.java
+                                                )
                                             }
                                         }
-                                        true }
+                                        true
+                                    }
                                     inflate(R.menu.actions_user)
                                     show()
                                 }
@@ -222,9 +246,7 @@ class HomeFragment : BaseFragment() {
 
                     }
                 }
-            })
-            val versionTextView: TextView = root.findViewById(R.id.textVersion)
-
+            }
 
 
         }
@@ -533,7 +555,7 @@ class HomeFragment : BaseFragment() {
 
 
 
-        var array=arrayOf(
+        private var array=arrayOf(
 //            Pair(
 //                InvoiceFragmentLines::class.java,
 //                Bundle().apply {

@@ -43,8 +43,8 @@ class CrashHandler : Thread.UncaughtExceptionHandler {
 
         MainActivity.getInstanceSingleton()?.apply { startActivity(Intent(this , CrashActivity::class.java)) }
 
-        android.os.Process.killProcess(android.os.Process.myPid());
-        exitProcess(2);
+        android.os.Process.killProcess(android.os.Process.myPid())
+        exitProcess(2)
 
     }
 }

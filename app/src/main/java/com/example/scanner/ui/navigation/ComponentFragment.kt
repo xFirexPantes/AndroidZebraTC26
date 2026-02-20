@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import androidx.collection.emptyLongSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -98,7 +97,7 @@ class ComponentFragment: BaseFragment() {
                                         ViewGroup.LayoutParams.WRAP_CONTENT
                                     )
                                 }
-                                urgentSearchBut.setText("срочно")
+                                urgentSearchBut.text = "срочно"
                                 containerVertical.addView(urgentSearchBut , 0)  // добавляем в начало
 
                                 // Сохраняем ссылку (если нужно управлять позже)
@@ -106,7 +105,7 @@ class ComponentFragment: BaseFragment() {
                                 containerVertical.tag = urgentSearchBut  // или сохраните в поле фрагмента
 
                                 // ... остальная логика (наблюдатели и т.д.)
-                                urgentSearchBut.setOnClickListener(){
+                                urgentSearchBut.setOnClickListener{
                                     adapterComponents.resetContent()
                                     isUrgent = !isUrgent
                                     if (isUrgent) {
@@ -272,8 +271,6 @@ class ComponentFragment: BaseFragment() {
                                     infoTextView.visibility = View.VISIBLE
                                     infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
                                 }
-                            } else {
-
                             }
                         }
                         else {
@@ -372,7 +369,7 @@ class ComponentFragment: BaseFragment() {
 
     }
 
-    inner class AdapterComponents(): BaseRecyclerAdapter<ComponentsSearchResponse>(ComponentsSearchResponse()) {
+    inner class AdapterComponents: BaseRecyclerAdapter<ComponentsSearchResponse>(ComponentsSearchResponse()) {
         override fun getCallback(dataOld: ComponentsSearchResponse?): DiffUtil.Callback {
             return object :DiffUtil.Callback(){
                 override fun getOldListSize(): Int {

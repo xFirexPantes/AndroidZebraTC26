@@ -183,8 +183,8 @@ class InvoiceFragment : BaseFragment() {
             when(val f=it.data){
                 is InvoiceFragmentLines->{
                     adapterInvoices.updateItem(
-                        f.getArgument<String>(InvoiceFragmentLines.PARAMS_INVOICE_ID),
-                        f.getArgument<Boolean>(InvoiceFragmentLines.PARAMS2_COLLECTED),
+                        f.getArgument(InvoiceFragmentLines.PARAMS_INVOICE_ID),
+                        f.getArgument(InvoiceFragmentLines.PARAMS2_COLLECTED),
                     )
                 }
                 else -> {}
@@ -463,28 +463,6 @@ class InvoiceFragment : BaseFragment() {
                     }
                 )
             }
-        }
-
-        init {
-//            ioCoroutineScope.launch {
-//                when (val token = loginRepository.user?.token) {
-//                    null -> InvoicesFragmentState.Error(ErrorsFragment.nonFatalExceptionToken)
-//                    else ->when (val result = apiPantes.log(
-//                        token,
-//                        "test_log"
-//                    )) {
-//                        is ApiState.Success ->{
-//                            result
-//                        }
-//
-//
-//                        is ApiState.Error ->{
-//                            result
-//                        }
-//
-//                    }
-//                }
-//            }
         }
 
     }

@@ -75,16 +75,13 @@ class ReceiveFragment : BaseFragment() {
     private lateinit var layoutManager:LinearLayoutManager
     private var layoutManagerOnSaveInstanceStateParcelable:Parcelable?=null
     private lateinit var step1: EditText
-    private var stelFromQR: String = ""
-    private var yachFromQR: String = ""
     private var Nkat: String = ""
     private var lastStel = ""
     private var lastCell = ""
     private var isBottle: Boolean = false
     private var lastQR: String = ""
     private lateinit var infoTextView :TextView
-    var currentStel: String = ""
-    var currentYach : String = ""
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

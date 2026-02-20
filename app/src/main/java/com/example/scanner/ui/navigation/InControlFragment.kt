@@ -54,6 +54,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.math.abs
 
 class InControlFragment: BaseFragment() {
     companion object{
@@ -121,7 +122,7 @@ class InControlFragment: BaseFragment() {
             ) {
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
                 // Затемняем элемент при свайпе
-                val alpha = 1 - Math.abs(dX) / viewHolder.itemView.width.toFloat()
+                val alpha = 1 - abs(dX) / viewHolder.itemView.width.toFloat()
                 viewHolder.itemView.alpha = alpha
             }
         }
@@ -359,12 +360,10 @@ class InControlFragment: BaseFragment() {
             if (isCompleted && curNum!!.isNotEmpty()) {
                 lifecycleScope.launch {
                     try {
-                        val result :  Result< Back2SkladState. CheckST>
-                        if (isbottle) {
-                            result = incontrolViewModel.checkst("bottle"+curNum!!)
-                           }
-                        else{
-                            result  = incontrolViewModel.checkst(curNum!!)
+                        val result :  Result< Back2SkladState. CheckST> = if (isbottle) {
+                            incontrolViewModel.checkst("bottle"+curNum!!)
+                        } else{
+                            incontrolViewModel.checkst(curNum!!)
                         }
                         when (result) {
                             is Result.Success -> {
@@ -610,7 +609,7 @@ class InControlFragment: BaseFragment() {
         }
         incontrolViewModel.incontrolSearch(paramValue!!,"",box)
     }
-    fun showPrimInputDialog( onConfirm: (String) -> Unit) {
+    private fun showPrimInputDialog(onConfirm: (String) -> Unit) {
         val builder = AlertDialog.Builder(requireContext())
         val input = EditText(requireContext())
         input.inputType = InputType.TYPE_CLASS_TEXT  // или нужный тип ввода
@@ -649,7 +648,7 @@ class InControlFragment: BaseFragment() {
             imm.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
         }
     }
-    fun handleIDAllList(idAllList: ArrayList<Int>) {
+    private fun handleIDAllList(idAllList: ArrayList<Int>) {
         val lastStel = incontrolViewModel.lastStoredStel
         val lastCell = incontrolViewModel.lastStoredCell
         val firstIdAll = idAllList.firstOrNull()
@@ -677,12 +676,10 @@ class InControlFragment: BaseFragment() {
                 infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0))
 
                 lifecycleScope.launch {
-                    val putResult:   Result<Unit>
-                    if (isbottle){
-                        putResult  = incontrolViewModel.put2WH("bottle"+curNum!!)
-                    }
-                    else {
-                        putResult =  incontrolViewModel.put2WH(curNum!!)
+                    val putResult:   Result<Unit> = if (isbottle){
+                        incontrolViewModel.put2WH("bottle"+curNum!!)
+                    } else {
+                        incontrolViewModel.put2WH(curNum!!)
                     }
 
 
@@ -727,9 +724,7 @@ class InControlFragment: BaseFragment() {
                 // 2. Вызываем WHtoBox()
 
                 lifecycleScope.launch {
-                    val putResult = incontrolViewModel.WHtoBox(num, box)
-
-                    when (putResult) {
+                    when (val putResult = incontrolViewModel.whToBox(num, box)) {
                         is Result.Success<Unit> -> {
                             // Успех: запрашиваем обновление списка
                             incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -770,9 +765,7 @@ class InControlFragment: BaseFragment() {
         // 2. Вызываем put2Box()
 
         lifecycleScope.launch {
-            val putResult = incontrolViewModel.WHtoBox("bottle" + curNum, box)
-
-            when (putResult) {
+            when (val putResult = incontrolViewModel.whToBox("bottle$curNum", box)) {
                 is Result.Success<Unit> -> {
                     // Успех: запрашиваем обновление списка
                     incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -794,9 +787,7 @@ class InControlFragment: BaseFragment() {
             lifecycleScope.launch {
                 try {
                     // 1. Вызываем checkst() и ждём результата
-                    val result = incontrolViewModel.checkst(num)
-
-                    when (result) {
+                    when (val result = incontrolViewModel.checkst(num)) {
                         is Result.Success -> {
                             msg = result.data.isOk
                             IDAll = result.data.IDAll
@@ -905,9 +896,7 @@ class InControlFragment: BaseFragment() {
             lifecycleScope.launch {
                 try {
                     // 1. Вызываем checkst() и ждём результата
-                    val result = incontrolViewModel.checkst("bottle"+num)
-
-                    when (result) {
+                    when (val result = incontrolViewModel.checkst("bottle$num")) {
                         is Result.Success -> {
                             msg = result.data.isOk
                             IDAll = result.data.IDAll
@@ -918,7 +907,7 @@ class InControlFragment: BaseFragment() {
 
                             if (msg.isEmpty()) {
                                 if (curIDAll == IDAll){
-                                    val putResult = incontrolViewModel.back2Sklad("bottle"+num, curPrim)
+                                    val putResult = incontrolViewModel.back2Sklad("bottle$num", curPrim)
                                     when (putResult) {
                                         is Result.Success -> {
                                             // putResult.data — это уже готовая строка (isOk) от API
@@ -937,7 +926,7 @@ class InControlFragment: BaseFragment() {
                                 else{
                                     showPrimInputDialog { prim ->
                                         lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.back2Sklad("bottle"+num, prim)
+                                            val putResult = incontrolViewModel.back2Sklad("bottle$num", prim)
                                             curIDAll = IDAll
                                             curPrim = prim
                                             when (putResult) {
@@ -987,9 +976,7 @@ class InControlFragment: BaseFragment() {
                 // 2. Вызываем put2Box()
 
                 lifecycleScope.launch {
-                    val putResult = incontrolViewModel.put2Box(num, box)
-
-                    when (putResult) {
+                    when (val putResult = incontrolViewModel.put2Box(num, box)) {
                         is Result.Success<Unit> -> {
                             // Успех: запрашиваем обновление списка
                             incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -1031,9 +1018,7 @@ class InControlFragment: BaseFragment() {
             // 2. Вызываем put2Box()
 
             lifecycleScope.launch {
-                val putResult = incontrolViewModel.put2Box("bottle" + curNum, box)
-
-                when (putResult) {
+                when (val putResult = incontrolViewModel.put2Box("bottle$curNum", box)) {
                     is Result.Success<Unit> -> {
                         // Успех: запрашиваем обновление списка
                         incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -1057,8 +1042,7 @@ class InControlFragment: BaseFragment() {
                 val num = parts[1]
                 curNum = num
                 lifecycleScope.launch {
-                    val result = incontrolViewModel.getAllID(num)
-                    when (result) {
+                    when (val result = incontrolViewModel.getAllID(num)) {
                         is Result.Success -> {
                             val IDAllList = result.data
                             // Теперь можно работать с полученным списком
@@ -1119,8 +1103,7 @@ class InControlFragment: BaseFragment() {
             if (parts.size == 5) {
                 curNum = parts[2]
                 lifecycleScope.launch {
-                    val result = incontrolViewModel.getAllID(curNum!!)
-                    when (result) {
+                    when (val result = incontrolViewModel.getAllID(curNum!!)) {
                         is Result.Success -> {
                             val IDAllList = result.data
                             // Теперь можно работать с полученным списком
@@ -1182,14 +1165,10 @@ class InControlFragment: BaseFragment() {
 //                                                incontrolViewModel.put2WH(curNum!!,paramValue,box)
 //                                                incontrolViewModel.refreshListEvent.postValue(Unit)
                         lifecycleScope.launch {
-                            val putResult : Result<Unit>
-                            if (isbottle)
-                            {
-                                putResult = incontrolViewModel.put2WH("bottle"+curNum!!)
-                            }
-                            else
-                            {
-                                putResult = incontrolViewModel.put2WH(curNum!!)
+                            val putResult : Result<Unit> = if (isbottle) {
+                                incontrolViewModel.put2WH("bottle"+curNum!!)
+                            } else {
+                                incontrolViewModel.put2WH(curNum!!)
                             }
 
 
@@ -1641,7 +1620,7 @@ class InControlFragment: BaseFragment() {
                 }
             }
 
-        suspend fun WHtoBox(num: String, box: Int): Result<Unit> =
+        suspend fun whToBox(num: String, box: Int): Result<Unit> =
             withContext(Dispatchers.IO) {
                 val token = loginRepository.user?.token
                     ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)

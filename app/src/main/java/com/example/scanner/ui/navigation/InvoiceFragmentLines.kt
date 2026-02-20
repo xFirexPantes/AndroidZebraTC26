@@ -64,7 +64,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
     private val issuanceIssueDialogViewModel: IssuanceIssueDialogViewModel by viewModels{ viewModelFactory  }
     private val adapterLines=AdapterLines()
     private var lastStringScanResult=Other.SAD<String>(null)
-    lateinit var recyclerView: RecyclerView
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -206,7 +206,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                 root.addView(
                     TemplateCardBinding.inflate(inflater,root,false)
                         .apply {
-                            root.setPadding(0,0,0,0,)
+                            root.setPadding(0,0,0,0)
 
                             containerHorizon.gravity=Gravity.CENTER_VERTICAL
 
@@ -608,7 +608,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
 
     inner class AdapterLines : BaseRecyclerAdapter<LinesSearchResponse>(LinesSearchResponse()) {
 
-        val contentItems=arrayOf<Pair<Array<Any>, String>>(
+        private val contentItems=arrayOf<Pair<Array<Any>, String>>(
             Pair(arrayOf("name", "", "", "", "", true), ""),
             Pair(arrayOf("number"), "#компонента "),
             Pair(arrayOf("nominal"), "Номинал "),
@@ -645,7 +645,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             dataOld?.found?.get(oldItemPosition)?.id)
                             &&
                             (data.found[newItemPosition].collected==
-                                    dataOld.found.get(oldItemPosition).collected)
+                                    dataOld.found[oldItemPosition].collected)
                             &&
                             (data.found[newItemPosition].isDirty==
                                     dataOld.found[oldItemPosition].isDirty)

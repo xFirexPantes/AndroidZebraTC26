@@ -84,7 +84,7 @@ class MainActivity : BaseActivity() {
     private var navControllerDrawer:NavController?=null
     private var navControllerMain:NavController?=null
     private var navControllerMainOver:NavController?=null
-    lateinit var drawerLayout: DrawerLayout
+    private lateinit var drawerLayout: DrawerLayout
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

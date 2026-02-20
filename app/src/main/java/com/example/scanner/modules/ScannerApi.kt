@@ -360,6 +360,6 @@ class ScannerApi:
     }
 
 init {
-    "".toString()
+    ""
 }
 }
