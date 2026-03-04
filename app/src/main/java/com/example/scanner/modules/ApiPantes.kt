@@ -5,7 +5,6 @@ import android.net.Uri
 import com.example.scanner.models.AcceptInfoResponse
 import com.example.scanner.models.AcceptScanResponse
 import com.example.scanner.models.AcceptSearchResponse
-import com.example.scanner.models.AcceptPutkatResponse
 import com.example.scanner.models.ComponentInfoResponse
 import com.example.scanner.models.ComponentsSearchResponse
 import com.example.scanner.models.ComponentsUrgentSearchResponse
@@ -1050,7 +1049,7 @@ class ApiPantes(
                     else -> emit(ApiState.Error(buildException(response)))
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
                 Timber.tag("API_ERROR").e("Message: ${e.message}")
                 Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
@@ -1083,7 +1082,7 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolTakebox("Bearer $token",box, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
@@ -1112,7 +1111,7 @@ class ApiPantes(
             } catch (e: Exception) {
                 Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
                 Timber.tag("API_ERROR").e("Message: ${e.message}")
-                Log.e("API_ERROR", "Stack trace: ${e.stackTraceToString()}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
                 emit(ApiState.Error(e))
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
@@ -1144,7 +1143,7 @@ class ApiPantes(
                 api.drySearch( "Bearer $token",Cab,skladID,Sost,ActionNme,rgm,token).execute()
             emit(
                 when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!! as DrySearchResponse)
+                    true->ApiState.Success(response.body()!!)
                     else->ApiState.Error(buildException(response))
                 }
             )
@@ -1156,7 +1155,7 @@ class ApiPantes(
                 val response: Response<String> =
                     api.incontrolPut2WH("Bearer $token", num, token).execute()
 
-                Log.d("API", "Response code: ${response.code()}")
+                Timber.tag("API").d("Response code: ${response.code()}")
 
                 when (response.isSuccessful) {
                     true -> emit(ApiState.Success(response.body()!!))
@@ -1191,7 +1190,7 @@ class ApiPantes(
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
     }
     //endregion
-     suspend fun log(token:String, data: String): Response<ResponseBody?> {
+     fun log(token:String, data: String): Response<ResponseBody?> {
         return api.log( "Bearer $token",data,token).execute()
     }
 }

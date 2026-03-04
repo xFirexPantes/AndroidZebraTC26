@@ -608,6 +608,7 @@ class DryFragment: BaseFragment() {
     }
 
 
+
     private fun handleDScanTo(stringScanResult: String) {
         val parts = stringScanResult.split('$')
             if (parts.size > 1) {

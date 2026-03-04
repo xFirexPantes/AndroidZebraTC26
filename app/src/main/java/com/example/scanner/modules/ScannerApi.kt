@@ -38,7 +38,6 @@ class ScannerApi:
     private var bExtScannerDisconnected = false
     private var bSoftTriggerSelected = false
     private var contextRef: WeakReference<Context>? = null
-    private var isRequestingEmdk = false
     var exceptionScanner=
         NonFatalExceptionShowToaste("Ошибка сканера!")
 
@@ -380,6 +379,6 @@ class ScannerApi:
     }
 
 init {
-    ""
+
 }
 }
