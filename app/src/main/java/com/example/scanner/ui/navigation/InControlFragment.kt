@@ -77,12 +77,13 @@ class InControlFragment: BaseFragment() {
     private var curPrim: String = ""
     private var action15: Boolean = false
     private var action23: Boolean = false
+    private var action2: String = ""
     private var isbottle: Boolean = false
 
 
     sealed class Back2SkladState<out T : Any> {
         data class Success(val message: String) : Back2SkladState<String>()
-        data class CheckST(val IDAll: String,val isOk: String,val action15: Boolean,val action23: Boolean) : Back2SkladState<String>()
+        data class CheckST(val IDAll: String,val isOk: String,val action15: Boolean,val action23: Boolean,val action2: String) : Back2SkladState<String>()
         data class Put2Box(val isOk: String) : Back2SkladState<String>()
         data class Put2WH(val isOk: String) : Back2SkladState<String>()
         data class TakeBox(val isOk: String) : Back2SkladState<String>()
@@ -292,11 +293,17 @@ class InControlFragment: BaseFragment() {
     }
 
 
-    private fun showResponse(response: String) {
+    private fun showResponse(response: String, onDismiss: (() -> Unit)? = null) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Комментарий")
             .setMessage(response)
-            .setNegativeButton("Закрыть", null)
+            .setNegativeButton("Закрыть") { _, _ ->
+                onDismiss?.invoke()
+            }
+            .setOnDismissListener {
+                // Если диалог закрыт без нажатия кнопки (например, касанием вне), тоже вызываем
+                onDismiss?.invoke()
+            }
             .show()
     }
 
@@ -793,47 +800,72 @@ class InControlFragment: BaseFragment() {
                             IDAll = result.data.IDAll
                             action15 = result.data.action15
                             action23 = result.data.action23
-
+                            action2 = result.data.action2
                             // 2. Получаем DT по IDAll
 
 
                             if (msg.isEmpty()) {
-                                if (curIDAll == IDAll){
-                                    val putResult = incontrolViewModel.back2Sklad(num, curPrim)
-                                    when (putResult) {
-                                        is Result.Success -> {
-                                            // putResult.data — это уже готовая строка (isOk) от API
-                                            if (putResult.data != "") {
-                                                showResponse(
-                                                    putResult.data
-                                                )  // Показываем её
+                                if (curIDAll == IDAll) {
+                                    if (action2.isNotEmpty()) {
+                                        showResponse(action2) {
+                                            lifecycleScope.launch {
+                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                when (putResult) {
+                                                    is Result.Success -> {
+                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                    }
+                                                    is Result.Failure -> {
+                                                        showError(putResult.exception)
+                                                    }
+                                                }
                                             }
-                                            incontrolViewModel.refreshListEvent.postValue(Unit)
                                         }
-                                        is Result.Failure -> {
-                                            showError(putResult.exception)
-                                        }
-                                    }
-                                }
-                                else{
-                                    showPrimInputDialog { prim ->
+                                    } else {
                                         lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.back2Sklad(num, prim)
-                                            curIDAll = IDAll
-                                            curPrim = prim
+                                            val putResult = incontrolViewModel.back2Sklad(num, curPrim)
                                             when (putResult) {
                                                 is Result.Success -> {
-                                                    // putResult.data — это уже готовая строка (isOk) от API
-                                                    if (putResult.data != "") {
-                                                        showResponse(
-                                                            putResult.data
-                                                        )  // Показываем её
-                                                    }
                                                     incontrolViewModel.refreshListEvent.postValue(Unit)
                                                 }
                                                 is Result.Failure -> {
                                                     showError(putResult.exception)
                                                 }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    if (action2.isNotEmpty()) {
+                                        showResponse(action2) {
+                                            showPrimInputDialog {
+                                                lifecycleScope.launch {
+                                                    val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                    when (putResult) {
+                                                        is Result.Success -> {
+                                                            incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                        }
+                                                        is Result.Failure -> {
+                                                            showError(putResult.exception)
+                                                        }
+                                                    }
+                                                    curIDAll = IDAll
+
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        showPrimInputDialog {
+                                            lifecycleScope.launch {
+                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                when (putResult) {
+                                                    is Result.Success -> {
+                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
+                                                    }
+                                                    is Result.Failure -> {
+                                                        showError(putResult.exception)
+                                                    }
+                                                }
+                                                curIDAll = IDAll
+
                                             }
                                         }
                                     }
@@ -1554,11 +1586,12 @@ class InControlFragment: BaseFragment() {
                             val IDAll = result.data.IDAll!!
                             val action15 = result.data.action15!!
                             val action23 = result.data.action23!!
+                            val action2 = result.data.action2!!
 
                             DT.let {
                                 Back2SkladState.CheckST(
                                     IDAll,
-                                    it, action15, action23
+                                    it, action15, action23, action2
                                 )
                             }.let {
                                 Result.Success(

@@ -578,28 +578,31 @@ class DryFragment: BaseFragment() {
         dryViewModel.drySearch(0,"",box,"",paramValue)
     }
     private fun handle3N0ScanTo(stringScanResult: String) {
+        if (box == 0) {
+            showResponse("Сначала отсканируйте упаковку")
+        } else {
 
+            val parts = stringScanResult.split('$')
+            if (parts.size > 1) {
+                val num = parts[1]
+                curNum = num
+                // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
+                lifecycleScope.launch {
+                    when (val result = dryViewModel.getAllID(num)) {
+                        is Result.Success -> {
+                            val IDAll = result.data
+                            // Теперь можно работать с полученным списком
 
-        val parts = stringScanResult.split('$')
-        if (parts.size > 1) {
-            val num = parts[1]
-            curNum = num
-            // ЗАПУСКАЕМ КОРУТИНУ ДЛЯ АСИНХРОННОГО ВЫЗОВА
-            lifecycleScope.launch {
-                when (val result = dryViewModel.getAllID(num)) {
-                    is Result.Success -> {
-                        val IDAll = result.data
-                        // Теперь можно работать с полученным списком
+                            handleIDAllList(IDAll, 0)
+                            dryViewModel.refreshListEvent.postValue(Unit)
+                        }
 
-                        handleIDAllList(IDAll,0)
-                        dryViewModel.refreshListEvent.postValue(Unit)
+                        is Result.Failure -> {
+                            showError(result.exception)
+                        }
                     }
 
-                    is Result.Failure -> {
-                        showError(result.exception)
-                    }
                 }
-
             }
         }
     }
@@ -607,9 +610,6 @@ class DryFragment: BaseFragment() {
 
     private fun handleDScanTo(stringScanResult: String) {
         val parts = stringScanResult.split('$')
-        if (IDAll == "") {
-            showResponse("Сначала отсканируйте упаковку")
-        } else{
             if (parts.size > 1) {
                 box = parts[1].toInt()
                 val currentItem = adapterdry.getItemByID(IDAll.toInt())
@@ -620,7 +620,7 @@ class DryFragment: BaseFragment() {
                     dryViewModel.drySearch(currentItem.IDAll, "", 0, "", paramValue)
                 }
             }
-        }
+
     }
 
     private fun handle3N0ScanFrom(stringScanResult: String) {

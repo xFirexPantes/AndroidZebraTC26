@@ -314,7 +314,7 @@ class ApiPantes(
             @Query("isOk") isOk:Boolean,
             @Query("rgm") rgm:String,
             @Query("token") token: String,
-        ):Call<AcceptPutkatResponse>
+        ):Call<Int>
         //endregion
         //region log
         @POST("log/add")
@@ -908,9 +908,9 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun acceptPutbottle(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,rgm:String): ApiState<AcceptPutkatResponse> {
+    suspend fun acceptPutbottle(token:String, Stel: String, Shelf: String,  curKat: String, isOk: Boolean,rgm:String): ApiState<Int> {
         return flow {
-            val response:Response<AcceptPutkatResponse> =
+            val response:Response<Int> =
                 api.acceptPutbottle( "Bearer $token",Stel,Shelf,curKat,isOk,rgm,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))

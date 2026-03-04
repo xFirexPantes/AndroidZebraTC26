@@ -16,6 +16,7 @@ import com.symbol.emdk.barcode.ScannerInfo
 import com.symbol.emdk.barcode.ScannerResults
 import com.symbol.emdk.barcode.StatusData
 import com.symbol.emdk.barcode.StatusData.ScannerStates
+import java.lang.ref.WeakReference
 
 class ScannerApi:
     EMDKListener,
@@ -24,6 +25,8 @@ class ScannerApi:
     ScannerConnectionListener,
     IScannerApi
 {
+
+    private var emdkRequested = false
     private var emdkManager:EMDKManager? = null
     private var barcodeManager: BarcodeManager? = null
     private var deviceList: List<ScannerInfo>? = null
@@ -34,6 +37,8 @@ class ScannerApi:
     private var scanner: Scanner? = null
     private var bExtScannerDisconnected = false
     private var bSoftTriggerSelected = false
+    private var contextRef: WeakReference<Context>? = null
+    private var isRequestingEmdk = false
     var exceptionScanner=
         NonFatalExceptionShowToaste("Ошибка сканера!")
 
@@ -67,27 +72,23 @@ class ScannerApi:
 
     override fun onOpened(emdkManager: EMDKManager?) {
         this.emdkManager = emdkManager
-        this.emdkManager
-            ?.let {
-                initBarcodeManager()
-                // Enumerate scanner devices
-                enumerateScannerDevices()
-                if (scanner==null && isResumed){
-                    resume()
-                }
-
+        emdkManager?.let {
+            initBarcodeManager()
+            enumerateScannerDevices()
+            if (scanner == null && isResumed) {
+                initScanner()
             }
-            ?:run {
-                onScannerException?.invoke(Exception("emdkManager is null"))
-            }
+        } ?: run {
+            onScannerException?.invoke(Exception("emdkManager is null"))
+        }
     }
     override fun onClosed() {
-        // Release all the resources
+        emdkRequested = false
         if (emdkManager != null) {
             emdkManager!!.release()
             emdkManager = null
         }
-        updateStatus?.invoke("EMDK closed unexpectedly! Please close and restart the application.")
+        updateStatus?.invoke("EMDK closed unexpectedly! Will try to reconnect on next resume.")
     }
     override fun onData(scanDataCollection: ScanDataCollection?) {
         if ((scanDataCollection != null) && (scanDataCollection.result == ScannerResults.SUCCESS)) {
@@ -311,13 +312,18 @@ class ScannerApi:
     }
 
     override suspend fun start(requireContext: Context) {
+        contextRef = WeakReference(requireContext)
+        emdkRequested = true
         try {
+
             val results = EMDKManager.getEMDKManager(requireContext, this)
             if (results.statusCode != EMDKResults.STATUS_CODE.SUCCESS) {
+                emdkRequested = false
                 onScannerException?.invoke(Exception("EMDKManager object request failed!"))
                 updateStatus?.invoke("EMDKManager object request failed!")
             }
         }catch (e:Exception){
+            emdkRequested = false
             onScannerException?.invoke(e)
         }
 
@@ -332,6 +338,20 @@ class ScannerApi:
             // Initialize scanner
             deInitScanner()
             initScanner()
+        } else if (!emdkRequested) {
+            // Менеджер потерян (был onClosed) — запрашиваем заново
+            emdkRequested = true
+            contextRef?.get()?.let { ctx ->
+                try {
+                    EMDKManager.getEMDKManager(ctx, this)
+                } catch (e: Exception) {
+                    emdkRequested = false
+                    onScannerException?.invoke(e)
+                }
+            } ?: run {
+                emdkRequested = false
+                onScannerException?.invoke(Exception("Context lost, cannot reconnect"))
+            }
         }
     }
     override fun pause() {
