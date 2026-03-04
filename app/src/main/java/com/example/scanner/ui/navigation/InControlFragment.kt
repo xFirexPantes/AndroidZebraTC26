@@ -660,14 +660,15 @@ class InControlFragment: BaseFragment() {
         val lastCell = incontrolViewModel.lastStoredCell
         val firstIdAll = idAllList.firstOrNull()
         IDAll = firstIdAll.toString()
-        val currentItem = adapterincontrol.findByIdAll(IDAll)
-        if (currentItem == null) {
-            showResponse("Элемент не найден")
-            return
-        }
-        val stel = currentItem.rack
-        val cell = currentItem.cell
-        if (firstIdAll != null) {
+            val currentItem = adapterincontrol.findByIdAll(IDAll)
+            if (currentItem == null) {
+                showResponse("Элемент не найден")
+                return
+            }
+
+            val stel = currentItem.rack
+            val cell = currentItem.cell
+         if (firstIdAll != null) {
             val position = adapterincontrol.findPosition(firstIdAll.toString())
             if (position != null && position != -1) {
                 adapterincontrol.scrollToPosition(position,recyclerView)

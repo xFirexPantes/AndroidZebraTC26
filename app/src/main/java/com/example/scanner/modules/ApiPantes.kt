@@ -1,6 +1,5 @@
 package com.example.scanner.modules
 
-import android.util.Log
 import android.net.Uri
 import com.example.scanner.models.AcceptInfoResponse
 import com.example.scanner.models.AcceptScanResponse
