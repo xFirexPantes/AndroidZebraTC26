@@ -579,7 +579,7 @@ class DryFragment: BaseFragment() {
     }
     private fun handle3N0ScanTo(stringScanResult: String) {
         if (box == 0) {
-            showResponse("Сначала отсканируйте упаковку")
+            showResponse("Сначала отсканируйте печь")
         } else {
 
             val parts = stringScanResult.split('$')
@@ -593,7 +593,14 @@ class DryFragment: BaseFragment() {
                             val IDAll = result.data
                             // Теперь можно работать с полученным списком
 
-                            handleIDAllList(IDAll, 0)
+                            //handleIDAllList(IDAll, 0)
+                            val currentItem = adapterdry.getItemByID(IDAll)
+                            if (currentItem!!.Cab != box) {
+                                showResponse("Выбрана не верная печь")
+                            } else {
+                                adapterdry.resetContent()
+                                dryViewModel.drySearch(currentItem.IDAll, "", 0, "", paramValue)
+                            }
                             dryViewModel.refreshListEvent.postValue(Unit)
                         }
 
@@ -613,13 +620,13 @@ class DryFragment: BaseFragment() {
         val parts = stringScanResult.split('$')
             if (parts.size > 1) {
                 box = parts[1].toInt()
-                val currentItem = adapterdry.getItemByID(IDAll.toInt())
-                if (currentItem!!.Cab != box) {
-                    showResponse("Выбрана не верная печь")
-                } else {
-                    adapterdry.resetContent()
-                    dryViewModel.drySearch(currentItem.IDAll, "", 0, "", paramValue)
-                }
+//                val currentItem = adapterdry.getItemByID(IDAll.toInt())
+//                if (currentItem!!.Cab != box) {
+//                    showResponse("Выбрана не верная печь")
+//                } else {
+//                    adapterdry.resetContent()
+//                    dryViewModel.drySearch(currentItem.IDAll, "", 0, "", paramValue)
+//                }
             }
 
     }
