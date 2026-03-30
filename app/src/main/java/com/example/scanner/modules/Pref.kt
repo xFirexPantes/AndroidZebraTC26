@@ -49,7 +49,7 @@ class Pref(context: Context,private val gson: Gson) {
         MutableLiveData(R.drawable.ic_qr)
 
     var pantesServerName: String
-        get() = preferences.getString(PREF_PANTES_SERVER_NAME,"109.73.192.152")?:"109.73.192.152"
+        get() = preferences.getString(PREF_PANTES_SERVER_NAME,"192.168.0.124")?:"109.73.192.152"
         set(value) = preferences.edit { putString(PREF_PANTES_SERVER_NAME,value) }
 
 

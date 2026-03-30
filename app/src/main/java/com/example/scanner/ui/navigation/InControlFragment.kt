@@ -77,13 +77,14 @@ class InControlFragment: BaseFragment() {
     private var curPrim: String = ""
     private var action15: Boolean = false
     private var action23: Boolean = false
-    private var action2: String = ""
+    private var comm: String = ""
     private var isbottle: Boolean = false
+    private var needscroll: Boolean = true
 
 
     sealed class Back2SkladState<out T : Any> {
         data class Success(val message: String) : Back2SkladState<String>()
-        data class CheckST(val IDAll: String,val isOk: String,val action15: Boolean,val action23: Boolean,val action2: String) : Back2SkladState<String>()
+        data class CheckST(val IDAll: String,val isOk: String,val action15: Boolean,val action23: Boolean,val comm: String) : Back2SkladState<String>()
         data class Put2Box(val isOk: String) : Back2SkladState<String>()
         data class Put2WH(val isOk: String) : Back2SkladState<String>()
         data class TakeBox(val isOk: String) : Back2SkladState<String>()
@@ -330,6 +331,7 @@ class InControlFragment: BaseFragment() {
                 msg = state.isOk
                 action15 = state.action15
                 action23 = state.action23
+                comm = state.comm
             }
 
             is Back2SkladState.Put2Box -> {
@@ -375,11 +377,13 @@ class InControlFragment: BaseFragment() {
                         when (result) {
                             is Result.Success -> {
                                 IDAll = result.data.IDAll
-                                val position = adapterincontrol.findPosition(IDAll)
-                                if (position != null && position != -1) {
-                                    adapterincontrol.scrollToPosition(position, recyclerView)
-                                } else {
-                                    showResponse("Элемент с IDAll=$IDAll не найден в списке")
+                                if (needscroll){
+                                    val position = adapterincontrol.findPosition(IDAll)
+                                    if (position != null && position != -1) {
+                                        adapterincontrol.scrollToPosition(position, recyclerView)
+                                    } else {
+                                        showResponse("Элемент с IDAll=$IDAll не найден в списке")
+                                    }
                                 }
                             }
                             is Result.Failure -> showError(result.exception)
@@ -682,12 +686,13 @@ class InControlFragment: BaseFragment() {
             if(lastStel == stel.toString() && (lastCell == cell)) {
                 infoTextView.visibility = View.VISIBLE
                 infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0))
-
+                needscroll = false
                 lifecycleScope.launch {
                     val putResult:   Result<Unit> = if (isbottle){
                         incontrolViewModel.put2WH("bottle"+curNum!!)
                     } else {
                         incontrolViewModel.put2WH(curNum!!)
+
                     }
 
 
@@ -795,51 +800,44 @@ class InControlFragment: BaseFragment() {
             lifecycleScope.launch {
                 try {
                     // 1. Вызываем checkst() и ждём результата
-                    when (val result = incontrolViewModel.checkst(num)) {
+                    val result = incontrolViewModel.checkst(num)
+
+                    when (result) {
                         is Result.Success -> {
                             msg = result.data.isOk
                             IDAll = result.data.IDAll
                             action15 = result.data.action15
                             action23 = result.data.action23
-                            action2 = result.data.action2
+                            comm = result.data.comm
                             // 2. Получаем DT по IDAll
 
 
                             if (msg.isEmpty()) {
-                                if (curIDAll == IDAll) {
-                                    if (action2.isNotEmpty()) {
-                                        showResponse(action2) {
-                                            lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
-                                                when (putResult) {
-                                                    is Result.Success -> {
-                                                        incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                    }
-                                                    is Result.Failure -> {
-                                                        showError(putResult.exception)
-                                                    }
-                                                }
-                                            }
+                                if (curIDAll == IDAll){
+                                    val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                    when (putResult) {
+                                        is Result.Success -> {
+                                            // putResult.data — это уже готовая строка (isOk) от AP
+                                            incontrolViewModel.refreshListEvent.postValue(Unit)
                                         }
-                                    } else {
-                                        lifecycleScope.launch {
-                                            val putResult = incontrolViewModel.back2Sklad(num, curPrim)
-                                            when (putResult) {
-                                                is Result.Success -> {
-                                                    incontrolViewModel.refreshListEvent.postValue(Unit)
-                                                }
-                                                is Result.Failure -> {
-                                                    showError(putResult.exception)
-                                                }
-                                            }
+                                        is Result.Failure -> {
+                                            showError(putResult.exception)
                                         }
                                     }
-                                } else {
-                                    if (action2.isNotEmpty()) {
-                                        showResponse(action2) {
-                                            showPrimInputDialog {
+                                }
+                                else {
+                                    if (comm != "") {
+                                        // Показываем диалог с сообщением, а после нажатия кнопки — диалог ввода
+                                        showMessageDialog(
+                                            message = comm,
+                                            title = "Комментарий",
+                                            positiveButtonText = "Далее"
+                                        ) {
+                                            showPrimInputDialog { prim ->
                                                 lifecycleScope.launch {
-                                                    val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                    val putResult = incontrolViewModel.back2Sklad(num, prim)
+                                                    curIDAll = IDAll
+                                                    curPrim = prim
                                                     when (putResult) {
                                                         is Result.Success -> {
                                                             incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -848,15 +846,16 @@ class InControlFragment: BaseFragment() {
                                                             showError(putResult.exception)
                                                         }
                                                     }
-                                                    curIDAll = IDAll
-
                                                 }
                                             }
                                         }
                                     } else {
-                                        showPrimInputDialog {
+                                        // Если comm пуст, сразу открываем диалог ввода
+                                        showPrimInputDialog { prim ->
                                             lifecycleScope.launch {
-                                                val putResult = incontrolViewModel.back2Sklad(num, curPrim)
+                                                val putResult = incontrolViewModel.back2Sklad(num, prim)
+                                                curIDAll = IDAll
+                                                curPrim = prim
                                                 when (putResult) {
                                                     is Result.Success -> {
                                                         incontrolViewModel.refreshListEvent.postValue(Unit)
@@ -865,8 +864,6 @@ class InControlFragment: BaseFragment() {
                                                         showError(putResult.exception)
                                                     }
                                                 }
-                                                curIDAll = IDAll
-
                                             }
                                         }
                                     }
@@ -886,7 +883,23 @@ class InControlFragment: BaseFragment() {
             }
         }
     }
-
+    private  fun showMessageDialog(
+        message: String,
+        title: String? = null,
+        positiveButtonText: String = "Продолжить",
+        onPositive: (() -> Unit)? = null
+    ) {
+        context?.let {
+            AlertDialog.Builder(it)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(positiveButtonText) { _, _ ->
+                    onPositive?.invoke()
+                }
+                .setCancelable(false) // или true, в зависимости от требований
+                .show()
+        }
+    }
     private fun handleZScan2(stringScanResult: String) {
         // Проверяем, есть ли элементы в адаптере
         if (adapterincontrol.itemCount > 0) {
@@ -1000,6 +1013,7 @@ class InControlFragment: BaseFragment() {
             Toast.makeText(requireContext(), "Сначала отсканируйте коробку", Toast.LENGTH_SHORT).show()
         }
         else {
+            needscroll = true
             val parts = stringScanResult.split('$')
             if (parts.size > 1) {
                 val num = parts[1]
@@ -1587,12 +1601,12 @@ class InControlFragment: BaseFragment() {
                             val IDAll = result.data.IDAll!!
                             val action15 = result.data.action15!!
                             val action23 = result.data.action23!!
-                            val action2 = result.data.action2!!
+                            val comm = result.data.comm!!
 
                             DT.let {
                                 Back2SkladState.CheckST(
                                     IDAll,
-                                    it, action15, action23, action2
+                                    it, action15, action23, comm
                                 )
                             }.let {
                                 Result.Success(
