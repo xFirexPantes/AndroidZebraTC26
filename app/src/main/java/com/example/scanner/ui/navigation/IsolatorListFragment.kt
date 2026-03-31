@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -272,7 +273,7 @@ class IsolatorListFragment: BaseFragment() {
     }
 
     private fun showFilterDialog() {
-        if (paramValue=="listDry") {
+
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Выберите фильтр")
                 .setAdapter(
@@ -280,7 +281,7 @@ class IsolatorListFragment: BaseFragment() {
                     ArrayAdapter(
                         requireContext(),
                         R.layout.dialog_list_item,
-                        arrayOf("Все", "По номеру печи", "По состоянию", "По действию")
+                        arrayOf("Все", "По коду", "По причине")
                     )
 
                 ) { _, which ->
@@ -289,71 +290,80 @@ class IsolatorListFragment: BaseFragment() {
 
                     when (which) {
                         0 -> {
-                            isolatorListViewModel.isolatorListSearch(0, "")
-                            toolbarlnk.title= "Забрать из печи"
+                            isolatorListViewModel.isolatorListSearch(0, "iniso","")
                         }
                         1 -> showOvenNumberDialog()
                         2 -> showStateDialog()
-                        3 -> showActionDialog()
                     }
                 }
 
                 .show()
-        }
-        if (paramValue=="fromDry") {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Выберите фильтр")
-                .setAdapter(
 
-                    ArrayAdapter(
-                        requireContext(),
-                        R.layout.dialog_list_item,
-                        arrayOf("Все", "По номеру печи")
-                    )
-
-                ) { _, which ->
-                    adapterisolatorlist.resetContent()
-                    isolatorListViewModel.isolatorListFragmentState.postValue(IsolatorListFragmentState.Idle)
-
-                    when (which) {
-                        0 -> {
-                            isolatorListViewModel.isolatorListSearch(0, "")
-                            toolbarlnk.title= "Забрать из печи"
-                        }
-                        1 -> showOvenNumberDialog()
-                    }
-                }
-
-                .show()
-        }
     }
-
     private fun showOvenNumberDialog() {
-        val ovenNumbers = (1..5).map { it.toString() }
+        val inflater = LayoutInflater.from(requireContext())
+        val dialogView = inflater.inflate(R.layout.dialog_input_number, null)
+        val inputEditText = dialogView.findViewById<EditText>(R.id.editTextOvenNumber)
+
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Выберите номер печи")
-            .setAdapter(
-                ArrayAdapter(requireContext(), R.layout.dialog_list_item, ovenNumbers.toTypedArray())
-            ) { _, which ->
+            .setTitle("Введите номер элемента")
+            .setView(dialogView)
+            .setPositiveButton("ОК") { _, _ ->
+                val inputText = inputEditText.text.toString()
+
+                // Проверка на пустой ввод
+                if (inputText.isBlank()) {
+                    Toast.makeText(requireContext(), "Введите номер элемента", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+
+                val skladid = inputText.toIntOrNull()
+                if (skladid  == null) {
+                    Toast.makeText(requireContext(), "Пожалуйста, введите корректное число", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
                 adapterisolatorlist.resetContent()
-                val oven = ovenNumbers[which].toInt()
-                toolbarlnk.title= "Печь $oven"
-                isolatorListViewModel.isolatorListSearch(0, "")
+                toolbarlnk.title = "Поиск $skladid "
+                isolatorListViewModel.isolatorListSearch(skladid , "iniso","")
+            }
+            .setNegativeButton("Отмена") { dialog, _ ->
+                dialog.dismiss()
             }
             .show()
     }
-
     private fun showStateDialog() {
-        val states = listOf("Отмена сушки", "Просушено", "Идёт сушка", "Сушка закончена")
+        // Создаём Map с ID и соответствующими состояниями
+        val stateMap = mapOf(
+            -1 to "Все" ,
+            0 to "Ведется исследование",
+            1 to "Замена элементов",
+            2 to "Тест паяемости",
+            4 to "Перенос в ручной элемент",
+            5 to "Перенос в автоматический элемент",
+            6 to "Возврат денежных средств поставщиком",
+            7 to "Утилизация элемента",
+            8 to "Функциональный контроль",
+            9 to "Излишки",
+            10 to "Замена брака из излишков"
+        )
+
+        // Получаем список состояний для отображения в диалоге
+        val states = stateMap.values.toList()
+
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Выберите состояние")
             .setAdapter(
                 ArrayAdapter(requireContext(), R.layout.dialog_list_item, states.toTypedArray())
             ) { _, which ->
+                // Получаем ID выбранного состояния по индексу
+                val selectedId = stateMap.keys.toList()[which]
                 val state = states[which]
+
                 adapterisolatorlist.resetContent()
-                toolbarlnk.title= state
-                isolatorListViewModel.isolatorListSearch(0, state)
+                toolbarlnk.title = state
+                isolatorListViewModel.isolatorListSearch(0, "iniso",selectedId.toString())
             }
             .show()
     }
@@ -368,7 +378,7 @@ class IsolatorListFragment: BaseFragment() {
                 val action = actions[which]
                 adapterisolatorlist.resetContent()
                 toolbarlnk.title= action
-                isolatorListViewModel.isolatorListSearch(0, "")
+                isolatorListViewModel.isolatorListSearch(0, "iniso","")
             }
             .show()
     }
@@ -380,7 +390,7 @@ class IsolatorListFragment: BaseFragment() {
         isolatorListViewModel.refreshListEvent.observe(viewLifecycleOwner) {
             // Перезагружаем данные списка
             adapterisolatorlist.resetContent()
-            isolatorListViewModel.isolatorListSearch(0, "")
+            isolatorListViewModel.isolatorListSearch(0, "iniso","")
 
         }
         sViewModel.scannedItems.observe(viewLifecycleOwner) { scanned ->
@@ -529,7 +539,7 @@ class IsolatorListFragment: BaseFragment() {
             )
 
         }
-        isolatorListViewModel.isolatorListSearch(0,paramValue)
+        isolatorListViewModel.isolatorListSearch(0,paramValue,"")
     }
     private fun handle3N0ScanTo(stringScanResult: String) {
         if (box == 0) {
@@ -552,7 +562,7 @@ class IsolatorListFragment: BaseFragment() {
 
                                 adapterisolatorlist.resetContent()
                             if (currentItem != null) {
-                                isolatorListViewModel.isolatorListSearch(currentItem.IDAll, paramValue)
+                                isolatorListViewModel.isolatorListSearch(currentItem.IDAll, paramValue,"")
                             }
 
                             isolatorListViewModel.refreshListEvent.postValue(Unit)
@@ -652,7 +662,7 @@ class IsolatorListFragment: BaseFragment() {
             box = parts[1].toInt()
             toolbarlnk.title= "Забрать с сушки"
             adapterisolatorlist.resetContent()
-            isolatorListViewModel.isolatorListSearch(0, paramValue)
+            isolatorListViewModel.isolatorListSearch(0, paramValue,"")
         }
     }
 
@@ -1026,7 +1036,7 @@ class IsolatorListFragment: BaseFragment() {
 
         var lastStoredStel: String = ""
         var lastStoredCell: String = ""
-        fun isolatorListSearch(SkladID: Int, rgm: String) {
+        fun isolatorListSearch(SkladID: Int, rgm: String,Reason: String) {
             ioCoroutineScope.launch {
                 // Очищаем старое состояние перед запросом
                 isolatorListFragmentState.postValue(IsolatorListFragmentState.Idle)
@@ -1034,7 +1044,7 @@ class IsolatorListFragment: BaseFragment() {
                 when (val token = loginRepository.user?.token) {
                     null -> isolatorListFragmentState.postValue(IsolatorListFragmentState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken))
                     else -> {
-                        val result = apiPantes.isolatorListSearch(token,  SkladID, rgm)
+                        val result = apiPantes.isolatorListSearch(token,  SkladID, Reason, rgm)
                         when (result) {
                             is ApiPantes.ApiState.Success -> {
                                 // Отправляем новый результат

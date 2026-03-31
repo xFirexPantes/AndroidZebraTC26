@@ -48,12 +48,12 @@ class IsolatorMenuFragment : Fragment() {
             when (state) {
                 is HomeFragmentFormState.SetView -> {
                     binding?.isIso?.visibility =
-                        if (state.accept) View.VISIBLE else View.GONE
-                    binding?.isIso?.isEnabled = state.accept
+                        if (state.isolator) View.VISIBLE else View.GONE
+                    binding?.isIso?.isEnabled = state.isolator
 
                     binding?.toWh?.visibility =
-                        if (state.accept) View.VISIBLE else View.GONE
-                    binding?.toWh?.isEnabled = state.accept
+                        if (state.isolator) View.VISIBLE else View.GONE
+                    binding?.toWh?.isEnabled = state.isolator
 
                 }
             }
