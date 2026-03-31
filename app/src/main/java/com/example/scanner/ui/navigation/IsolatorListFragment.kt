@@ -289,7 +289,7 @@ class IsolatorListFragment: BaseFragment() {
 
                     when (which) {
                         0 -> {
-                            isolatorListViewModel.isolatorListSearch(0, "", 0, "", paramValue)
+                            isolatorListViewModel.isolatorListSearch(0, "")
                             toolbarlnk.title= "Забрать из печи"
                         }
                         1 -> showOvenNumberDialog()
@@ -317,7 +317,7 @@ class IsolatorListFragment: BaseFragment() {
 
                     when (which) {
                         0 -> {
-                            isolatorListViewModel.isolatorListSearch(0, "", 0, "", paramValue)
+                            isolatorListViewModel.isolatorListSearch(0, "")
                             toolbarlnk.title= "Забрать из печи"
                         }
                         1 -> showOvenNumberDialog()
@@ -338,7 +338,7 @@ class IsolatorListFragment: BaseFragment() {
                 adapterisolatorlist.resetContent()
                 val oven = ovenNumbers[which].toInt()
                 toolbarlnk.title= "Печь $oven"
-                isolatorListViewModel.isolatorListSearch(0, "", oven , "",paramValue)
+                isolatorListViewModel.isolatorListSearch(0, "")
             }
             .show()
     }
@@ -353,7 +353,7 @@ class IsolatorListFragment: BaseFragment() {
                 val state = states[which]
                 adapterisolatorlist.resetContent()
                 toolbarlnk.title= state
-                isolatorListViewModel.isolatorListSearch(0, state, 0, "",paramValue)
+                isolatorListViewModel.isolatorListSearch(0, state)
             }
             .show()
     }
@@ -368,7 +368,7 @@ class IsolatorListFragment: BaseFragment() {
                 val action = actions[which]
                 adapterisolatorlist.resetContent()
                 toolbarlnk.title= action
-                isolatorListViewModel.isolatorListSearch(0, "", 0, action,paramValue)
+                isolatorListViewModel.isolatorListSearch(0, "")
             }
             .show()
     }
@@ -380,7 +380,7 @@ class IsolatorListFragment: BaseFragment() {
         isolatorListViewModel.refreshListEvent.observe(viewLifecycleOwner) {
             // Перезагружаем данные списка
             adapterisolatorlist.resetContent()
-            isolatorListViewModel.isolatorListSearch(0, "", box, "",paramValue)
+            isolatorListViewModel.isolatorListSearch(0, "")
 
         }
         sViewModel.scannedItems.observe(viewLifecycleOwner) { scanned ->
@@ -490,55 +490,36 @@ class IsolatorListFragment: BaseFragment() {
 
         scanViewModel.scanFragmentBaseFormState.observe(viewLifecycleOwner){
             when(paramValue){
-                "toDry" -> {
-                    when(val stateScan=it){
-                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
-                            stateScan.stringScanResult?.let { stringScanResult ->
-                                when {
-                                    stringScanResult.startsWith("3N0") -> handle3N0ScanTo(stringScanResult)
-                                    stringScanResult.startsWith('d') -> handleDScanTo(stringScanResult)
-                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
-                                    else -> showErrorMessageQR()
-                                }
-                            }
-                        }
-                        else->{}
-                    }
+                "iniso" -> {
+//                    when(val stateScan=it){
+//                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
+//                            stateScan.stringScanResult?.let { stringScanResult ->
+//                                when {
+//                                    stringScanResult.startsWith("3N0") -> handle3N0ScanTo(stringScanResult)
+//                                    stringScanResult.startsWith('d') -> handleDScanTo(stringScanResult)
+//                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
+//                                    else -> showErrorMessageQR()
+//                                }
+//                            }
+//                        }
+//                        else->{}
+//                    }
                 }
-                "fromDry" -> {
-                    when(val stateScan=it){
-                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
-                            stateScan.stringScanResult?.let { stringScanResult ->
-                                when {
-                                    stringScanResult.startsWith("3N0") -> handle3N0ScanFrom(stringScanResult)
-                                    stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
-                                    stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
-                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
-                                    else -> showErrorMessageQR()
-                                }
-                            }
-                        }
-                        else->{}
-                    }
-                }
-                "listDry" -> {
-                    when(val stateScan=it){
-                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
-                            stateScan.stringScanResult?.let { stringScanResult ->
-                                when {
-                                    stringScanResult.startsWith("3N0") -> handle3N0ScanTo(stringScanResult)
-                                    //      stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
-                                    //      stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
-                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
-                                    else -> showErrorMessageQR()
-                                }
-                            }
-
-
-
-                        }
-                        else->{}
-                    }
+                "towh" -> {
+//                    when(val stateScan=it){
+//                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
+//                            stateScan.stringScanResult?.let { stringScanResult ->
+//                                when {
+//                                    stringScanResult.startsWith("3N0") -> handle3N0ScanFrom(stringScanResult)
+//                                    stringScanResult.startsWith('C') -> handleCScanFrom(stringScanResult)
+//                                    stringScanResult.startsWith('d') -> handleDScanFrom(stringScanResult)
+//                                    //  (stringScanResult.split('$')).size == 5 -> handleCScanBottleFrom(stringScanResult)
+//                                    else -> showErrorMessageQR()
+//                                }
+//                            }
+//                        }
+//                        else->{}
+//                    }
                 }
                 else->{}
             }
@@ -548,7 +529,7 @@ class IsolatorListFragment: BaseFragment() {
             )
 
         }
-        isolatorListViewModel.isolatorListSearch(0,"",box,"",paramValue)
+        isolatorListViewModel.isolatorListSearch(0,paramValue)
     }
     private fun handle3N0ScanTo(stringScanResult: String) {
         if (box == 0) {
@@ -568,12 +549,12 @@ class IsolatorListFragment: BaseFragment() {
 
                             //handleIDAllList(IDAll, 0)
                             val currentItem = adapterisolatorlist.getItemByID(IDAll)
-                            if (currentItem!!.Cab != box) {
-                                showResponse("Выбрана не верная печь")
-                            } else {
+
                                 adapterisolatorlist.resetContent()
-                                isolatorListViewModel.isolatorListSearch(currentItem.IDAll, "", 0, "", paramValue)
+                            if (currentItem != null) {
+                                isolatorListViewModel.isolatorListSearch(currentItem.IDAll, paramValue)
                             }
+
                             isolatorListViewModel.refreshListEvent.postValue(Unit)
                         }
 
@@ -654,34 +635,10 @@ class IsolatorListFragment: BaseFragment() {
                 // Получаем текущие значения stel и cell из отображаемых данных
                 val currentItem =  adapterisolatorlist.getItemByID(IDAll.toInt())
 
-                val isMatch = (currentItem?.Stel.toString() == stel) && (currentItem?.Yach  == yach)
 
-                updateInfoTextView(isMatch, false)
 
-                if (isMatch) {
-                    lifecycleScope.launch {
-                        when (val result = curNum?.let { isolatorListViewModel.getAllID(it) }) {
-                            is Result.Success -> {
-                                oldSize = adapterisolatorlist.itemCount
-                                if (currentItem != null) {
-                                    needscroll = false
-                                  //  isolatorListViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
-                                    soundHelper.playSuccessSound()
-                                }
-                                isolatorListViewModel.refreshListEvent.postValue(Unit)
-                            }
 
-                            is Result.Failure -> {
-                                showError(result.exception)
-                            }
 
-                            null -> TODO()
-                        }
-                        isolatorListViewModel.saveStelAndCell(stel,yach)
-                    }
-                } else {
-                    isolatorListViewModel.clearStelAndCell()
-                }
 
             } else {
                 showResponse("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
@@ -695,7 +652,7 @@ class IsolatorListFragment: BaseFragment() {
             box = parts[1].toInt()
             toolbarlnk.title= "Забрать с сушки"
             adapterisolatorlist.resetContent()
-            isolatorListViewModel.isolatorListSearch(0, "", box, "",paramValue)
+            isolatorListViewModel.isolatorListSearch(0, paramValue)
         }
     }
 
@@ -745,8 +702,7 @@ class IsolatorListFragment: BaseFragment() {
             showResponse("Элемент не найден")
             return
         }
-        val stel = currentItem.Stel.toString()
-        val cell = currentItem.Yach
+
         if (lastStel == "") {
             ftime = true
         }
@@ -761,19 +717,7 @@ class IsolatorListFragment: BaseFragment() {
         } else {
             // showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
         }
-        if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
-            val isMatch = (lastStel == stel) && (lastCell == cell)
 
-            updateInfoTextView(isMatch, ftime)
-
-            if (isMatch) {
-                needscroll = false
-                isolatorListViewModel.putFromDry2WH(currentItem.IDResSub,  currentItem.id,curNum!!.toInt())
-                soundHelper.playSuccessSound()
-            } else {
-                isolatorListViewModel.clearStelAndCell()
-            }
-        }
         adapterisolatorlist.notifyDataSetChanged()
     }
     inner class AdapterisolatorList: BaseRecyclerAdapter<IsolatorListSearchResponse>(IsolatorListSearchResponse()) {
@@ -938,13 +882,10 @@ class IsolatorListFragment: BaseFragment() {
             arrayOf(
                 Pair(arrayOf("SkladID"), "# компонента "),
                 Pair(arrayOf("Naim"), "Наименование "),
-                Pair(arrayOf("ActionNme"), "Действие "),
-                Pair(arrayOf("Sost"), "Состояние "),
+                Pair(arrayOf("Nom"), "Номинал "),
+                Pair(arrayOf("Krp"), "Корпус "),
                 Pair(arrayOf("kol"), "Кол-во "),
-                Pair(arrayOf("Stel"), "Стеллаж "),
-                Pair(arrayOf("Yach"), "Ячейка "),
-                Pair(arrayOf("Cab"), "№ печки "),
-                Pair(arrayOf("DryTmeOst"), "Осталось сушить "),
+                Pair(arrayOf("Reason"), "Причина "),
                 Pair(arrayOf("kolpacks"), "Упаковок ")
             ).forEach { pair ->
                 val presenterBinding = TemplatePresenterBinding.inflate(
@@ -1085,7 +1026,7 @@ class IsolatorListFragment: BaseFragment() {
 
         var lastStoredStel: String = ""
         var lastStoredCell: String = ""
-        fun isolatorListSearch(SkladID: Int, Sost: String, cab: Int, ActionNme: String,rgm: String) {
+        fun isolatorListSearch(SkladID: Int, rgm: String) {
             ioCoroutineScope.launch {
                 // Очищаем старое состояние перед запросом
                 isolatorListFragmentState.postValue(IsolatorListFragmentState.Idle)
@@ -1093,7 +1034,7 @@ class IsolatorListFragment: BaseFragment() {
                 when (val token = loginRepository.user?.token) {
                     null -> isolatorListFragmentState.postValue(IsolatorListFragmentState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken))
                     else -> {
-                        val result = apiPantes.isolatorListSearch(token, cab, SkladID, Sost, ActionNme,rgm)
+                        val result = apiPantes.isolatorListSearch(token,  SkladID, rgm)
                         when (result) {
                             is ApiPantes.ApiState.Success -> {
                                 // Отправляем новый результат

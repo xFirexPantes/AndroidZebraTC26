@@ -9,18 +9,14 @@ data class IsolatorListSearchResponse(
     data class Item(
         val id:Int,
         val SkladID: Int,
-        val ActionNme:String,
-        val Sost: String,
         val kol:Int,
-        val DryTmeOst: String,
+        val Krp: String,
         val Naim:String,
         val Nom:String,
-        val Stel:Int,
-        val Yach: String,
         val IDAll:Int,
-        val Cab:Int,
         val kolpacks:Int,
         val IDResSub:Int,
+        val Reason:String,
         val coils:ArrayList<Coil> = ArrayList(),
         var isScanned: Boolean = false
     )
@@ -28,9 +24,7 @@ data class IsolatorListSearchResponse(
         val type:String,
         val num: Int,
         val ost: Int,
-        val Cab: Int,
         val inDry: String,
-        val take: Int,
         var isScanned: Boolean = false
     )
 }

@@ -435,10 +435,7 @@ class ApiPantes(
         @Headers("Content-Type: application/json")
         fun isolatorListSearch(
             @Header("Authorization") authorization:String,
-            @Query("Cab") Cab: Int,
             @Query("skladId") skladId: Int,
-            @Query("Sost") Sost: String,
-            @Query("ActionNme") ActionNme: String,
             @Query("rgm") rgm: String,
             @Query("token") token: String,
         ):Call<IsolatorListSearchResponse>
@@ -1202,10 +1199,10 @@ class ApiPantes(
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
 
-    suspend fun isolatorListSearch(token:String,Cab: Int,skladID: Int,Sost:String,ActionNme: String,rgm: String): ApiState<IsolatorListSearchResponse> {
+    suspend fun isolatorListSearch(token:String,skladID: Int,rgm: String): ApiState<IsolatorListSearchResponse> {
         return flow {
             val response:Response<IsolatorListSearchResponse> =
-                api.isolatorListSearch( "Bearer $token",Cab,skladID,Sost,ActionNme,rgm,token).execute()
+                api.isolatorListSearch( "Bearer $token",skladID,rgm,token).execute()
             emit(
                 when(response.isSuccessful){
                     true->ApiState.Success(response.body()!!)
