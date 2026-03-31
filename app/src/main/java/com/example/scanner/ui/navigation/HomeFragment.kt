@@ -135,10 +135,10 @@ class HomeFragment : BaseFragment() {
                                 isolator.button.setOnClickListener {
                                     //homeViewModel.mainActivityRouter.navigate(ScanIsolatorFragment::class.java)
                                     homeViewModel.mainActivityRouter.navigate(
-                                        IsolatorFragment::class.java,
+                                        IsolatorMenuFragment::class.java,
                                         Bundle().apply {
                                             putSerializable(
-                                                IsolatorFragment.PARAM,
+                                                IsolatorMenuFragment.PARAM_STEP_1_VALUE,
                                                 ""
                                             )
                                         }
@@ -201,6 +201,19 @@ class HomeFragment : BaseFragment() {
                             update.button.setOnClickListener { forbiddenToast() }
                             floatDisable
                         }
+                        truesign.button.alpha =
+                            if (state.truesign) {
+                                truesign.button.setOnClickListener {
+                                    homeViewModel.mainActivityRouter.navigate(
+                                        TrueSignFragment::class.java,
+                                        Bundle().apply { putSerializable(PARAM_STEP_1_VALUE, "") }
+                                    )
+                                }
+                                floatEnable
+                            } else {
+                                truesign.button.setOnClickListener { forbiddenToast() }
+                                floatDisable
+                            }
 
                         admin.button.visibility = if (state.admin) {
                             admin.button.setOnClickListener {
@@ -641,7 +654,8 @@ class HomeFragment : BaseFragment() {
                             isolator = it.access.isolator,
                             incontrol = it.access.incontrol,
                             update = it.access.update,
-                            admin = it.access.admin
+                            admin = it.access.admin,
+                            truesign = it.access.truesign
                         )
                     }
                 }

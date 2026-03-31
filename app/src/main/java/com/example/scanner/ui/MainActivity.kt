@@ -50,6 +50,10 @@ import com.example.scanner.ui.navigation_over.ProgressFragment
 import com.example.scanner.ui.navigation.ReceiveFragment
 import com.example.scanner.ui.navigation.ReceiveFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceMenuFragment
+import com.example.scanner.ui.navigation.IsolatorListFragment
+import com.example.scanner.ui.navigation.IsolatorListFragmentInfo
+import com.example.scanner.ui.navigation.IsolatorMenuFragment
+import com.example.scanner.ui.navigation.TrueSignFragment
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_over.TransparentFragment
 import com.example.scanner.ui.navigation_setting.SettingFragment
@@ -256,6 +260,14 @@ class MainActivity : BaseActivity() {
                     navControllerMain?.navigate(R.id.nav_dry_fragment, route.params)
                 DryFragmentInfo::class.java ->
                     navControllerMain?.navigate(R.id.nav_dry_info_fragment, route.params)
+                TrueSignFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_truesign_fragment, route.params)
+                IsolatorMenuFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_isolator_menu_fragment, route.params)
+                IsolatorListFragment::class.java ->
+                    navControllerMain?.navigate(R.id.nav_isolator_list_fragment, route.params)
+                IsolatorListFragmentInfo::class.java ->
+                    navControllerMain?.navigate(R.id.nav_isolator_list_info_fragment, route.params)
             }
 
             scanViewModel.mainActivityRouter.clear()

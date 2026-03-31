@@ -24,10 +24,13 @@ import com.example.scanner.ui.navigation.InvoiceFragmentLines
 import com.example.scanner.ui.navigation.IsolatorFragment
 import com.example.scanner.ui.navigation.IsolatorFragmentIsolate
 import com.example.scanner.ui.navigation.IsolatorFragmentMinus
+import com.example.scanner.ui.navigation.IsolatorListFragment
+import com.example.scanner.ui.navigation.IsolatorListFragmentInfo
 import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation.login.LoginViewModel
 import com.example.scanner.ui.navigation.ReceiveFragment
 import com.example.scanner.ui.navigation.ReceiveFragmentInfo.ReceiveInfoModelView
+import com.example.scanner.ui.navigation.TrueSignFragment
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import com.example.scanner.ui.navigation_setting.LogsFragment.ViewModelLogs
 import com.example.scanner.ui.navigation_setting.SettingFragment.ViewModelSetting
@@ -159,8 +162,18 @@ val viewModelFactory= viewModelFactory {
         DryFragmentInfo.DryInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
     initializer {
+        IsolatorListFragmentInfo.IsolatorListInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
+        IsolatorListFragment.IsolatorListViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
+        TrueSignFragment.TrueSignViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
         SessionViewModel(
             (this[APPLICATION_KEY] as App).applicationContext // передаём context
         )
     }
+
 }

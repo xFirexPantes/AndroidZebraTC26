@@ -45,7 +45,10 @@
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
     </fragment>
-
+    <fragment
+        android:id="@+id/nav_truesign_fragment"
+        android:name="com.example.scanner.ui.navigation.TrueSignFragment"
+        android:label="TrueSignFragment" />
     <!--invoices-->
     <fragment
         android:id="@+id/nav_invoices"
@@ -83,6 +86,11 @@
         android:name="com.example.scanner.ui.navigation.DryFragmentInfo"
         android:label="DryFragmentInfo"
         />
+    <fragment
+        android:id="@+id/nav_isolator_list_info_fragment"
+        android:name="com.example.scanner.ui.navigation.IsolatorListFragmentInfo"
+        android:label="IsolatorListFragmentInfo"
+        />
     <!--components info-->
     <fragment
         android:id="@+id/nav_components_info_fragment"
@@ -96,15 +104,16 @@
         android:label="InControlMenuFragment"
         />
     <fragment
+        android:id="@+id/nav_isolator_menu_fragment"
+        android:name="com.example.scanner.ui.navigation.IsolatorMenuFragment"
+        android:label="IsolatorMenuFragment"
+        />
+    <fragment
         android:id="@+id/nav_invoice_menu_fragment"
         android:name="com.example.scanner.ui.navigation.InvoiceMenuFragment"
         android:label="InvoiceMenuFragment"
         />
-    <fragment
-        android:id="@+id/nav_return_fragment"
-        android:name="com.example.scanner.ui.navigation.ReturnFragment"
-        android:label="ReturnFragment"
-        />
+
     <!--incontrol (добавляем сюда!)-->
     <fragment
         android:id="@+id/nav_incontrol_fragment"
@@ -149,6 +158,11 @@
         android:id="@+id/nav_dry_fragment"
         android:name="com.example.scanner.ui.navigation.DryFragment"
         android:label="DryFragment"
+        />
+    <fragment
+        android:id="@+id/nav_isolator_list_fragment"
+        android:name="com.example.scanner.ui.navigation.IsolatorListFragment"
+        android:label="IsolatorListFragment"
         />
 
 </navigation>

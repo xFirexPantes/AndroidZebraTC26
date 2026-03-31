@@ -3,151 +3,135 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.navigation.HomeFragment">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.navigation.HomeFragment">
 
-    <TextView
-        android:id="@+id/textVersion"
-        android:layout_width="wrap_content"
-        android:layout_height="29dp"
-        android:text="TextView"
-        tools:layout_editor_absoluteX="41dp"
-        tools:layout_editor_absoluteY="0dp"
-        tools:ignore="MissingConstraints" />
+        <TextView
+            android:id="@+id/textVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="29dp"
+            android:text="TextView"
+            app:layout_constraintStart_toStartOf="@id/guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="MissingConstraints" />
 
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/user_view_container"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
-        app:layout_constraintStart_toStartOf="@id/guideline"
-        app:layout_constraintEnd_toEndOf="@id/guideline2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintDimensionRatio="8:2"
-        android:layout_marginTop="30dp"
-        android:gravity="center_vertical"
-        >
-<!--        <androidx.cardview.widget.CardView-->
-<!--            android:id="@+id/user_view_image_container"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            app:layout_constraintBaseline_toBottomOf="parent"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            android:layout_weight="1"-->
-<!--            >-->
-<!--            <ImageView-->
-<!--                android:id="@+id/user_view_image"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:importantForAccessibility="no"-->
-<!--                android:src="@drawable/ic_empty_avatar"-->
-<!--                />-->
-<!--        </androidx.cardview.widget.CardView>-->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_weight="1">
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/user_view_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="30dp"
+            app:layout_constraintStart_toStartOf="@id/guideline"
+            app:layout_constraintEnd_toEndOf="@id/guideline2"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintDimensionRatio="8:2">
 
-            <TextView
-                android:id="@+id/user_view_text"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:gravity="center_vertical"
-                android:maxLines="2"
-                android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                tools:text="username" />
+                android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/user_view_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="2"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                    tools:text="username" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Текущий пользователь"
+                    tools:ignore="HardcodedText" />
+
+            </LinearLayout>
+
+            <include layout="@layout/template_icon"
+                app:src="@{@drawable/ic_exit}" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintStart_toEndOf="@id/guideline"
+            app:layout_constraintEnd_toStartOf="@id/guideline2"
+            app:layout_constraintTop_toBottomOf="@id/user_view_container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Текущий пользователь"
-                tools:ignore="HardcodedText" />
+                android:gravity="center"
+                android:orientation="vertical">
 
-        </LinearLayout>
-        <include layout="@layout/template_icon"
-            app:src="@{@drawable/ic_exit}"
-            />
+                <include layout="@layout/template_button"
+                    android:id="@+id/issuance"
+                    app:title="@{@string/button_invoice}"
+                    app:icon="@{@drawable/ic_extradition}" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+                <include layout="@layout/template_button"
+                    android:id="@+id/isolator"
+                    app:title="@{@string/button_isolator}"
+                    app:icon="@{@drawable/ic_isolator}" />
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guideline2"
-        app:layout_constraintStart_toEndOf="@id/guideline"
-        app:layout_constraintTop_toBottomOf="@id/user_view_container"
-        android:layout_marginTop="50dp"
-        >
+                <include layout="@layout/template_button"
+                    android:id="@+id/search"
+                    app:title="@{@string/button_search}"
+                    app:icon="@{@drawable/ic_search3}" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+                <include layout="@layout/template_button"
+                    android:id="@+id/accept"
+                    app:title="@{@string/button_receive}"
+                    app:icon="@{@drawable/ic_receive}" />
+
+                <include layout="@layout/template_button"
+                    android:id="@+id/incontrol"
+                    app:title="@{@string/button_incontrol}"
+                    app:icon="@{@drawable/ic_incontrol}" />
+
+                <include layout="@layout/template_button"
+                    android:id="@+id/update"
+                    app:title="@{@string/button_update}"
+                    app:icon="@{@drawable/ic_update}" />
+
+                <include layout="@layout/template_button"
+                    android:id="@+id/truesign"
+                    app:title="@{@string/button_truesign}"
+                    app:icon="@{@drawable/ic_truesign}" />
+
+                <include layout="@layout/template_button"
+                    android:id="@+id/admin"
+                    app:title="@{@string/button_admin}"
+                    app:icon="@{@drawable/ic_admin}" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:orientation="vertical"
-            >
+            app:layout_constraintGuide_percent="0.1" />
 
-            <include layout="@layout/template_button"
-                android:id="@+id/issuance"
-                app:title="@{@string/button_invoice}"
-                app:icon="@{@drawable/ic_extradition}"
-                />
-            <include layout="@layout/template_button"
-                android:id="@+id/isolator"
-                app:title="@{@string/button_isolator}"
-                app:icon="@{@drawable/ic_isolator}"
-                />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.9" />
 
-            <include layout="@layout/template_button"
-                android:id="@+id/search"
-                app:title="@{@string/button_search}"
-                app:icon="@{@drawable/ic_search3}"
-                />
-
-            <include layout="@layout/template_button"
-                android:id="@+id/accept"
-                app:title="@{@string/button_receive}"
-                app:icon="@{@drawable/ic_receive}"
-                />
-            <include layout="@layout/template_button"
-                android:id="@+id/incontrol"
-                app:title="@{@string/button_incontrol}"
-                app:icon="@{@drawable/ic_incontrol}"
-                />
-            <include layout="@layout/template_button"
-                android:id="@+id/update"
-                app:title="@{@string/button_update}"
-                app:icon="@{@drawable/ic_update}"
-                />
-            <include layout="@layout/template_button"
-                android:id="@+id/admin"
-                app:title="@{@string/button_admin}"
-                app:icon="@{@drawable/ic_admin}"
-                />
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.1" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.9" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
