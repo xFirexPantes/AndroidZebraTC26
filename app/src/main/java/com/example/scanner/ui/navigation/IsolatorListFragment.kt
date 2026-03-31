@@ -982,14 +982,14 @@ class IsolatorListFragment: BaseFragment() {
                 itemBinding.root.background = null
                 itemBinding.containerVertical.background = null
             }
-            itemBinding.containerVertical.setOnClickListener {
-                isolatorListViewModel.mainActivityRouter.navigate(
-                    DryFragmentInfo::class.java,
-                    Bundle().apply {
-                        putSerializable(IsolatorListFragmentInfo.PARAM, itemData.id)
-                    }
-                )
-            }
+//            itemBinding.containerVertical.setOnClickListener {
+//                isolatorListViewModel.mainActivityRouter.navigate(
+//                    DryFragmentInfo::class.java,
+//                    Bundle().apply {
+//                        putSerializable(IsolatorListFragmentInfo.PARAM, itemData.id)
+//                    }
+//                )
+//            }
         }
 
     }
