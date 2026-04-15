@@ -78,42 +78,42 @@
                 <include layout="@layout/template_button"
                     android:id="@+id/issuance"
                     app:title="@{@string/button_invoice}"
-                    app:icon="@{@drawable/ic_extradition}" />
+                    app:icon="@{@drawable/out}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/isolator"
                     app:title="@{@string/button_isolator}"
-                    app:icon="@{@drawable/ic_isolator}" />
+                    app:icon="@{@drawable/iso}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/search"
                     app:title="@{@string/button_search}"
-                    app:icon="@{@drawable/ic_search3}" />
+                    app:icon="@{@drawable/search}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/accept"
                     app:title="@{@string/button_receive}"
-                    app:icon="@{@drawable/ic_receive}" />
+                    app:icon="@{@drawable/in}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/incontrol"
                     app:title="@{@string/button_incontrol}"
-                    app:icon="@{@drawable/ic_incontrol}" />
+                    app:icon="@{@drawable/vk}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/update"
                     app:title="@{@string/button_update}"
-                    app:icon="@{@drawable/ic_update}" />
+                    app:icon="@{@drawable/update}" />
 
                 <include layout="@layout/template_button"
                     android:id="@+id/truesign"
                     app:title="@{@string/button_truesign}"
-                    app:icon="@{@drawable/ic_truesign}" />
+                    app:icon="@{@drawable/truesign}"/>
 
                 <include layout="@layout/template_button"
                     android:id="@+id/admin"
                     app:title="@{@string/button_admin}"
-                    app:icon="@{@drawable/ic_admin}" />
+                    app:icon="@{@drawable/admin}" />
 
             </LinearLayout>
 

@@ -41,7 +41,7 @@ class InvoiceMenuFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding?.toControl?.isEnabled = false
         binding?.toReturn?.isEnabled = false
-
+        binding?.toCheck?.isEnabled = false
 
 
         homeViewModel.homeFragmentFormState.observe(viewLifecycleOwner) { state ->
@@ -55,13 +55,18 @@ class InvoiceMenuFragment : Fragment() {
                         if (state.accept) View.VISIBLE else View.GONE
                     binding?.toReturn?.isEnabled = state.accept
 
+                    binding?.toCheck?.visibility =
+                        if (state.checknab) View.VISIBLE else View.GONE
+                    binding?.toCheck?.isEnabled = state.checknab
+
                 }
             }
         }
         binding?.toControl?.setOnClickListener {
             homeViewModel.mainActivityRouter.navigate(
                 InvoiceFragment::class.java,
-                Bundle().apply { putSerializable(InvoiceFragment.PARAM, "") }
+                Bundle().apply { putSerializable(InvoiceFragment.PARAM, "")
+                    putSerializable(EXTRA_RGM, "")  }
             )
         }
         binding?.toReturn?.setOnClickListener {
@@ -71,6 +76,13 @@ class InvoiceMenuFragment : Fragment() {
                     putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
                     putSerializable(EXTRA_RGM, "back")              // или putSerializable
                 }
+            )
+        }
+        binding?.toCheck?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                InvoiceFragment::class.java,
+                Bundle().apply { putSerializable(InvoiceFragment.PARAM, "")
+                    putSerializable(EXTRA_RGM, "checknab")   }
             )
         }
     }

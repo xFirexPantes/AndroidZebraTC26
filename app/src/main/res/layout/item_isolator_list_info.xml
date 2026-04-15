@@ -3,49 +3,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-        <TextView
-            android:id="@+id/type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="16dp"
-            android:text="TextView" />
 
         <TextView
             android:id="@+id/number"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="16dp"
-            android:text="TextView" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        android:orientation="horizontal">
-    <TextView
-            android:id="@+id/ost"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textSize="16dp"
-            android:text="TextView" />
+             android:layout_weight="1"
+            android:text="5009183"
+            android:textSize="16dp" />
         <TextView
-            android:id="@+id/Cab"
-            android:layout_width="match_parent"
+            android:id="@+id/numNakl"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:textSize="16dp"
+            android:text="Н-плюс элемента" />
+        <TextView
+            android:id="@+id/NaklDT"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="16dp"
-            android:text="TextView" />
-
+            android:text="06.04.2026" />
     </LinearLayout>
+
 
     <View
         android:id="@+id/separator"

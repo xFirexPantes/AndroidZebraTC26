@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         style="@style/ButtonBase"
         android:text="@{title}"
+
         android:drawableStart="@{icon}"
         android:textAlignment="textStart">
     </androidx.appcompat.widget.AppCompatButton>

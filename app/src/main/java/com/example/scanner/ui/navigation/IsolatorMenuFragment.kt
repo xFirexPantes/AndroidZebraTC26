@@ -11,7 +11,6 @@ import com.example.scanner.R
 import com.example.scanner.databinding.FragmentIsolatorMenuBinding
 import com.example.scanner.modules.viewModelFactory
 import com.example.scanner.ui.navigation.HomeFragment.HomeViewModel
-import com.example.scanner.ui.navigation.ReceiveFragment.Companion.EXTRA_RGM
 
 class IsolatorMenuFragment : Fragment() {
     private val homeViewModel: HomeViewModel by viewModels{ viewModelFactory }
@@ -55,6 +54,10 @@ class IsolatorMenuFragment : Fragment() {
                         if (state.isolator) View.VISIBLE else View.GONE
                     binding?.toWh?.isEnabled = state.isolator
 
+                    binding?.toIso?.visibility =
+                        if (state.admin) View.VISIBLE else View.GONE
+                    binding?.toIso?.isEnabled = state.admin
+
                 }
             }
         }
@@ -68,6 +71,12 @@ class IsolatorMenuFragment : Fragment() {
             homeViewModel.mainActivityRouter.navigate(
                 IsolatorListFragment::class.java,
                 Bundle().apply { putSerializable(IsolatorFragment.PARAM, "towh") }
+            )
+        }
+        binding?.toIso?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                IsolatorListFragmentInfo::class.java,
+                Bundle().apply { putSerializable(IsolatorListFragmentInfo.PARAM, "toIso") }
             )
         }
     }

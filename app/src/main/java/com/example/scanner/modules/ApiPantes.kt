@@ -163,6 +163,7 @@ class ApiPantes(
             @Header("Authorization") authorization:String,
             @Query("token") token: String,
             ):Call<InvoiceSearchResponse>
+
         //endregion
 
         //region lines
@@ -436,8 +437,8 @@ class ApiPantes(
         fun isolatorListSearch(
             @Header("Authorization") authorization:String,
             @Query("skladId") skladId: Int,
-            @Query("Reason") Reason: String,
             @Query("rgm") rgm: String,
+            @Query("Reason") Reason: String,
             @Query("token") token: String,
         ):Call<IsolatorListSearchResponse>
         @GET("dry/info")
@@ -451,9 +452,31 @@ class ApiPantes(
         @Headers("Content-Type: application/json")
         fun isolatorListInfo(
             @Header("Authorization") authorization:String,
-            @Query("id") id: Int,
             @Query("token") token: String,
         ):Call<IsolatorListInfoResponse>
+        @GET("isolator/isolatemanual")
+        @Headers("Content-Type: application/json")
+        fun isolatorIsolateManual(
+            @Header("Authorization") authorization:String,
+            @Query("reason") reason: Int,
+            @Query("dt") dt: String,
+            @Query("prim") prim: String,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("isolator/clear")
+        @Headers("Content-Type: application/json")
+        fun isolatorClear(
+            @Header("Authorization") authorization:String,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("isolator/addnum")
+        @Headers("Content-Type: application/json")
+        fun isolatorAddNum(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("isbottle") isbottle: Boolean,
+            @Query("token") token: String,
+        ):Call<String>
         @GET("incontrol/put2wh")
         @Headers("Content-Type: application/json")
         fun incontrolPut2WH(
@@ -612,33 +635,33 @@ class ApiPantes(
             )
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun isolatorIsolating(
-        token: String,
-        component: String,
-        note: String,
-        quantity: String,
-        reason: String,
-        until: String,
-    ): ApiState<IsolatorSearchResponse.Item> {
-        return flow {
-            val response:Response<IsolatorSearchResponse.Item> =
-                api.isolatorIsolate(
-                    authorization = "Bearer $token",
-                    component = component,
-                    note = note,
-                    quantity = quantity,
-                    reason = reason,
-                    token = token,
-                    until = until
-                    ).execute()
-            emit(
-                when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!!)
-                    else->ApiState.Error(buildException(response))
-                }
-            )
-        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
-    }
+//    suspend fun isolatorIsolating(
+//        token: String,
+//        component: String,
+//        note: String,
+//        quantity: String,
+//        reason: String,
+//        until: String,
+//    ): ApiState<IsolatorSearchResponse.Item> {
+//        return flow {
+//            val response:Response<IsolatorSearchResponse.Item> =
+//                api.isolatorIsolate(
+//                    authorization = "Bearer $token",
+//                    component = component,
+//                    note = note,
+//                    quantity = quantity,
+//                    reason = reason,
+//                    token = token,
+//                    until = until
+//                    ).execute()
+//            emit(
+//                when(response.isSuccessful){
+//                    true->ApiState.Success(response.body()!!)
+//                    else->ApiState.Error(buildException(response))
+//                }
+//            )
+//        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+//    }
     suspend fun isolatorMinus(
         token: String,
         numberCoil: Int?,
@@ -692,10 +715,46 @@ class ApiPantes(
 
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun isolatorListInfo(token:String,id: Int): ApiState<IsolatorListInfoResponse> {
+    suspend fun isolatorListInfo(token:String): ApiState<IsolatorListInfoResponse> {
         return flow {
             val response:Response<IsolatorListInfoResponse> =
-                api.isolatorListInfo( "Bearer $token",id,token).execute()
+                api.isolatorListInfo( "Bearer $token",token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun isolatorIsolate(token:String,reason:Int, DT: String,prim: String): ApiState<String> {
+        return flow {
+            val response:Response<String> =
+                api.isolatorIsolateManual( "Bearer $token",reason,DT,prim,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun isolatorClear(token:String): ApiState<String> {
+        return flow {
+            val response:Response<String> =
+                api.isolatorClear( "Bearer $token",token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun isolatorAddNum(token:String,num: String, isbottle: Boolean): ApiState<String> {
+        return flow {
+            val response:Response<String> =
+                api.isolatorAddNum( "Bearer $token",num,isbottle,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 //else->emit(AppResult.Success(it))
@@ -734,12 +793,15 @@ class ApiPantes(
 
     suspend fun invoiceSearch(token:String,query:String,last:String): ApiState<InvoiceSearchResponse> {
         return flow {
-            val response:Response<InvoiceSearchResponse> =
+            val response: Response<InvoiceSearchResponse> =
                 api.invoiceSearch(
                     authorization = "Bearer $token",
                     token = token,
                     query = query,
-                    last = last).execute()
+                    last = last
+                ).execute()
+
+
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!.apply { request=query }))
                 else->emit(ApiState.Error(buildException(response)))
@@ -1203,7 +1265,7 @@ class ApiPantes(
     suspend fun isolatorListSearch(token:String,skladID: Int,Reason: String,rgm: String): ApiState<IsolatorListSearchResponse> {
         return flow {
             val response:Response<IsolatorListSearchResponse> =
-                api.isolatorListSearch( "Bearer $token",skladID,Reason,rgm,token).execute()
+                api.isolatorListSearch( "Bearer $token",skladID,rgm,Reason,token).execute()
             emit(
                 when(response.isSuccessful){
                     true->ApiState.Success(response.body()!!)

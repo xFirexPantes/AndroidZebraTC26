@@ -39,6 +39,7 @@ class InvoiceFragment : BaseFragment() {
 
     companion object{
         const val PARAM="param"
+        const val EXTRA_RGM=""
     }
 
     private val invoicesViewModel: InvoicesViewModel by viewModels<InvoicesViewModel> {viewModelFactory}
@@ -377,6 +378,7 @@ class InvoiceFragment : BaseFragment() {
                                 putSerializable(InvoiceFragmentLines.PARAMS_INVOICE_ID,itemData.id)
                                 putSerializable(InvoiceFragmentLines.PARAMS1_INVOICE_NAME,itemData.number)
                                 putSerializable(InvoiceFragmentLines.PARAMS2_COLLECTED,itemData.collected)
+
                             }
                         )
                     }

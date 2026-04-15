@@ -191,27 +191,27 @@ class IsolatorFragmentIsolate : BaseFragment() , TextWatcher {
                             )
                             //endregion
                             //region isolate
-                            containerHorizon.addView(
-                                TemplateButton2Binding.inflate(inflater,containerHorizon,false)
-                                    .apply {
-                                        containerHorizon.gravity= Gravity.CENTER
-                                        buttonScan.text="Изолировать"
-                                        buttonIsolating=buttonScan
-                                        buttonIsolating.setOnClickListener {
-                                            if (isValid()) {
-                                                isolatorIsolateViewModel.requestIsolating(
-                                                    //component = "",
-                                                    component = number.text.toString(),
-                                                    note = note.text.toString(),
-                                                    quantity = quantity.text.toString(),
-                                                    reason = isolatorSearchResponse.found[spinner.selectedItemPosition].id,
-                                                    until = until.text.toString()
-                                                )
-                                            }
-                                        }
-                                    }
-                                    .root
-                            )
+//                            containerHorizon.addView(
+//                                TemplateButton2Binding.inflate(inflater,containerHorizon,false)
+//                                    .apply {
+//                                        containerHorizon.gravity= Gravity.CENTER
+//                                        buttonScan.text="Изолировать"
+//                                        buttonIsolating=buttonScan
+//                                        buttonIsolating.setOnClickListener {
+//                                            if (isValid()) {
+//                                                isolatorIsolateViewModel.requestIsolating(
+//                                                    //component = "",
+//                                                    component = number.text.toString(),
+//                                                    note = note.text.toString(),
+//                                                    quantity = quantity.text.toString(),
+//                                                    reason = isolatorSearchResponse.found[spinner.selectedItemPosition].id,
+//                                                    until = until.text.toString()
+//                                                )
+//                                            }
+//                                        }
+//                                    }
+//                                    .root
+//                            )
                             //endregion
 
                             //region tune card
@@ -375,31 +375,31 @@ class IsolatorFragmentIsolate : BaseFragment() , TextWatcher {
             }
         }
 
-        fun requestIsolating(component:String,note:String,quantity:String,reason:String,until:String,) {
-            ioCoroutineScope.launch {
-                isolatorIsolateFragmentFormState.postValue(
-                    when(val token=loginRepository.user?.token){
-                        null-> IsolatorIsolateFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
-                        else->{
-                            when(val result = apiPantes.isolatorIsolating(
-                                component = component,
-                                token = token,
-                                note = note,
-                                quantity = quantity,
-                                reason = reason,
-                                until = until
-                            )){
-                                is ApiPantes.ApiState.Success->
-                                    IsolatorIsolateFragmentFormState.SuccessIsolate(result.data)
-                                is ApiPantes.ApiState.Error->
-                                    IsolatorIsolateFragmentFormState.Error(result.exception)
-                            }
-                        }
-                    }
-                )
-
-            }
-        }
+//        fun requestIsolating(component:String,note:String,quantity:String,reason:String,until:String,) {
+//            ioCoroutineScope.launch {
+//                isolatorIsolateFragmentFormState.postValue(
+//                    when(val token=loginRepository.user?.token){
+//                        null-> IsolatorIsolateFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+//                        else->{
+//                            when(val result = apiPantes.isolatorIsolating(
+//                                component = component,
+//                                token = token,
+//                                note = note,
+//                                quantity = quantity,
+//                                reason = reason,
+//                                until = until
+//                            )){
+//                                is ApiPantes.ApiState.Success->
+//                                    IsolatorIsolateFragmentFormState.SuccessIsolate(result.data)
+//                                is ApiPantes.ApiState.Error->
+//                                    IsolatorIsolateFragmentFormState.Error(result.exception)
+//                            }
+//                        }
+//                    }
+//                )
+//
+//            }
+//        }
 
 
     }

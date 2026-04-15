@@ -17,6 +17,8 @@ data class IsolatorListSearchResponse(
         val kolpacks:Int,
         val IDResSub:Int,
         val Reason:String,
+        val cell: String,
+        val stel:Int,
         val coils:ArrayList<Coil> = ArrayList(),
         var isScanned: Boolean = false
     )

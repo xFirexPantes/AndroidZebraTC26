@@ -19,6 +19,7 @@ data class LoggedInUserResponse(
         val update: Boolean=false,
         val admin: Boolean=false,
         val truesign: Boolean=false,
+        val checknab: Boolean=false,
         val token:String
         )
 }

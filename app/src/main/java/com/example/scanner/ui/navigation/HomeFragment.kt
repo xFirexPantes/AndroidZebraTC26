@@ -98,11 +98,14 @@ class HomeFragment : BaseFragment() {
                         }
 
                         issuance.button.alpha =
-                            if (state.issuance) {
+                            if (state.issuance or state.checknab) {
                                 issuance.button.setOnClickListener {
                                     homeViewModel.mainActivityRouter.navigate(
                                         InvoiceMenuFragment::class.java,
-                                        Bundle().apply { putSerializable(PARAM_STEP_1_VALUE, "") }
+                                        Bundle().apply {
+                                            putSerializable(PARAM_STEP_1_VALUE, "")   // если нужно
+                                            // или putSerializable
+                                        }
                                     )
                                 }
                                 floatEnable
@@ -293,6 +296,10 @@ class HomeFragment : BaseFragment() {
                 // 3. Обновляем TextView в UI-потоке
                 val currentVersion = getCurrentVersion()
                 versionTextView.text = "Версия: $currentVersion"
+                versionTextView.setOnClickListener {
+                    val changelogText = loadLocalChangelog()
+                    showChangelogDialog(changelogText)
+                }
                 if (isUpdateNeeded) {
                     btn.setBackgroundColor(Color.argb(255, 0, 255, 0))
                     versionTextView.setBackgroundColor(Color.argb(255, 0, 255, 0))
@@ -358,6 +365,23 @@ class HomeFragment : BaseFragment() {
         }.start()
     }
 
+    private fun loadLocalChangelog(): String {
+        return try {
+            resources.openRawResource(R.raw.changelog).bufferedReader().use { it.readText() }
+        } catch (e: IOException) {
+            "Не удалось загрузить список изменений"
+        }
+    }
+    private fun showChangelogDialog(changelogText: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Список изменений")
+            .setMessage(if (changelogText.isBlank()) "Список изменений пуст" else changelogText)
+            .setPositiveButton("ОК") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+            .show()
+    }
     private fun showUpdateDialog(networkPath: String) {
         AlertDialog.Builder(requireContext())
             .setTitle("Доступно обновление")
@@ -655,7 +679,8 @@ class HomeFragment : BaseFragment() {
                             incontrol = it.access.incontrol,
                             update = it.access.update,
                             admin = it.access.admin,
-                            truesign = it.access.truesign
+                            truesign = it.access.truesign,
+                            checknab = it.access.checknab
                         )
                     }
                 }

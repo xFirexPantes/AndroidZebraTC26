@@ -415,26 +415,7 @@ class InControlFragment: BaseFragment() {
                 is InControlFragmentState.Success ->{
                     state.data?.let { incontrolSearchResponse->
                         incontrolSearchResponse as InControlSearchResponse
-//                        if (      isUrgentCompare){
-//                            val apiId = incontrolSearchResponse.found.firstOrNull()?.id
-//                            val currentId = if (adapterincontrol.itemCount > 0) {
-//                                adapterincontrol.data.found.firstOrNull()?.id
-//                            } else {
-//                                null
-//                            }
-//                            if (apiId != null && currentId != null) {
-//                                if (apiId == currentId) {
-//                                    infoTextView.visibility = View.VISIBLE
-//                                    infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
-//                                } else {
-//                                    infoTextView.visibility = View.VISIBLE
-//                                    infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
-//                                }
-//                            } else {
-//
-//                            }
-//                        }
-//                        else {
+
                         if (adapterincontrol.isResetContent) {
                             infoTextView.visibility = View.GONE
                             incontrolViewModel.incontrolFragmentTitle
