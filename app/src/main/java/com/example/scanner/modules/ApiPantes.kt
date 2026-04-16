@@ -24,6 +24,7 @@ import com.example.scanner.models.InControlSearchResponse
 import com.example.scanner.models.InControlUrgentSearchResponse
 import com.example.scanner.models.IsolatorListInfoResponse
 import com.example.scanner.models.IsolatorListSearchResponse
+import com.example.scanner.models.TrueSignSearchResponse
 import com.example.scanner.ui.MainActivity
 import com.example.scanner.ui.base.NonFatalExceptionShowDialogMessage
 import com.example.scanner.ui.navigation_over.ProgressFragment
@@ -197,7 +198,13 @@ class ApiPantes(
             @Query("query") query: String,
             @Query("token") token: String,
         ):Call<ComponentsSearchResponse>
-
+        @GET("component/searchts")
+        @Headers("Content-Type: application/json")
+        fun truesignSearch(
+            @Header("Authorization") authorization:String,
+            @Query("query") query: String,
+            @Query("token") token: String,
+        ):Call<TrueSignSearchResponse>
         @GET("component/urgentsearch")
         @Headers("Content-Type: application/json")
         fun componentUrgentSearch(
@@ -767,6 +774,18 @@ class ApiPantes(
         return flow {
             val response:Response<ComponentsSearchResponse> =
                 api.componentSearch( "Bearer $token",last,query,token).execute()
+            emit(
+                when(response.isSuccessful){
+                    true->ApiState.Success(response.body()!!)
+                    else->ApiState.Error(buildException(response))
+                }
+            )
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun truesignSearch(token:String,query:String,last:String): ApiState<TrueSignSearchResponse> {
+        return flow {
+            val response:Response<TrueSignSearchResponse> =
+                api.truesignSearch( "Bearer $token",query,token).execute()
             emit(
                 when(response.isSuccessful){
                     true->ApiState.Success(response.body()!!)

@@ -1,13 +1,17 @@
 package com.example.scanner.ui.navigation
-
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Color.rgb
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -44,8 +48,7 @@ class TrueSignFragment: BaseFragment() {
 
     private val truesignViewModel: TrueSignViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
-    private val adapterTrueSign =
-        AdapterTrueSign()
+
     private lateinit var infoTextView : TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,145 +61,24 @@ class TrueSignFragment: BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return TemplateFragmentBinding.inflate(inflater, container, false)
-            .apply {
+        val view = inflater.inflate(R.layout.truesign_fragment, container, false)
+        val toolbar: androidx.appcompat.widget.Toolbar = view.findViewById(R.id.toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(toolbar)
+        val actionBar = (activity as AppCompatActivity).supportActionBar
+        actionBar?.setDisplayHomeAsUpEnabled(true)
+        actionBar?.setDisplayShowHomeEnabled(true)
 
-                toolbar.apply {
-                    setNavigationOnClickListener {
-                        findNavController().navigateUp()
-                    }
-                    //region iconManual
-                    iconContainer.addView(
-                        TemplateIconBinding.inflate(inflater,toolbar,false)
-                            .apply {
-                                src= ResourcesCompat.getDrawable(resources,R.drawable.ic_search,null)
-                                truesignViewModel.pref.enableManualInputMutableLiveData.observe(viewLifecycleOwner){
-                                    root.visibility=it
-                                }
-                                image.setOnClickListener {
-                                    scanViewModel.scannerApiEmulator.softScan(childFragmentManager,requireContext())
-                                }
-                            }
-                            .root
-                    )
-                    //endregion
-                    //region button scan
-                    iconContainer.addView(
-                        TemplateCardBinding.inflate(inflater, root, false)
-                            .apply {
-                                // Создаём TextView и добавляем в containerVertical
-
-
-                                 }
-                            .root
-                    )
-                    iconContainer.addView(
-                        TemplateIconBinding.inflate(inflater,toolbar,false)
-                            .apply {
-                                truesignViewModel.pref.scannerIconDrawableId.observe(viewLifecycleOwner){
-                                    src=ResourcesCompat.getDrawable(resources,it,null)
-                                }
-
-                                image.setOnClickListener {
-                                    scanViewModel.scannerApi.softScan(childFragmentManager,requireContext())
-                                }
-                            }
-                            .root
-                    )
-                    //endregion
-                }
-
-                truesignViewModel.truesignFragmentTitle
-                    .observe(viewLifecycleOwner){
-                        toolbar.title=it
-                    }
-
-                truesignViewModel.truesignFragmentSubtitle
-                    .observe(viewLifecycleOwner){
-                        toolbar.subtitle=it
-                    }
-                root.addView(
-                    TemplateCardBinding.inflate(inflater, root, false)
-                        .apply {
-                            // Создаём TextView и добавляем в containerVertical
-                            infoTextView = TextView(requireContext()).apply {
-                                id = View.generateViewId()  // генерируем ID
-                                visibility = View.GONE  // изначально скрыт
-                                setTextColor(Color.RED)  // например, красный текст
-                                textSize = 14f
-                                setPadding(8, 8, 8, 8)
-                                layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.WRAP_CONTENT
-                                )
-                            }
-                            containerVertical.addView(infoTextView, 0)  // добавляем в начало
-
-                            // Сохраняем ссылку (если нужно управлять позже)
-                            // Например, через tag или поле во фрагменте
-                            containerVertical.tag = infoTextView  // или сохраните в поле фрагмента
-
-                            // ... остальная логика (наблюдатели и т.д.)
-                        }
-                        .root
-                )
-                //region recyclerView
-                root.addView(
-                    TemplateRecyclerBinding.inflate(inflater,root,false)
-                        .apply {
-                            recycler.adapter=adapterTrueSign
-                            recycler.layoutManager=
-                                object : LinearLayoutManager(requireContext()) {
-                                    override fun onScrollStateChanged(state: Int) {
-                                        super.onScrollStateChanged(state)
-                                        if (findLastVisibleItemPosition()+1 == adapterTrueSign.itemCount) {
-                                            truesignViewModel.truesignSearch(
-                                                getArgument(PARAM),
-                                                adapterTrueSign.last.toString())
-                                        }
-                                    }
-                                }
-                            //region empty
-                            containerContent.addView(
-                                TemplateResultEmptyBinding.inflate(inflater,containerContent,false)
-                                    .root
-                                    .apply {
-                                        truesignViewModel.truesignFragmentEmpty
-                                            .observe(viewLifecycleOwner){
-                                                this.visibility=it
-                                            }
-                                        truesignViewModel.truesignFragmentEmpty
-                                            .postValue(
-                                                View.GONE
-                                            )
-                                    }
-                            )
-                            //endregion
-
-                            //region ready
-                            containerContent.addView(
-                                TemplateScannerReadyBinding.inflate(inflater,containerContent,false)
-                                    .apply {
-                                        icon= ResourcesCompat.getDrawable(resources,R.drawable.ic_qr,null)
-                                        title="Сканируйте код элемента'"
-                                        truesignViewModel.truesignFragmentReady
-                                            .observe(viewLifecycleOwner){
-                                                root.visibility=it
-                                            }
-                                    }
-                                    .root
-                            )
-                            //endregion
-                        }
-                        .root
-                )
-                //endregion
-
-            }.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()  // или activity.onBackPressed()
+        }
+        val txtPost : TextView = view.findViewById(R.id.customer)
+        val txtnumNakl : TextView = view.findViewById(R.id.numNakl)
+        val txtdt : TextView = view.findViewById(R.id.dt)
+        val txtkol : TextView = view.findViewById(R.id.kol)
+        val txtmsg: TextView = view.findViewById(R.id.msg)
+        toolbar.apply {
+            title = "Честный Знак"
+        }
 
         truesignViewModel.truesignFragmentState.observe(viewLifecycleOwner)
         {
@@ -217,30 +99,24 @@ class TrueSignFragment: BaseFragment() {
                 is TrueSignFragmentState.Success ->{
                     state.data?.let { truesignSearchResponse->
                         truesignSearchResponse as TrueSignSearchResponse
-
-                        if (adapterTrueSign.isResetContent) {
-                            infoTextView.visibility = View.GONE
-                            truesignViewModel.truesignFragmentTitle
-                                .postValue(
-                                    getString(
-                                        R.string.format_title,
-                                        "${truesignSearchResponse.total}"
-                                    )
-                                )
-                            truesignViewModel.truesignFragmentEmpty
-                                .postValue(
-                                    if (truesignSearchResponse.found.isEmpty())
-                                        View.VISIBLE
-                                    else
-                                        View.GONE
-                                )
-                            adapterTrueSign.setContent(truesignSearchResponse)
-                        } else {
-                            adapterTrueSign.appendContent(truesignSearchResponse)
+                        if (truesignSearchResponse.msg == "Ok") {
+                            txtPost.setText(truesignSearchResponse.customer)
+                            txtnumNakl.setText(truesignSearchResponse.numNakl)
+                            val dateString = truesignSearchResponse.dt.substringBefore(' ')
+                            val date = LocalDate.parse(dateString)
+                            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                            val formattedDate = date.format(formatter)  // "31.12.2026"
+                            txtdt.setText(formattedDate)
+                            txtkol.setText(truesignSearchResponse.kol.toString())
+                            txtmsg.setTextColor( rgb(0,255,0))
+                        }else{
+                            txtPost.setText("")
+                            txtnumNakl.setText("")
+                            txtdt.setText("")
+                            txtkol.setText("")
+                            txtmsg.setTextColor( rgb(255,0,0))
                         }
-
-
-
+                        txtmsg.text = truesignSearchResponse.msg
                     }
 
                 }
@@ -255,13 +131,7 @@ class TrueSignFragment: BaseFragment() {
                         }
                     )
 
-                    truesignViewModel.truesignFragmentEmpty.postValue(
-                        when{
-                            !getArgument<String?>(PARAM).isNullOrEmpty()
-                                    && adapterTrueSign.itemCount==0 -> View.VISIBLE
-                            else-> View.GONE
-                        }
-                    )
+
                 }
             }
 
@@ -271,6 +141,13 @@ class TrueSignFragment: BaseFragment() {
                 )
             }
         }
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+
 
         scanViewModel.scanFragmentBaseFormState.observe(viewLifecycleOwner)
         {
@@ -283,12 +160,10 @@ class TrueSignFragment: BaseFragment() {
                         arguments = Bundle().apply {
                             putSerializable(PARAM, stringScanResult)
                         }
-                        infoTextView.visibility = View.VISIBLE
-                        infoTextView.text = stringScanResult
+
                         truesignViewModel.truesignFragmentSubtitle
                             .postValue(getString(R.string.format_subtitle, getArgument(PARAM)))
-                        adapterTrueSign.resetContent()
-//                        truesignViewModel.truesignSearch(getArgument(PARAM),"")
+                        truesignViewModel.truesignSearch(getArgument(PARAM),"")
 
                         truesignViewModel.truesignFragmentReady
                             .postValue(
@@ -302,10 +177,6 @@ class TrueSignFragment: BaseFragment() {
             }
         }
 
-        if (!getArgument<String?>(PARAM).isNullOrEmpty() && adapterTrueSign.itemCount==0){
-            truesignViewModel.truesignSearch(
-                getArgument(PARAM),"")
-        }
 
         truesignViewModel.truesignFragmentState.postValue(
             TrueSignFragmentState.Idle
@@ -313,102 +184,9 @@ class TrueSignFragment: BaseFragment() {
 
     }
 
-    inner class AdapterTrueSign: BaseRecyclerAdapter<TrueSignSearchResponse>(TrueSignSearchResponse()) {
-        override fun getCallback(dataOld: TrueSignSearchResponse?): DiffUtil.Callback {
-            return object :DiffUtil.Callback(){
-                override fun getOldListSize(): Int {
-                    return dataOld?.found?.size?:0
-                }
-
-                override fun getNewListSize(): Int {
-                    return data.found.size
-                }
-
-                override fun areItemsTheSame(
-                    oldItemPosition: Int,
-                    newItemPosition: Int
-                ): Boolean {
-                    return data.found[newItemPosition].id==
-                            dataOld?.found?.get(oldItemPosition)?.id
-                }
-
-                override fun areContentsTheSame(
-                    oldItemPosition: Int,
-                    newItemPosition: Int
-                ): Boolean {
-                    return data.found[newItemPosition].id==
-                            dataOld?.found?.get(oldItemPosition)?.id
-                }
-            }
-        }
-
-        override fun appendData(dataNew: TrueSignSearchResponse) {
-            if (dataNew.found.isNotEmpty()){
-                data.last=dataNew.last
-                data.found.addAll(dataNew.found)
-            }
-        }
-
-        override fun getLastId(): Any {
-            return data.last
-        }
-
-        override fun cloneData(): TrueSignSearchResponse {
-            return data.copy(found = ArrayList(data.found))
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            return object :ViewHolder(TemplateCardBinding.inflate(layoutInflater,parent,false).root){}
-
-        }
-
-        override fun getItemCount(): Int {
-            return data.found.size
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val itemBinding=TemplateCardBinding.bind(holder.itemView)
-            val itemData =
-                data.found[position]
-            itemBinding.containerVertical.removeAllViews()
-            itemBinding.containerHorizon.removeAllViews()
-            //region content
-            arrayOf(
-                Pair(arrayOf("name"),""),
-                Pair(arrayOf("id"),"# компонента "),
-                Pair(arrayOf("nominal"),"Номинал "),
-                Pair(arrayOf("coil"),"Катушка "),
-                Pair(arrayOf("horizontalDivider"),""),
-                Pair(arrayOf("amount"),"На складе "),
-                Pair(arrayOf("isokol"),"В изоляторе "),
-                Pair(arrayOf("drykol"),"На сушке "),
-                //Pair(arrayOf("isolated"),"В изоляторе "),
-            )
-                .forEach {pair->
-                    itemBinding.containerVertical.addView(
-                        TemplatePresenterBinding.inflate(layoutInflater,itemBinding.containerVertical,false)
-                            .apply {
-                                setAttribute(pair,itemData)
-                            }
-                            .root
-                    )
-                }
-            //endregion
-
-//            itemBinding.containerVertical.setOnClickListener {
-//                truesignViewModel.mainActivityRouter.navigate(
-//                        TrueSignFragmentInfo::class.java,
-//                        Bundle().apply {
-//                            putSerializable(TrueSignFragmentInfo.PARAM, itemData.id)
-//                        }
-//                    )
-//
-//            }
 
 
-        }
 
-    }
 
     sealed class TrueSignFragmentState<out T:Any> {
 
@@ -443,7 +221,7 @@ class TrueSignFragment: BaseFragment() {
                     when(val token=loginRepository.user?.token){
                         null-> TrueSignFragmentState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
                         else-> when(
-                            val result = apiPantes.componentSearch(
+                            val result = apiPantes.truesignSearch(
                                     token = token,
                                     query = param,
                                     last=last,
@@ -472,8 +250,7 @@ class TrueSignFragment: BaseFragment() {
 
         val truesignFragmentReady=
             MutableLiveData<Int>()
-        val truesignFragmentEmpty=
-            MutableLiveData<Int>()
+
         val truesignFragmentTitle=
             MutableLiveData<String>()
         val truesignFragmentSubtitle=

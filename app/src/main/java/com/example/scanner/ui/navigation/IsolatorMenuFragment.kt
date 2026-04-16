@@ -55,8 +55,8 @@ class IsolatorMenuFragment : Fragment() {
                     binding?.toWh?.isEnabled = state.isolator
 
                     binding?.toIso?.visibility =
-                        if (state.admin) View.VISIBLE else View.GONE
-                    binding?.toIso?.isEnabled = state.admin
+                        if (state.isolator) View.VISIBLE else View.GONE
+                    binding?.toIso?.isEnabled = state.isolator
 
                 }
             }

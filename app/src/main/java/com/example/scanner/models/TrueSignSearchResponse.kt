@@ -1,20 +1,9 @@
 package com.example.scanner.models
 
 data class TrueSignSearchResponse(
-    val found:ArrayList<Item> = ArrayList(),
-    var last:String = "",
-    val total:Long = 0
-) {
-    data class Item(
-        val amount:Double,
-        val cell:String,
-        val case:String,
-        val coil:Boolean,
-        val id:String,
-        val name: String,
-        val nominal:String,
-        val rack:Int,
-        val isokol: Double,
-        val drykol: Double
-    )
-}
+    val customer: String ="",
+    val numNakl: String ="",
+    var dt:String = "",
+    val kol:Long = 0,
+    val msg:String = "",
+)
