@@ -24,7 +24,6 @@ import com.example.scanner.ui.navigation_over.ErrorsFragment
 import kotlinx.coroutines.launch
 import com.example.scanner.models.IsolatorListInfoResponse
 import com.example.scanner.ui.base.ScanFragmentBase
-import com.example.scanner.ui.navigation.InControlFragment.Result
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -98,11 +97,8 @@ class IsolatorListFragmentInfo : BaseFragment() {
         isolatorListIViewModel.isolatorListInfoFormState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is IsolatorListInfoFormState.SuccessIsolatorListInfo -> {
-                    val data = state.data as IsolatorListInfoResponse
-                    // toolbar.title = "Данные катушек"  // Можно взять из ответа, если есть поле
-
-                    // Очищаем контейнер
-                    containerList.removeAllViews()
+                    val data = state.data
+                       containerList.removeAllViews()
 
                         skladid.text = data.head.skladid ?: ""
                         naim.text = data.head.naim ?: ""

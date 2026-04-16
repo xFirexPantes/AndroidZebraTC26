@@ -2,38 +2,22 @@ package com.example.scanner.ui.navigation
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Color.rgb
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.scanner.R
-import com.example.scanner.app.setAttribute
-import com.example.scanner.databinding.TemplateCardBinding
-import com.example.scanner.databinding.TemplateFragmentBinding
-import com.example.scanner.databinding.TemplateIconBinding
-import com.example.scanner.databinding.TemplatePresenterBinding
-import com.example.scanner.databinding.TemplateRecyclerBinding
-import com.example.scanner.databinding.TemplateResultEmptyBinding
-import com.example.scanner.databinding.TemplateScannerReadyBinding
 import com.example.scanner.models.TrueSignSearchResponse
 import com.example.scanner.modules.ApiPantes
 import com.example.scanner.modules.Pref
 import com.example.scanner.modules.viewModelFactory
 import com.example.scanner.ui.base.BaseFragment
-import com.example.scanner.ui.base.BaseRecyclerAdapter
 import com.example.scanner.ui.base.BaseViewModel
 import com.example.scanner.ui.base.ScanFragmentBase
 import com.example.scanner.ui.navigation.login.LoginRepository
@@ -49,7 +33,6 @@ class TrueSignFragment: BaseFragment() {
     private val truesignViewModel: TrueSignViewModel by viewModels{ viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
 
-    private lateinit var infoTextView : TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel

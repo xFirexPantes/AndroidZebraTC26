@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -16,21 +17,24 @@
             android:layout_height="wrap_content"
              android:layout_weight="1"
             android:text="5009183"
-            android:textSize="16dp" />
+            android:textSize="16sp"
+            tools:ignore="HardcodedText" />
         <TextView
             android:id="@+id/numNakl"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
-            android:textSize="16dp"
-            android:text="Н-плюс элемента" />
+            android:textSize="16sp"
+            android:text="Н-плюс элемента"
+            tools:ignore="HardcodedText" />
         <TextView
             android:id="@+id/NaklDT"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="16dp"
-            android:text="06.04.2026" />
+            android:textSize="16sp"
+            android:text="06.04.2026"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
 

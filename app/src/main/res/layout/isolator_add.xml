@@ -14,6 +14,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:layout_weight="2"
         android:padding="5dp"
@@ -22,53 +23,54 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            tools:ignore="NestedWeights">
             <TextView
                 android:id="@+id/editTextText6"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Код" />
+                android:text="Код"
+                tools:ignore="HardcodedText" />
             <TextView
                 android:id="@+id/editTextText5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Наименование" />
+                android:text="Наименование"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/editTextText4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Элемент" />
+                android:text="Элемент"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/editTextText3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Серия" />
+                android:text="Серия"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/editTextText2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Номинал" />
+                android:text="Номинал"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/editTextText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:inputType="text"
-                android:text="Корпус" />
+                android:text="Корпус"
+                tools:ignore="HardcodedText" />
 
         </LinearLayout>
         <LinearLayout
@@ -127,7 +129,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.8"
             android:textAlignment="center"
-            android:text="№" />
+            android:text="№"
+            tools:ignore="HardcodedText,NestedWeights" />
 
         <TextView
             android:id="@+id/Label2"
@@ -135,7 +138,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
             android:textAlignment="center"
-            android:text="Накладная" />
+            android:text="Накладная"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/Label3"
@@ -143,7 +147,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
             android:textAlignment="center"
-            android:text="Дата" />
+            android:text="Дата"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"
@@ -155,7 +160,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:padding="16dp" />
+            android:padding="16dp"
+            tools:ignore="ObsoleteLayoutParam" />
     </ScrollView>
 
     <LinearLayout
@@ -175,7 +181,8 @@
             android:textSize="16sp"
             app:backgroundTint="#0DA5CA"
             app:iconTint="@color/white"
-            app:strokeColor="#FFFFFF" />
+            app:strokeColor="#FFFFFF"
+            tools:ignore="HardcodedText,NestedWeights" />
         <Button
             android:id="@+id/buttonClear"
             android:layout_width="0dp"
@@ -187,9 +194,7 @@
             android:textSize="16sp"
             app:backgroundTint="#0DA5CA"
             app:iconTint="@color/white"
-            app:strokeColor="#FFFFFF" />
+            app:strokeColor="#FFFFFF"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
-
-
-
 </LinearLayout>
