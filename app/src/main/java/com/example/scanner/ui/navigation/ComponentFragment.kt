@@ -554,8 +554,7 @@ class ComponentFragment: BaseFragment() {
                         else-> when(
                             val result = apiPantes.componentUrgentSearch(
                                 token = token,
-                                query = param,
-                                last=last,
+                                 last=last,
                             )
                         ){
                             is ApiPantes.ApiState.Success->

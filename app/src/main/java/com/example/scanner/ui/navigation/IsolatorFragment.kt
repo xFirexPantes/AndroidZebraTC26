@@ -279,7 +279,7 @@ class IsolatorFragment : BaseFragment() {
 
     }
 
-    inner class AdapterIsolator(): BaseRecyclerAdapter<IsolatorSearchResponse>(IsolatorSearchResponse()){
+    inner class AdapterIsolator : BaseRecyclerAdapter<IsolatorSearchResponse>(IsolatorSearchResponse()){
 
         override fun getCallback(dataOld: IsolatorSearchResponse?): DiffUtil.Callback {
             return object :DiffUtil.Callback(){

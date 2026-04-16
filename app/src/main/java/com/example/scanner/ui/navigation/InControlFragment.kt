@@ -781,9 +781,7 @@ class InControlFragment: BaseFragment() {
             lifecycleScope.launch {
                 try {
                     // 1. Вызываем checkst() и ждём результата
-                    val result = incontrolViewModel.checkst(num)
-
-                    when (result) {
+                    when (val result = incontrolViewModel.checkst(num)) {
                         is Result.Success -> {
                             msg = result.data.isOk
                             IDAll = result.data.IDAll

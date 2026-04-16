@@ -151,7 +151,7 @@ class ReceiveFragmentInfo:BaseFragment() {
                                         tabLayout.addTab(
                                             tabLayout.newTab()
                                                 .apply {
-                                                    setText(tabItem.name)
+                                                    text = tabItem.name
                                                 }
                                         )
                                     }

@@ -26,7 +26,7 @@ class SettingScannerDialog: BaseFragmentDialog() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setRetainInstance(true)
+        retainInstance = true
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

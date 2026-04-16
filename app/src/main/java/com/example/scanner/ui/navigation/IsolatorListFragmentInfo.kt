@@ -72,8 +72,8 @@ class IsolatorListFragmentInfo : BaseFragment() {
         val krp: TextView = view.findViewById(R.id.krp)
 
 
-        val addBtn : Button = view.findViewById(R.id.buttonIso);
-        val clearBtn : Button = view.findViewById(R.id.buttonClear);
+        val addBtn : Button = view.findViewById(R.id.buttonIso)
+        val clearBtn : Button = view.findViewById(R.id.buttonClear)
         toolbar.apply {
             title = "Изолируем вручную"
         }
@@ -100,12 +100,12 @@ class IsolatorListFragmentInfo : BaseFragment() {
                     val data = state.data
                        containerList.removeAllViews()
 
-                        skladid.text = data.head.skladid ?: ""
-                        naim.text = data.head.naim ?: ""
-                        el.text = data.head.el ?: ""
-                        ser.text = data.head.ser ?: ""
-                        nom.text = data.head.nom ?: ""
-                        krp.text = data.head.krp ?: ""
+                        skladid.text = data.head.skladid
+                        naim.text = data.head.naim
+                        el.text = data.head.el
+                        ser.text = data.head.ser
+                        nom.text = data.head.nom
+                        krp.text = data.head.krp
 
                     // Заполняем список
                     data.coils.forEach { attribute ->
@@ -117,9 +117,9 @@ class IsolatorListFragmentInfo : BaseFragment() {
                         val tvnumNakl: TextView = itemView.findViewById(R.id.numNakl)
                         val tvNaklDT: TextView = itemView.findViewById(R.id.NaklDT)
 
-                        tvNumber.text = attribute.number.toString() ?: ""
-                        tvnumNakl.text = attribute.numNakl ?: "-"
-                        tvNaklDT.text = attribute.NaklDT ?: "-"
+                        tvNumber.text = attribute.number.toString()
+                        tvnumNakl.text = attribute.numNakl
+                        tvNaklDT.text = attribute.NaklDT
                         // Можно добавить разделитель
 //                        val separator = View(requireContext()).apply {
 //                            layoutParams = ViewGroup.LayoutParams(
@@ -152,7 +152,7 @@ class IsolatorListFragmentInfo : BaseFragment() {
                                     context,
                                     "Другой элемент необходимо изолировать отдельно",
                                     Toast.LENGTH_LONG
-                                ).show();
+                                ).show()
 
                     }
                     else {
@@ -160,7 +160,7 @@ class IsolatorListFragmentInfo : BaseFragment() {
                             context,
                             "Упаковка добавлена",
                             Toast.LENGTH_LONG
-                        ).show();
+                        ).show()
                         isolatorListIViewModel.isolatorListSearch()
                     }
                 }

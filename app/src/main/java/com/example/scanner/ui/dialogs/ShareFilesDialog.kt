@@ -2,26 +2,15 @@ package com.example.scanner.ui.dialogs
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
-import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.CheckedTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatCheckedTextView
-import androidx.core.content.FileProvider
 import androidx.fragment.app.viewModels
-import com.example.scanner.ui.base.BaseViewModel
 import com.example.scanner.app.App
 import com.example.scanner.databinding.DialogFilesSelectViewBinding
 import com.example.scanner.ui.base.BaseFragmentDialog
-import java.io.File
 
 class ShareFilesDialog : BaseFragmentDialog(){
 
@@ -85,8 +74,5 @@ class ShareFilesDialog : BaseFragmentDialog(){
             .create()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }
 

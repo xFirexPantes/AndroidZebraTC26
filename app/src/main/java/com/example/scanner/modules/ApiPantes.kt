@@ -205,14 +205,7 @@ class ApiPantes(
             @Query("query") query: String,
             @Query("token") token: String,
         ):Call<TrueSignSearchResponse>
-        @GET("component/urgentsearch")
-        @Headers("Content-Type: application/json")
-        fun componentUrgentSearch(
-            @Header("Authorization") authorization:String,
-            @Query("last") last: String,
-            @Query("query") query: String,
-            @Query("token") token: String,
-        ):Call<ComponentsUrgentSearchResponse>
+
 
         @GET("component/info")
         @Headers("Content-Type: application/json")
@@ -232,7 +225,6 @@ class ApiPantes(
             @Query("last") last: String,
             @Query("query") query: String,
             @Query("token") token: String,
-//        ):Call<ResponseBody>
         ):Call<IsolatorSearchResponse>
 
         @GET("isolator/reasons")
@@ -343,14 +335,7 @@ class ApiPantes(
             @Query("token") token: String,
         ):Call<InControlSearchResponse>
 
-        @GET("incontrol/urgentsearch")
-        @Headers("Content-Type: application/json")
-        fun incontrolUrgentSearch(
-            @Header("Authorization") authorization:String,
-            @Query("last") last: String,
-            @Query("query") query: String,
-            @Query("token") token: String,
-        ):Call<InControlUrgentSearchResponse>
+
 
         @GET("incontrol/info")
         @Headers("Content-Type: application/json")
@@ -513,7 +498,7 @@ class ApiPantes(
                 }
             }
         }.apply {
-            setLevel(HttpLoggingInterceptor.Level.BODY)
+            level = HttpLoggingInterceptor.Level.BODY
         })
         .addInterceptor( {
             onRequestExecuteStart?.invoke()
@@ -782,7 +767,7 @@ class ApiPantes(
             )
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun truesignSearch(token:String,query:String,last:String): ApiState<TrueSignSearchResponse> {
+    suspend fun truesignSearch(token:String,query:String): ApiState<TrueSignSearchResponse> {
         return flow {
             val response:Response<TrueSignSearchResponse> =
                 api.truesignSearch( "Bearer $token",query,token).execute()
@@ -794,7 +779,7 @@ class ApiPantes(
             )
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun componentUrgentSearch(token:String,query:String,last:String): ApiState<ComponentsSearchResponse> {
+    suspend fun componentUrgentSearch(token:String,last:String): ApiState<ComponentsSearchResponse> {
         return flow {
             val response:Response<ComponentsSearchResponse> =
                 api.componentSearch( "Bearer $token",last,"U",token).execute()
@@ -930,21 +915,7 @@ class ApiPantes(
     //endregion
 
     //region login/logout
-    suspend fun logout(token:String): ApiState<Any> {
-        return flow<ApiState<Any>> {
 
-            val response:Response<ResponseBody> =
-                api.logout("Bearer $token").execute()
-
-            emit(
-                when(response.isSuccessful){
-                    true->ApiState.Success(response.body()!!)
-                    else->ApiState.Error(buildException(response))
-                }
-            )
-
-        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
-    }
     suspend fun login(username: String, password: String): ApiState<LoggedInUserResponse> {
         return flow {
 
@@ -1147,26 +1118,7 @@ class ApiPantes(
             }
         }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
     }
-    suspend fun isolatorListGetID(token:String, num: String): ApiState<Int> {
-        return flow {
-            try {
-                val response: Response<Int> =
-                    api.dryGetID("Bearer $token", num, token).execute()
 
-                Timber.tag("API").d("Response code: ${response.code()}")
-
-                when (response.isSuccessful) {
-                    true -> emit(ApiState.Success(response.body()!!))
-                    else -> emit(ApiState.Error(buildException(response)))
-                }
-            } catch (e: Exception) {
-                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
-                Timber.tag("API_ERROR").e("Message: ${e.message}")
-                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
-                emit(ApiState.Error(e))
-            }
-        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
-    }
     suspend fun incontrolPut2box(token:String, num: String, box: Int): ApiState<String> {
         return flow {
             try {

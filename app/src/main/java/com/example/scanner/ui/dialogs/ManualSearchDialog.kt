@@ -131,7 +131,4 @@ class ManualSearchDialog(private val emulateScannerInput: Boolean=false) :BaseFr
         return false
     }
 
-    override fun onPause() {
-        super.onPause()
-    }
 }

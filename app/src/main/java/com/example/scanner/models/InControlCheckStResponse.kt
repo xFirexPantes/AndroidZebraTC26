@@ -8,6 +8,4 @@ data class InControlCheckStResponse(
     val action15: Boolean? = false,
     val action23: Boolean? = false,
     val comm: String? = "",
-): Serializable{
-
-}
+): Serializable

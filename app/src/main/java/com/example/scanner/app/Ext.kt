@@ -20,8 +20,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -37,7 +35,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -182,7 +179,7 @@ fun ImageView.loadImage(uri: String?,callback: Callback?=null){
 fun String.downloadFile(context: Context){
     val  strSrc= Uri.decode(this)
     val request = DownloadManager.Request(strSrc.toUri())
-    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
     request.setDestinationUri(Uri.fromFile(File(
             Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS
@@ -197,44 +194,7 @@ fun String.downloadFile(context: Context){
 const val floatEnable=1f
 const val floatDisable=.3f
 
-fun View.fadeIn(){
-    val animation = AlphaAnimation(0f, 1f)
-    animation.duration=1000
-    animation.fillAfter=true
-    startAnimation(animation)
-}
-fun ViewGroup.getAllDescendants(view: View = this): MutableList<View> {
-    val descendants = mutableListOf<View>()
-    if (view is ViewGroup) {
-        for (i in 0 until view.childCount) {
-            val child = view.getChildAt(i)
-            descendants.add(child) // Add the child itself
-            descendants.addAll(getAllDescendants(child)) // Recursively add its descendants
-        }
-    }
-    return descendants
-}
 
-fun View.fadeOutGone(){
-    val animation = AlphaAnimation(1f, 0f)
-    animation.duration=500
-    animation.fillAfter=true
-    startAnimation(animation)
-    animation.setAnimationListener(object :Animation.AnimationListener{
-        override fun onAnimationStart(animation: Animation?) {
-
-        }
-
-        override fun onAnimationEnd(animation: Animation?) {
-            visibility= View.GONE
-        }
-
-        override fun onAnimationRepeat(animation: Animation?) {
-
-        }
-    })
-    postDelayed({visibility= View.GONE},animation.duration)
-}
 //endregion
 
 //region Template Presenter Binding
@@ -644,9 +604,9 @@ fun TemplatePresenterBinding.setAttribute(
                         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
                             if (holder is ListViewHolder) {
                                 val item = listData[position]
-                                holder.coilTextView.text = item.label ?: ""
-                                holder.ostTextView.text = item.ost ?: ""
-                                holder.kolTextView.text = item.kol ?: ""
+                                holder.coilTextView.text = item.label
+                                holder.ostTextView.text = item.ost
+                                holder.kolTextView.text = item.kol
                             }
                         }
 

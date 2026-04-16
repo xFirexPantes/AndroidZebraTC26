@@ -4,9 +4,5 @@ import java.io.Serializable
 
 data class AcceptPutkatResponse(
     val isOk: Int,
-): Serializable {
-
-
-
-}
+): Serializable
 

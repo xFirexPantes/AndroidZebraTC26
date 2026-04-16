@@ -40,7 +40,6 @@ import com.example.scanner.databinding.TemplateIconBinding
 import com.example.scanner.databinding.TemplatePresenterBinding
 import com.example.scanner.databinding.TemplateRecyclerBinding
 import com.example.scanner.databinding.TemplateResultEmptyBinding
-import com.example.scanner.models.InControlSearchResponse
 import com.example.scanner.models.IsolatorListSearchResponse
 import com.example.scanner.modules.ApiPantes
 import com.example.scanner.modules.Pref
@@ -81,8 +80,6 @@ class IsolatorListFragment: BaseFragment() {
     var oldSize = 0
     private var Nkat: String = ""
     private var isBottle: Boolean = false
-    private var lastStel = ""
-    private var lastCell = ""
     private lateinit var soundHelper: SoundHelper
     private var lastQR: String = ""
     // Инициализация (один раз)
@@ -733,19 +730,7 @@ class IsolatorListFragment: BaseFragment() {
         }
     }
 
-    private fun updateInfoTextView(isMatch: Boolean) {
 
-        infoTextView.visibility = View.VISIBLE
-        if (isMatch) {
-            infoTextView.setBackgroundColor(Color.argb(255, 0, 255, 0)) // Зелёный
-
-        } else {
-            infoTextView.setBackgroundColor(Color.argb(255, 255, 0, 0)) // Красный
-            val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
-        }
-
-    }
     private fun showError(exception: Throwable) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Ошибка")
@@ -754,9 +739,7 @@ class IsolatorListFragment: BaseFragment() {
             .show()
     }
 
-    private fun showErrorMessageQR() {
-        Toast.makeText(requireContext(), "Неподдерживаемый формат QR-кода", Toast.LENGTH_LONG).show()
-    }
+
     private fun showResponse(response: String) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Комментарий")
@@ -873,9 +856,7 @@ class IsolatorListFragment: BaseFragment() {
                 .firstOrNull { it.IDAll == idAll.toInt() }  // ищем первый элемент с совпадающим id
             // предполагаем, что у InControlSearchResponse.found.item есть поле dt
         }
-        fun getItemByID(id: Int): IsolatorListSearchResponse.Item? {
-            return data.found.firstOrNull { it.id == id }
-        }
+
         fun scrollToPosition(position: Int,recyclerView: RecyclerView) {
             if (position in 0 until itemCount) {
                 // Устанавливаем выделенную позицию
@@ -1106,45 +1087,7 @@ class IsolatorListFragment: BaseFragment() {
 
             }
         }
-        fun setSkipNextPut(skip: Boolean) {
-            skipNextPut = skip
-        }
-        fun putKat2Sklad(
-            stel: String,
-            shelf: String,
-            curKat: String,
-            isOk: Boolean,
-            coil: Boolean,
-            rgm: String
-        ) {
-            ioCoroutineScope.launch {
 
-                when(val token=loginRepository.user?.token){
-                    null-> ReceiveFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
-                    else->{
-                        when(val result = apiPantes.acceptPutkat(
-                            token = token,
-                            Stel= stel,
-                            Shelf = shelf,
-                            curKat= curKat,
-                            isOk = isOk,
-                            coil = coil,
-                            rgm = rgm
-                        )){
-                            is ApiPantes.ApiState.Success -> {
-                                isolatorListFragmentState.postValue(IsolatorListFragmentState.Idle)
-                            }
-                            is ApiPantes.ApiState.Error -> {
-                                isolatorListFragmentState.postValue(
-                                    IsolatorListFragmentState.Error(result.exception)
-                                )
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
         suspend fun put2WH(num: String): Result<Unit> =
             withContext(Dispatchers.IO) {
                 val token = loginRepository.user?.token
@@ -1155,30 +1098,7 @@ class IsolatorListFragment: BaseFragment() {
                     is ApiPantes.ApiState.Error -> Result.Failure(result.exception)
                 }
             }
-        fun putBottle2Sklad(stel : String,shelf : String,curKat : String,isOk: Boolean,rgm: String) {
-            ioCoroutineScope.launch {
 
-                when(val token=loginRepository.user?.token){
-                    null-> ReceiveFragmentFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
-                    else->{
-                        when(val result = apiPantes.acceptPutbottle(
-                            token = token,
-                            Stel= stel,
-                            Shelf = shelf,
-                            curKat= curKat,
-                            isOk = isOk,
-                            rgm = rgm
-                        )){
-                            is ApiPantes.ApiState.Success->
-                                isolatorListFragmentState.postValue(IsolatorListFragmentState.Idle)
-                            is ApiPantes.ApiState.Error->
-                                ReceiveFragmentFormState.Error(result.exception)
-                        }
-                    }
-                }
-
-            }
-        }
 
 
         suspend fun getAllID(num: String): Result<ArrayList<Int>> =
@@ -1200,9 +1120,7 @@ class IsolatorListFragment: BaseFragment() {
             }
 
 
-        fun resetSearchCompleted() {
-            _searchCompleted.value = false
-        }
+
         fun saveStelAndCell(stel: String, cell: String) {
             lastStoredStel = stel
             lastStoredCell = cell

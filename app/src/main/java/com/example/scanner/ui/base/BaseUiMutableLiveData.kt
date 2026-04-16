@@ -11,7 +11,7 @@ class BaseUiMutableLiveData<T>:MutableLiveData<T>() {
             override fun onChanged(value: T) {
                 Timber.tag("UI").d("Start:"+value!!::class.simpleName)
                 observer.onChanged(value)
-                Timber.tag("UI").d("Finish:"+value!!::class.simpleName)
+                Timber.tag("UI").d("Finish:"+ value!!::class.simpleName)
             }
 
         })

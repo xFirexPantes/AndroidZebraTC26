@@ -16,7 +16,4 @@ class MyTextInputEditText @JvmOverloads constructor(
         return conn
     }
 
-    override fun setFocusable(focusable: Boolean) {
-        super.setFocusable(focusable)
-    }
 }

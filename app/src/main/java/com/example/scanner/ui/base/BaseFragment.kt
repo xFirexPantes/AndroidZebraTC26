@@ -1,9 +1,6 @@
 package com.example.scanner.ui.base
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.FragmentLifecycleCallbacks
@@ -37,23 +34,6 @@ open class BaseFragment:Fragment() {
         )
         super.onCreate(savedInstanceState)
         scanViewModelReference?.installScannerApi()
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return super.onCreateView(inflater, container, savedInstanceState)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        Timber.tag("lifecycle").i("onViewCreated:$this")
-        super.onViewCreated(view, savedInstanceState)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
     }
 
     override fun onDestroy() {

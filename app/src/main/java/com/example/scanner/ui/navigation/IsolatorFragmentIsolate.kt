@@ -29,7 +29,6 @@ import com.example.scanner.app.onRightDrawableClicked
 import com.example.scanner.app.setAttribute
 import com.example.scanner.app.textInvalidValue
 import com.example.scanner.app.templateAttributeTitleTextView
-import com.example.scanner.databinding.TemplateButton2Binding
 import com.example.scanner.databinding.TemplatePresenterBinding
 import com.example.scanner.databinding.TemplateFragmentBinding
 import com.example.scanner.databinding.TemplateCardBinding
@@ -90,7 +89,7 @@ class IsolatorFragmentIsolate : BaseFragment() , TextWatcher {
                                         TemplatePresenterBinding.inflate(layoutInflater,containerVertical,false)
                                             .apply {
                                                 setAttribute(pair,itemData)
-                                                when(pair.first[0].toString()){
+                                                when(pair.first[0]){
                                                     "amount"->amount=templateAttributeDataTextView
                                                     "id"->number=templateAttributeDataTextView
                                                 }
@@ -158,7 +157,7 @@ class IsolatorFragmentIsolate : BaseFragment() , TextWatcher {
                                         templateInputTextContainer.visibility=
                                             View.VISIBLE
                                         templateInputTextTextLayout.hint=""
-                                        templateInputTextMyTextInput.setFocusable(false)
+                                        templateInputTextMyTextInput.isFocusable = false
                                         templateInputTextMyTextInput.hint="Дата завершения изоляции "
                                         until=templateInputTextMyTextInput
                                         until.setOnClickListener {

@@ -83,20 +83,20 @@ class TrueSignFragment: BaseFragment() {
                     state.data?.let { truesignSearchResponse->
                         truesignSearchResponse as TrueSignSearchResponse
                         if (truesignSearchResponse.msg == "Ok") {
-                            txtPost.setText(truesignSearchResponse.customer)
-                            txtnumNakl.setText(truesignSearchResponse.numNakl)
+                            txtPost.text = truesignSearchResponse.customer
+                            txtnumNakl.text = truesignSearchResponse.numNakl
                             val dateString = truesignSearchResponse.dt.substringBefore(' ')
                             val date = LocalDate.parse(dateString)
                             val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
                             val formattedDate = date.format(formatter)  // "31.12.2026"
-                            txtdt.setText(formattedDate)
-                            txtkol.setText(truesignSearchResponse.kol.toString())
+                            txtdt.text = formattedDate
+                            txtkol.text = truesignSearchResponse.kol.toString()
                             txtmsg.setTextColor( rgb(0,255,0))
                         }else{
-                            txtPost.setText("")
-                            txtnumNakl.setText("")
-                            txtdt.setText("")
-                            txtkol.setText("")
+                            txtPost.text = ""
+                            txtnumNakl.text = ""
+                            txtdt.text = ""
+                            txtkol.text = ""
                             txtmsg.setTextColor( rgb(255,0,0))
                         }
                         txtmsg.text = truesignSearchResponse.msg
@@ -207,8 +207,7 @@ class TrueSignFragment: BaseFragment() {
                             val result = apiPantes.truesignSearch(
                                     token = token,
                                     query = param,
-                                    last=last,
-                                )
+                                                                )
                             ){
                                     is ApiPantes.ApiState.Success->
                                         TrueSignFragmentState.Success(result.data)
