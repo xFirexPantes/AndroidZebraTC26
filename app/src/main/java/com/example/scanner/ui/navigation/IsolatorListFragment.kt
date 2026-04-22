@@ -178,6 +178,7 @@ class IsolatorListFragment: BaseFragment() {
                 }
                 when (paramValue) {
                     "iniso" -> toolbar.title = "В изоляторе"
+                    "inisosklad" -> toolbar.title = "Выданы образцы"
                     "towh" -> toolbar.title = "На склад"
                     else -> toolbar.title = "Неизвестный режим"
                 }
@@ -519,6 +520,22 @@ class IsolatorListFragment: BaseFragment() {
                         else->{}
                     }
                 }
+                "inisosklad" -> {
+                    when(val stateScan=it){
+                        is ScanFragmentBase.ScanFragmentBaseFormState.ShowScanResult->{
+                            stateScan.stringScanResult?.let { stringScanResult ->
+                                when {
+                                    stringScanResult.startsWith("3N0") -> handle3N0Scan(stringScanResult)
+                                    stringScanResult.startsWith('C') -> handleCScanSklad(stringScanResult)
+                                    (stringScanResult.split('$')).size == 5 -> handleCScanBottle(stringScanResult)
+                                    else -> showErrorMessage("Неподдерживаемый формат QR-кода")
+                                }
+                            }
+                        }
+                        else->{}
+                    }
+
+                }
                 else->{}
             }
 
@@ -558,6 +575,7 @@ class IsolatorListFragment: BaseFragment() {
 
         }
     }
+
     private fun handleIDAllList(idAllList: ArrayList<Int>) {
         val lastStel = isolatorListViewModel.lastStoredStel
         val lastCell = isolatorListViewModel.lastStoredCell
@@ -701,6 +719,86 @@ class IsolatorListFragment: BaseFragment() {
         }
     }
 
+    private fun handleCScanSklad(stringScanResult: String) {
+        if (curNum == "") {
+            Toast.makeText(requireContext(), "Сначала отсканируйте компонент", Toast.LENGTH_SHORT).show()
+        }
+        else{
+            val content = stringScanResult.substring(1)
+
+            // Проверяем, что осталось ровно 12 символов
+            if (content.length == 12) {
+                // Разбиваем на 3 части по 4 символа
+                val shelfPart = content.substring(0, 4)   // стеллаж
+                val levelPart = content.substring(4, 8)  // полка
+                val cellPart  = content.substring(8, 12) // ячейка
+
+                // Удаляем ведущие нули в каждой части
+                val stel = shelfPart.toIntOrNull()?.toString() ?: ""
+                val level = levelPart.toIntOrNull()?.toString() ?: "0"
+                val cell  = cellPart.toIntOrNull()?.toString() ?: "0"
+
+                // Формируем yach = Полка + "." + Ячейка
+                val yach = if (level.isNotEmpty() && cell.isNotEmpty()) {
+                    "${level}.${cell}"
+                } else {
+                    ""
+                }
+
+                // Получаем текущие значения stel и cell из отображаемых данных
+                val currentItem =  adapterisolatorlist.getItemByIdAll(IDAll.toInt())
+                if (currentItem != null) {
+                    val currentStel = currentItem.stel.toString()
+                    val currentCell = currentItem.cell
+
+                    // Сравниваем
+
+                    if (stel == currentStel && yach == currentCell) {
+                        // Совпадение → зелёный фон
+                        infoTextView.visibility = View.VISIBLE
+                        infoTextView.setBackgroundColor(Color.argb(255,0,255,0))
+//                                                adapterincontrol.resetContent()
+//                                                incontrolViewModel.put2WH(curNum!!,paramValue,box)
+//                                                incontrolViewModel.refreshListEvent.postValue(Unit)
+                        lifecycleScope.launch {
+                            val putResult : Result<Unit> = if (isBottle) {
+                                isolatorListViewModel.put2WHisoSklad("bottle"+curNum!!)
+                            } else {
+                                isolatorListViewModel.put2WHisoSklad(curNum!!)
+                            }
+
+
+                            when (putResult) {
+                                is Result.Success<Unit> -> {
+                                    // Успех: запрашиваем обновление списка
+                                    isolatorListViewModel.refreshListEvent.postValue(Unit)
+                                }
+                                is Result.Failure -> {
+                                    // Ошибка: показываем сообщение
+                                    showError(putResult.exception) // Или putResult.exception — см. примечание ниже
+                                }
+                            }
+
+                        }
+                        curNum = ""
+                        isolatorListViewModel.saveStelAndCell(stel,yach)
+                    } else {
+                        // Несовпадение → красный фон
+                        infoTextView.visibility = View.VISIBLE
+                        infoTextView.setBackgroundColor(Color.argb(255,255,0,0))
+                        val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.playSoundEffect(AudioManager.FX_KEYPRESS_INVALID, 1f)
+                        isolatorListViewModel.clearStelAndCell()
+                    }
+                } else {
+                    showResponse("Нет данных для сравнения (receiveFragmentAcceptSearchResponse пуст)")
+                }
+            } else {
+                showResponse("QR-код после 'C' должен содержать 12 цифр, получено: ${content.length}")
+            }
+        }
+    }
+
     private fun handleCScanBottle(stringScanResult: String) {
         try {
             val parts = stringScanResult.split('$')
@@ -729,7 +827,6 @@ class IsolatorListFragment: BaseFragment() {
             Timber.tag("ReceiveFragment").e(e, "Bottle scan error")
         }
     }
-
 
     private fun showError(exception: Throwable) {
         MaterialAlertDialogBuilder(requireContext())
@@ -995,7 +1092,7 @@ class IsolatorListFragment: BaseFragment() {
                 itemBinding.containerVertical.addView(horizontalScrollView)
             }
             // endregion
-            if (paramValue == "towh") {
+            if (paramValue == "towh" || paramValue == "inisosklad") {
                 // region Логика подсветки всего элемента
                 if (itemData.isScanned) {
                     itemBinding.containerVertical.setBackgroundColor(
@@ -1100,6 +1197,16 @@ class IsolatorListFragment: BaseFragment() {
             }
 
 
+        suspend fun put2WHisoSklad(num: String): Result<Unit> =
+            withContext(Dispatchers.IO) {
+                val token = loginRepository.user?.token
+                    ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)
+
+                when (val result = apiPantes.incontrolPut2WHisoSklad( num,token)) {
+                    is ApiPantes.ApiState.Success -> Result.Success(Unit) // Возвращаем Unit
+                    is ApiPantes.ApiState.Error -> Result.Failure(result.exception)
+                }
+            }
 
         suspend fun getAllID(num: String): Result<ArrayList<Int>> =
             withContext(Dispatchers.IO) {

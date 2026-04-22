@@ -6,7 +6,6 @@ import com.example.scanner.models.AcceptScanResponse
 import com.example.scanner.models.AcceptSearchResponse
 import com.example.scanner.models.ComponentInfoResponse
 import com.example.scanner.models.ComponentsSearchResponse
-import com.example.scanner.models.ComponentsUrgentSearchResponse
 import com.example.scanner.models.DryInfoResponse
 import com.example.scanner.models.DrySearchResponse
 import com.example.scanner.models.InControlCheckStResponse
@@ -21,9 +20,9 @@ import com.example.scanner.models.LoggedInUserResponse
 import com.example.scanner.models.MessageToUserFromServer
 import com.example.scanner.models.InControlInfoResponse
 import com.example.scanner.models.InControlSearchResponse
-import com.example.scanner.models.InControlUrgentSearchResponse
 import com.example.scanner.models.IsolatorListInfoResponse
 import com.example.scanner.models.IsolatorListSearchResponse
+import com.example.scanner.models.IsolatorOtvListResponse
 import com.example.scanner.models.TrueSignSearchResponse
 import com.example.scanner.ui.MainActivity
 import com.example.scanner.ui.base.NonFatalExceptionShowDialogMessage
@@ -446,6 +445,12 @@ class ApiPantes(
             @Header("Authorization") authorization:String,
             @Query("token") token: String,
         ):Call<IsolatorListInfoResponse>
+        @GET("isolator/getotvlist")
+        @Headers("Content-Type: application/json")
+        fun isolatorGetOtvList(
+            @Header("Authorization") authorization:String,
+            @Query("token") token: String,
+        ):Call<IsolatorOtvListResponse>
         @GET("isolator/isolatemanual")
         @Headers("Content-Type: application/json")
         fun isolatorIsolateManual(
@@ -453,6 +458,9 @@ class ApiPantes(
             @Query("reason") reason: Int,
             @Query("dt") dt: String,
             @Query("prim") prim: String,
+            @Query("otv") otv: Int,
+            @Query("kol") kol: Int,
+            @Query("tpe") tpe: String,
             @Query("token") token: String,
         ):Call<String>
         @GET("isolator/clear")
@@ -472,6 +480,13 @@ class ApiPantes(
         @GET("incontrol/put2wh")
         @Headers("Content-Type: application/json")
         fun incontrolPut2WH(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<String>
+        @GET("incontrol/put2whisosklad")
+        @Headers("Content-Type: application/json")
+        fun incontrolPut2WHisoSklad(
             @Header("Authorization") authorization:String,
             @Query("num") num: String,
             @Query("token") token: String,
@@ -719,10 +734,24 @@ class ApiPantes(
 
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun isolatorIsolate(token:String,reason:Int, DT: String,prim: String): ApiState<String> {
+    suspend fun getOtvList(token:String): ApiState<IsolatorOtvListResponse> {
+        return flow {
+            val response:Response<IsolatorOtvListResponse> =
+                api.isolatorGetOtvList( "Bearer $token",token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun isolatorIsolate(token:String,reason:Int, DT: String,prim: String,otv: Int,kol: Int,param:String): ApiState<String> {
         return flow {
             val response:Response<String> =
-                api.isolatorIsolateManual( "Bearer $token",reason,DT,prim,token).execute()
+                        api.isolatorIsolateManual( "Bearer $token",reason,DT,prim,otv,kol,param,token).execute()
+
+
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 //else->emit(AppResult.Success(it))
@@ -1251,6 +1280,26 @@ class ApiPantes(
             try {
                 val response: Response<String> =
                     api.incontrolPut2WH("Bearer $token", num, token).execute()
+
+                Timber.tag("API").d("Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolPut2WHisoSklad(num: String,token:String): ApiState<String> {
+        return flow {
+            try {
+                val response: Response<String> =
+                    api.incontrolPut2WHisoSklad("Bearer $token", num, token).execute()
 
                 Timber.tag("API").d("Response code: ${response.code()}")
 

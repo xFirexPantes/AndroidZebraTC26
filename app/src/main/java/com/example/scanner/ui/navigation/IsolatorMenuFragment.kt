@@ -58,6 +58,23 @@ class IsolatorMenuFragment : Fragment() {
                         if (state.isolator) View.VISIBLE else View.GONE
                     binding?.toIso?.isEnabled = state.isolator
 
+                    binding?.toIsoSklad?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.toIsoSklad?.isEnabled = state.accept
+
+                    binding?.toIsoSkladList?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.toIsoSkladList?.isEnabled = state.accept
+
+                    binding?.isoLabel?.visibility =
+                        if (state.isolator) View.VISIBLE else View.GONE
+                    binding?.isoLabel?.isEnabled = state.isolator
+
+                    binding?.skladLabel?.visibility =
+                        if (state.accept) View.VISIBLE else View.GONE
+                    binding?.skladLabel?.isEnabled = state.accept
+
+
                 }
             }
         }
@@ -77,6 +94,18 @@ class IsolatorMenuFragment : Fragment() {
             homeViewModel.mainActivityRouter.navigate(
                 IsolatorListFragmentInfo::class.java,
                 Bundle().apply { putSerializable(IsolatorListFragmentInfo.PARAM, "toIso") }
+            )
+        }
+        binding?.toIsoSklad?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                IsolatorListFragmentInfo::class.java,
+                Bundle().apply { putSerializable(IsolatorListFragmentInfo.PARAM, "toIsoSklad") }
+            )
+        }
+        binding?.toIsoSkladList?.setOnClickListener {
+            homeViewModel.mainActivityRouter.navigate(
+                IsolatorListFragment::class.java,
+                Bundle().apply { putSerializable(IsolatorFragment.PARAM, "inisosklad") }
             )
         }
     }

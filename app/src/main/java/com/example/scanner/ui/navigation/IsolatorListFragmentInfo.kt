@@ -3,10 +3,12 @@ package com.example.scanner.ui.navigation
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -23,6 +25,7 @@ import com.example.scanner.ui.navigation.login.LoginRepository
 import com.example.scanner.ui.navigation_over.ErrorsFragment
 import kotlinx.coroutines.launch
 import com.example.scanner.models.IsolatorListInfoResponse
+import com.example.scanner.models.IsolatorOtvListResponse
 import com.example.scanner.ui.base.ScanFragmentBase
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -37,7 +40,9 @@ class IsolatorListFragmentInfo : BaseFragment() {
     private val isolatorListIViewModel: IsolatorListInfoViewModel by viewModels { viewModelFactory }
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private var isbottle: Boolean = false
-
+    private lateinit var param: String
+    lateinit var otvlist : List<IsolatorOtvListResponse.Attribute>
+    private var otv : Int = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         scanViewModelReference=scanViewModel
         super.onCreate(savedInstanceState)
@@ -51,7 +56,7 @@ class IsolatorListFragmentInfo : BaseFragment() {
     ): View? {
         // Устанавливаем layout
         val view = inflater.inflate(R.layout.isolator_add, container, false)
-
+        param = arguments?.getString(PARAM).toString()
         // Находим view по ID
         val toolbar: androidx.appcompat.widget.Toolbar = view.findViewById(R.id.toolbar)
         (activity as AppCompatActivity).setSupportActionBar(toolbar)
@@ -74,13 +79,25 @@ class IsolatorListFragmentInfo : BaseFragment() {
 
         val addBtn : Button = view.findViewById(R.id.buttonIso)
         val clearBtn : Button = view.findViewById(R.id.buttonClear)
+
         toolbar.apply {
-            title = "Изолируем вручную"
+            title =  when(param) {
+                 "toIso" -> {
+                "Изолируем вручную"
+            }
+                "toIsoSklad" -> {
+                 "Выдача образцов"
+            }
+
+                else -> {
+                    ""
+                }
+            }
         }
         // Наблюдаем за состоянием ViewModel
 
         addBtn.setOnClickListener {
-            showIsolationDialog()
+            showIsolationDialog(param)
         }
 
         clearBtn.setOnClickListener {
@@ -174,6 +191,27 @@ class IsolatorListFragmentInfo : BaseFragment() {
                         isolatorListIViewModel.isolatorListSearch()
                     }
                 }
+                is IsolatorListInfoFormState.SuccessOtvList -> {
+                    otvlist = state.data.list
+                    val selectedReasonCode = 100 // или другая константа для "Выдача образцов"
+                    val reasons = otvlist.associate { it.id to it.name }
+                    val reasonNames = reasons.values.toTypedArray()
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Выбор ответственного")
+                        .setSingleChoiceItems(reasonNames, -1) { dialog, which ->
+                            otv = reasons.keys.elementAt(which)
+                        }
+                        .setPositiveButton("Далее") { dialog, _ ->
+                            if (otv == 0) { // или проверка, что выбран
+                                Toast.makeText(requireContext(), "Выберите ответственного", Toast.LENGTH_SHORT).show()
+                                return@setPositiveButton
+                            }
+                            dialog.dismiss()
+                            showDatePicker(selectedReasonCode)
+                        }
+                        .setNegativeButton("Отмена", null)
+                        .show()
+                }
             }
         }
 
@@ -207,75 +245,111 @@ class IsolatorListFragmentInfo : BaseFragment() {
 
         }
     }
-    private fun showIsolationDialog() {
+    private fun showIsolationDialog(param: String) {
         // Шаг 1: выбор причины
-        val reasons = mapOf(
-            0 to "Ведется исследование",
-            1 to "Замена элементов",
-            2 to "Тест паяемости",
-            4 to "Перенос в ручной элемент",
-            5 to "Перенос в автоматический элемент",
-            6 to "Возврат денежных средств поставщиком",
-            7 to "Утилизация элемента",
-            8 to "Функциональный контроль",
-            9 to "Излишки",
-            10 to "Замена брака из излишков"
-        )
-        val reasonNames = reasons.values.toTypedArray()
         var selectedReasonCode: Int? = null
 
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Причина изоляции")
-            .setSingleChoiceItems(reasonNames, -1) { dialog, which ->
-                selectedReasonCode = reasons.keys.elementAt(which)
+        when (param) {
+
+            "toIso" -> {
+                val reasons = mapOf(
+                    0 to "Ведется исследование",
+                    1 to "Замена элементов",
+                    2 to "Тест паяемости",
+                    4 to "Перенос в ручной элемент",
+                    5 to "Перенос в автоматический элемент",
+                    6 to "Возврат денежных средств поставщиком",
+                    7 to "Утилизация элемента",
+                    8 to "Функциональный контроль",
+                    9 to "Излишки",
+                    10 to "Замена брака из излишков"
+                )
+                val reasonNames = reasons.values.toTypedArray()
+                otv = 0
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Причина изоляции")
+                    .setSingleChoiceItems(reasonNames, -1) { dialog, which ->
+                        selectedReasonCode = reasons.keys.elementAt(which)
+                    }
+                    .setPositiveButton("Далее") { dialog, _ ->
+                        if (selectedReasonCode == null) {
+                            Toast.makeText(requireContext(), "Выберите причину", Toast.LENGTH_SHORT).show()
+                            return@setPositiveButton
+                        }
+                        dialog.dismiss()
+                        // Шаг 2: выбор даты
+                        showDatePicker(selectedReasonCode!!)
+                    }
+                    .setNegativeButton("Отмена", null)
+                    .show()
             }
-            .setPositiveButton("Далее") { dialog, _ ->
-                if (selectedReasonCode == null) {
-                    Toast.makeText(requireContext(), "Выберите причину", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-                dialog.dismiss()
-                // Шаг 2: выбор даты
-                showDatePicker(selectedReasonCode!!)
+            "toIsoSklad" -> {
+                isolatorListIViewModel.getOtvList()
+
             }
-            .setNegativeButton("Отмена", null)
-            .show()
+
+
+        }
+
+
+
+
     }
 
+    @SuppressLint("DefaultLocale")
     private fun showDatePicker(reasonCode: Int) {
         val calendar = java.util.Calendar.getInstance()
         val year = calendar.get(java.util.Calendar.YEAR)
         val month = calendar.get(java.util.Calendar.MONTH)
         val day = calendar.get(java.util.Calendar.DAY_OF_MONTH)
+        val isSkladMode = param == "toIsoSklad"
+        if (!isSkladMode) {
 
-        android.app.DatePickerDialog(
-            requireContext(),
-            { _, selectedYear, selectedMonth, selectedDay ->
-                val formattedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
-                // Шаг 3: запрос комментария
-                showCommentInput(reasonCode, formattedDate)
-            },
-            year, month, day
-        ).show()
+            android.app.DatePickerDialog(
+                requireContext(),
+                { _, selectedYear, selectedMonth, selectedDay ->
+                    val formattedDate = String.format(
+                        "%04d-%02d-%02d",
+                        selectedYear,
+                        selectedMonth + 1,
+                        selectedDay
+                    )
+                    // Шаг 3: запрос комментария
+                    showCommentInput(reasonCode, formattedDate)
+                },
+                year, month, day
+            ).show()
+        }else{
+            showCommentInput(reasonCode, "01.01.1900")
+        }
     }
 
     private fun showCommentInput(reasonCode: Int, dt: String) {
-        val input = android.widget.EditText(requireContext()).apply {
+
+
+
+        // Создаём контейнер для полей
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 20, 50, 20)
+        }
+
+
+
+        // Поле для комментария (всегда)
+        val inputComment = EditText(requireContext()).apply {
             hint = "Введите комментарий"
-            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE
             maxLines = 3
         }
+        container.addView(inputComment)
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Комментарий")
-            .setView(input)
+            .setView(container)
             .setPositiveButton("OK") { _, _ ->
-                val comment = input.text.toString().trim()
-                if (comment.isEmpty()) {
-                    Toast.makeText(requireContext(), "Комментарий не может быть пустым", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-                // Вызов ViewModel
-                isolatorListIViewModel.isoData(reasonCode, dt, comment)
+                var comment = inputComment.text.toString().trim()  ?: ""
+                val kol = 0
+                isolatorListIViewModel.isoData(reasonCode, dt, comment, otv, kol, param)
             }
             .setNegativeButton("Отмена", null)
             .show()
@@ -325,6 +399,7 @@ class IsolatorListFragmentInfo : BaseFragment() {
         data class SuccessClear(val message: String) : IsolatorListInfoFormState()
         data class SuccessAdd(val message: String) : IsolatorListInfoFormState()
         data class SuccessIso(val message: String) : IsolatorListInfoFormState()
+        data class SuccessOtvList(val data: IsolatorOtvListResponse) : IsolatorListInfoFormState()
         data class Error(val exception: Throwable) : IsolatorListInfoFormState()
     }
 
@@ -352,13 +427,26 @@ class IsolatorListFragmentInfo : BaseFragment() {
          * Получить все накопленные элементы и очистить список.
          * @return список всех добавленных элементов
          */
-        fun isoData(reason: Int, dt: String, prim: String) {
+        fun isoData(reason: Int, dt: String, prim: String,otv:Int,kol:Int,param: String) {
             ioCoroutineScope.launch {
                 isolatorListInfoFormState.postValue(
                     when (val token = loginRepository.user?.token) {
                         null -> IsolatorListInfoFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
-                        else -> when (val result = apiPantes.isolatorIsolate(token, reason, dt, prim)) {
+                        else -> when (val result = apiPantes.isolatorIsolate(token, reason, dt, prim,otv,kol,param)) {
                             is ApiPantes.ApiState.Success -> IsolatorListInfoFormState.SuccessIso(result.data)
+                            is ApiPantes.ApiState.Error -> IsolatorListInfoFormState.Error(result.exception)
+                        }
+                    }
+                )
+            }
+        }
+        fun getOtvList() {
+            ioCoroutineScope.launch {
+                isolatorListInfoFormState.postValue(
+                    when (val token = loginRepository.user?.token) {
+                        null -> IsolatorListInfoFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
+                        else -> when (val result = apiPantes.getOtvList(token)) {
+                            is ApiPantes.ApiState.Success -> IsolatorListInfoFormState.SuccessOtvList(result.data)
                             is ApiPantes.ApiState.Error -> IsolatorListInfoFormState.Error(result.exception)
                         }
                     }

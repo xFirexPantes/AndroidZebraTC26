@@ -33,11 +33,12 @@
             android:orientation="vertical" >
 
             <TextView
+                android:id="@+id/isoLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="5dp"
-                android:text="Изолятор"
+                android:text="Входной контроль"
                 android:textColor="#555555"
                 android:textSize="18sp" />
 
@@ -80,6 +81,47 @@
                 android:layout_marginBottom="8dp"
                 android:padding="8dp"
                 android:text="Заизолировать"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_back_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/skladLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="5dp"
+                android:text="Склад"
+                android:textColor="#555555"
+                android:textSize="18sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toIsoSklad"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Выдача образцов"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:backgroundTint="#0DA5CA"
+                app:icon="@drawable/baseline_arrow_back_24_white"
+                app:iconTint="@color/white"
+                app:strokeColor="#FFFFFF" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/toIsoSkladList"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:padding="8dp"
+                android:text="Что выдано/возврат"
                 android:textAllCaps="false"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
