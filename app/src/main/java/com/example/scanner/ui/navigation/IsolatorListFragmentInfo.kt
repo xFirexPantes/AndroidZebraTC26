@@ -164,7 +164,8 @@ class IsolatorListFragmentInfo : BaseFragment() {
                 }
 
                 is IsolatorListInfoFormState.SuccessAdd -> {
-                    if (state.message == "skladid") {
+                    when (state.message) {
+                         "skladid" -> {
                                 Toast.makeText(
                                     context,
                                     "Другой элемент необходимо изолировать отдельно",
@@ -172,7 +173,15 @@ class IsolatorListFragmentInfo : BaseFragment() {
                                 ).show()
 
                     }
-                    else {
+                     "justiso" -> {
+                        Toast.makeText(
+                            context,
+                            "Эта упаковка уже изолирована",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                    }
+                    else -> {
                         Toast.makeText(
                             context,
                             "Упаковка добавлена",
@@ -180,6 +189,7 @@ class IsolatorListFragmentInfo : BaseFragment() {
                         ).show()
                         isolatorListIViewModel.isolatorListSearch()
                     }
+                }
                 }
                 is IsolatorListInfoFormState.SuccessClear -> {
                     if (state.message == "ok") {

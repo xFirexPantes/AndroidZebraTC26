@@ -390,7 +390,7 @@ class IsolatorListFragment: BaseFragment() {
                 lifecycleScope.launch {
                     try {
                         if (needscroll) {
-                            when (val result = isolatorListViewModel.getAllID(curNum!!)) {
+                            when (val result = isolatorListViewModel.getID(curNum!!)) {
                                 is Result.Success -> {
 
                                     IDAll = result.data.toString()
@@ -558,7 +558,7 @@ class IsolatorListFragment: BaseFragment() {
             val num = parts[1]
             curNum = num
             lifecycleScope.launch {
-                when (val result = isolatorListViewModel.getAllID(num)) {
+                when (val result = isolatorListViewModel.getID(num)) {
                     is Result.Success -> {
                         val IDAllList = result.data
                         // Теперь можно работать с полученным списком
@@ -576,12 +576,12 @@ class IsolatorListFragment: BaseFragment() {
         }
     }
 
-    private fun handleIDAllList(idAllList: ArrayList<Int>) {
+    private fun handleIDAllList(idAllList: Int) {
         val lastStel = isolatorListViewModel.lastStoredStel
         val lastCell = isolatorListViewModel.lastStoredCell
-        val firstIdAll = idAllList.firstOrNull()
+        val firstIdAll = idAllList
         IDAll = firstIdAll.toString()
-        val currentItem = adapterisolatorlist.findByIdAll(IDAll)
+        val currentItem = adapterisolatorlist.findById(IDAll)
         if (currentItem == null) {
             showResponse("Элемент не найден")
             return
@@ -589,15 +589,11 @@ class IsolatorListFragment: BaseFragment() {
 
         val stel = currentItem.stel
         val cell = currentItem.cell
-        if (firstIdAll != null) {
-            val position = adapterisolatorlist.findPosition(firstIdAll.toString())
-            if (position != null && position != -1) {
-                adapterisolatorlist.scrollToPosition(position,recyclerView)
-            } else {
-                showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
-            }
+        val position = adapterisolatorlist.findPosition(firstIdAll.toString())
+        if (position != null && position != -1) {
+            adapterisolatorlist.scrollToPosition(position,recyclerView)
         } else {
-            showResponse("Получен пустой список IDAll")
+            showResponse("Элемент с IDAll=$firstIdAll не найден в списке")
         }
         if (lastStel.isNotEmpty() && lastCell.isNotEmpty()) {
             if(lastStel == stel.toString() && (lastCell == cell)) {
@@ -666,7 +662,7 @@ class IsolatorListFragment: BaseFragment() {
                 }
 
                 // Получаем текущие значения stel и cell из отображаемых данных
-                val currentItem =  adapterisolatorlist.getItemByIdAll(IDAll.toInt())
+                val currentItem =  adapterisolatorlist.findById(IDAll)
                 if (currentItem != null) {
                     val currentStel = currentItem.stel.toString()
                     val currentCell = currentItem.cell
@@ -746,7 +742,7 @@ class IsolatorListFragment: BaseFragment() {
                 }
 
                 // Получаем текущие значения stel и cell из отображаемых данных
-                val currentItem =  adapterisolatorlist.getItemByIdAll(IDAll.toInt())
+                val currentItem =  adapterisolatorlist.findById(IDAll)
                 if (currentItem != null) {
                     val currentStel = currentItem.stel.toString()
                     val currentCell = currentItem.cell
@@ -942,7 +938,7 @@ class IsolatorListFragment: BaseFragment() {
 
         fun findPosition(idAll: String): Int? {
             val targetId = idAll.toInt()
-            val index = data.found.indexOfFirst { it.IDAll == targetId }
+            val index = data.found.indexOfFirst { it.id == targetId }
             return if (index != -1) index else null
         }
         fun getItemByIdAll(idAll: Int): IsolatorListSearchResponse.Item? {
@@ -953,6 +949,12 @@ class IsolatorListFragment: BaseFragment() {
                 .firstOrNull { it.IDAll == idAll.toInt() }  // ищем первый элемент с совпадающим id
             // предполагаем, что у InControlSearchResponse.found.item есть поле dt
         }
+        fun findById(id: String): IsolatorListSearchResponse.Item? {
+            return data.found
+                .firstOrNull { it.id == id.toInt() }  // ищем первый элемент с совпадающим id
+            // предполагаем, что у InControlSearchResponse.found.item есть поле dt
+        }
+
 
         fun scrollToPosition(position: Int,recyclerView: RecyclerView) {
             if (position in 0 until itemCount) {
@@ -1226,7 +1228,23 @@ class IsolatorListFragment: BaseFragment() {
                 }
             }
 
+        suspend fun getID(num: String): Result<Int> =
+            withContext(Dispatchers.IO) {
+                val token = loginRepository.user?.token
+                    ?: return@withContext Result.Failure(ErrorsFragment.nonFatalExceptionShowToasteToken)
 
+                when (val result = apiPantes.incontrolGetID(token, num)) {
+                    is ApiPantes.ApiState.Success -> {
+                        if (result.data > 0) {
+                            Result.Success(result.data)
+                        } else {
+                            Result.Failure(Exception("Empty response"))
+                        }
+                    }
+
+                    is ApiPantes.ApiState.Error -> Result.Failure(result.exception)
+                }
+            }
 
         fun saveStelAndCell(stel: String, cell: String) {
             lastStoredStel = stel

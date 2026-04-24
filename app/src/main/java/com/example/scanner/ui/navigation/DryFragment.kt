@@ -617,6 +617,7 @@ class DryFragment: BaseFragment() {
 
 
 
+    @SuppressLint("SuspiciousIndentation")
     private fun handleDScanTo(stringScanResult: String) {
         val parts = stringScanResult.split('$')
             if (parts.size > 1) {

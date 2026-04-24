@@ -134,7 +134,7 @@ class HomeFragment : BaseFragment() {
                             }
 
                         isolator.button.alpha =
-                            if (state.isolator) {
+                            if (state.isolator || state.accept) {
                                 isolator.button.setOnClickListener {
                                     //homeViewModel.mainActivityRouter.navigate(ScanIsolatorFragment::class.java)
                                     homeViewModel.mainActivityRouter.navigate(

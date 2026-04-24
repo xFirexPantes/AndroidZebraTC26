@@ -404,6 +404,13 @@ class ApiPantes(
             @Query("num") num: String,
             @Query("token") token: String,
         ):Call<ArrayList<Int>>
+        @GET("incontrol/getid")
+        @Headers("Content-Type: application/json")
+        fun incontrolGetID(
+            @Header("Authorization") authorization:String,
+            @Query("num") num: String,
+            @Query("token") token: String,
+        ):Call<Int>
         @GET("dry/getid")
         @Headers("Content-Type: application/json")
         fun dryGetID(
@@ -1112,6 +1119,26 @@ class ApiPantes(
             try {
                 val response: Response<ArrayList<Int>> =
                     api.incontrolGetIDAll("Bearer $token", num, token).execute()
+
+                Timber.tag("API").d("Response code: ${response.code()}")
+
+                when (response.isSuccessful) {
+                    true -> emit(ApiState.Success(response.body()!!))
+                    else -> emit(ApiState.Error(buildException(response)))
+                }
+            } catch (e: Exception) {
+                Timber.tag("API_ERROR").e("Exception: ${e.javaClass.simpleName}")
+                Timber.tag("API_ERROR").e("Message: ${e.message}")
+                Timber.tag("API_ERROR").e("Stack trace: ${e.stackTraceToString()}")
+                emit(ApiState.Error(e))
+            }
+        }.flowOn(Dispatchers.IO).catch { emit(ApiState.Error(it)) }.single()
+    }
+    suspend fun incontrolGetID(token:String, num: String): ApiState<Int> {
+        return flow {
+            try {
+                val response: Response<Int> =
+                    api.incontrolGetID("Bearer $token", num, token).execute()
 
                 Timber.tag("API").d("Response code: ${response.code()}")
 
