@@ -30,6 +30,7 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
         const val PARAM_COLLECTED="param5"
         const val PARAM_COMMENT="param55"
         const val PARAM6_RESULT="param6"
+        const val PARAM_YARL="params3"
 
     }
 
@@ -40,6 +41,7 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
     private var lineName:String?=null
     private var collected:Boolean?=null
     private var coil: String?=null
+    private var yarl: String?=null
 
 
     override fun onCreateView(
@@ -67,7 +69,7 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
                 lineName=getArgument(PARAM_LINE_NAME)
                 coil=getArgument(PARAM_COIL)
                 collected=getArgument(PARAM_COLLECTED)
-
+                yarl=getArgument(PARAM_YARL) ?: "params3"
                 toolbar.title=when(collected!!){
                     false->"Завершить сборку?"
                     true->"Отменить сборку?"
@@ -112,7 +114,8 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
                                 coil=coil,
                                 comment = getArgument<String?>(PARAM_COMMENT)?:"",
                                 invoice=invoiceId,
-                                line = lineId
+                                line = lineId,
+                                yarl= yarl ?: "params3"
                             )
                         }
                         true->{
@@ -165,7 +168,8 @@ class IssuanceIssueDialogViewModel(private val apiPantes: ApiPantes,private val 
         coil: String?,
         comment:String="",
         invoice: String,
-        line:String?=null
+        line:String?=null,
+        yarl:String
     ) {
         Other.getInstanceSingleton().ioCoroutineScope.launch {
             loginRepository.user?.token?.let { token->
@@ -175,6 +179,7 @@ class IssuanceIssueDialogViewModel(private val apiPantes: ApiPantes,private val 
                     comment = comment,
                     invoice = invoice,
                     line = line,
+                    yarl = yarl
                 )
                 ){
                     is ApiPantes.ApiState.Success->{

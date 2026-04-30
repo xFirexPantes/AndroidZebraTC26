@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.MutableLiveData
@@ -45,6 +46,7 @@ class InvoiceFragment : BaseFragment() {
     private val invoicesViewModel: InvoicesViewModel by viewModels<InvoicesViewModel> {viewModelFactory}
     private val scanViewModel: ScanFragmentBase.ScanViewModel by viewModels{ viewModelFactory  }
     private val adapterInvoices=AdapterInvoices()
+    private var rgm: String = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,7 +125,7 @@ class InvoiceFragment : BaseFragment() {
                                         if (findLastVisibleItemPosition()+1 == adapterInvoices.itemCount) {
                                             invoicesViewModel.invoiceSearch(
                                                 getArgument(PARAM),
-                                                adapterInvoices.last.toString()
+                                                adapterInvoices.last.toString(),rgm
                                             )
                                         }
                                     }
@@ -246,11 +248,14 @@ class InvoiceFragment : BaseFragment() {
 
                         adapterInvoices.setContent(InvoiceSearchResponse())
                         adapterInvoices.resetContent()
+                        when {
+                            stringScanResult.startsWith("N") -> rgm = "N"
+                            stringScanResult.startsWith("Y") -> rgm = "Y"
+                        }
                         invoicesViewModel.invoiceSearch(
                             getArgument(PARAM),
-                            ""
+                            "",rgm
                         )
-
                         invoicesViewModel.invoicesFragmentReady
                             .postValue(
                                 View.GONE
@@ -260,6 +265,7 @@ class InvoiceFragment : BaseFragment() {
                 else->{}
             }
         }
+
 
         if (invoicesViewModel.invoicesFragmentState.value==null) {
             if (getArgument<String?>(PARAM).isNullOrEmpty()){
@@ -271,7 +277,7 @@ class InvoiceFragment : BaseFragment() {
 
                 invoicesViewModel.invoiceSearch(
                     getArgument(PARAM),
-                    ""
+                    "",rgm
                 )
             }
             invoicesViewModel.invoicesFragmentTitle
@@ -287,7 +293,9 @@ class InvoiceFragment : BaseFragment() {
 
 
     }
-
+    private fun showErrorMessage(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+    }
     inner class AdapterInvoices :BaseRecyclerAdapter<InvoiceSearchResponse>(InvoiceSearchResponse()){
 
         override fun getCallback(dataOld: InvoiceSearchResponse?): DiffUtil.Callback {
@@ -355,17 +363,23 @@ class InvoiceFragment : BaseFragment() {
                 .apply {
                     containerVertical.removeAllViews()
 
-                    arrayOf(
-                        Pair(arrayOf("name"),"Накладная "),
-                        Pair(arrayOf("partial"),"Частичная отгрузка "),
-                        Pair(arrayOf<Any>("name","","",LinearLayout.VERTICAL),"Наименование изделия "),
-                        //Pair(arrayOf("number"),"Номер "),
-                        Pair(arrayOf("collected"),"Собрана "),
-                    ).forEach{
+                    // Формируем список пар динамически, исключая "Ярлык" при null
+                    val pairs = mutableListOf(
+                        Pair(arrayOf("name"), "Накладная "),
+                        Pair(arrayOf("partial"), "Частичная отгрузка "),
+                        Pair(arrayOf<Any>("name","","",LinearLayout.VERTICAL), "Наименование изделия "),
+                        Pair(arrayOf("collected"), "Собрана "),
+                    )
+                    if (itemData.yarl != null) {
+                        pairs.add(Pair(arrayOf("yarl"), "Ярлык "))
+                    }
+                    // Pair(arrayOf("number"),"Номер ") закомментирован – не добавляем
+
+                    pairs.forEach { pair ->
                         containerVertical.addView(
-                            TemplatePresenterBinding.inflate(layoutInflater,this.containerVertical,false)
+                            TemplatePresenterBinding.inflate(layoutInflater, containerVertical, false)
                                 .apply {
-                                    setAttribute(it,itemData)
+                                    setAttribute(pair, itemData)
                                 }
                                 .root
                         )
@@ -377,6 +391,8 @@ class InvoiceFragment : BaseFragment() {
                             Bundle().apply {
                                 putSerializable(InvoiceFragmentLines.PARAMS_INVOICE_ID,itemData.id)
                                 putSerializable(InvoiceFragmentLines.PARAMS1_INVOICE_NAME,itemData.number)
+                                putSerializable(InvoiceFragmentLines.PARAM_YARL,itemData.yarlnum)
+                                putSerializable(InvoiceFragmentLines.PARAM_YARLNAME,itemData.yarl)
                                 putSerializable(InvoiceFragmentLines.PARAMS2_COLLECTED,itemData.collected)
 
                             }
@@ -446,7 +462,7 @@ class InvoiceFragment : BaseFragment() {
         val invoicesFragmentState=
             MutableLiveData<InvoicesFragmentState<Any>>()
 
-        fun invoiceSearch(parseArguments: String,last:String) {
+        fun invoiceSearch(parseArguments: String,last:String, rgm : String = "N") {
             ioCoroutineScope.launch {
                 invoicesFragmentState.postValue(
                     when (val token = loginRepository.user?.token) {
@@ -454,7 +470,8 @@ class InvoiceFragment : BaseFragment() {
                         else ->when (val result = apiPantes.invoiceSearch(
                             token,
                             parseArguments,
-                            last
+                            last,
+                            rgm
                         )) {
                             is ApiState.Success ->
                                 InvoicesFragmentState.Success(result.data)

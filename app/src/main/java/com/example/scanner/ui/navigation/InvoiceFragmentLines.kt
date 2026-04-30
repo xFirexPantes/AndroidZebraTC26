@@ -56,6 +56,8 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
         const val PARAMS_INVOICE_ID="params"
         const val PARAMS1_INVOICE_NAME="params1"
         const val PARAMS2_COLLECTED="params2"
+        const val PARAM_YARL="params3"
+        const val PARAM_YARLNAME="params4"
         const val SAVE_SEARCH="search"
     }
 
@@ -104,7 +106,11 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                         .postValue(
                             getString(
                                 R.string.format_title_invoice,
-                                getArgument(PARAMS1_INVOICE_NAME)
+                                if (PARAM_YARL == "params3")
+                                {getArgument(PARAMS1_INVOICE_NAME)}
+                                else{
+                                    getArgument(PARAM_YARLNAME)
+                                }
                             )
                         )
                     //endregion
@@ -408,6 +414,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             getString(R.string.order_by_collected) -> "-collected"
                             else -> "place"
                         },
+                        yarl = getArgument(PARAM_YARL) ?: "params3",
                         last = adapterLines.last.toString(),
                         query = invoiceLinesViewModel.filterSearchView.value?:""
 
@@ -491,6 +498,10 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                             InvoiceFragmentInfoLine.PARAM_LINE_COLLECTED,
                                             false
                                         )
+                                        putSerializable(
+                                            InvoiceFragmentInfoLine.PARAM_YARL,
+                                            getArgument(PARAM_YARL)
+                                        )
                                     }
                                 )
                             }
@@ -542,7 +553,8 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                         lastStringScanResult.data=stringScanResult
                         issuanceIssueDialogViewModel.requestIssuanceIssue(
                             coil = stringScanResult,
-                            invoice = getArgument(PARAMS_INVOICE_ID)
+                            invoice = getArgument(PARAMS_INVOICE_ID),
+                            yarl = getArgument(PARAM_YARL) ?: "params3"
                         )
                     }
                 }
@@ -847,6 +859,10 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             InvoiceFragmentInfoLine.PARAM_LINE_COLLECTED,
                             itemData.collected
                         )
+                        putSerializable(
+                            InvoiceFragmentInfoLine.PARAM_YARL,
+                            getArgument(PARAM_YARL)
+                        )
                     }
                 )
             }
@@ -909,7 +925,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
         val invoiceLinesFormState=
             MutableLiveData<InvoiceLinesFormState<*>>()
 
-        fun requestLines(invoice: String, order:String, last:String,query:String) {
+        fun requestLines(invoice: String,yarl: String, order:String, last:String,query:String) {
             Other.getInstanceSingleton().ioCoroutineScope.launch {
                 invoiceLinesFormState.postValue(
                     when (val token = loginRepository.user?.token) {
@@ -918,6 +934,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             when (val result = apiPantes.linesSearch(
                                 token = token,
                                 invoice = invoice,
+                                yarl = yarl,
                                 order = order,
                                 last = last,
                                 query=query

@@ -9,6 +9,6 @@ data class InvoiceSearchResponse(
     var last:String = "",
     val pivotlist: ArrayList<Item> =ArrayList()
 ) {
-    data class Item(val id:String, val name:String, val number:String, val partial:Boolean,var collected: Boolean):Serializable
+    data class Item(val id:String, val name:String, val number:String, val yarl:String?, val yarlnum:String?, val partial:Boolean,var collected: Boolean):Serializable
 
 }

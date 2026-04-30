@@ -117,6 +117,7 @@ class ApiPantes(
             @Query("comment") comment:String,
             @Query("invoice") invoice:String,
             @Query("line") line:String?,
+            @Query("yarl") yarl:String?,
             @Query("token") token:String,
         ):Call<ResponseBody>
         //region issuance
@@ -127,6 +128,7 @@ class ApiPantes(
             @Query("comment") comment:String,
             @Query("invoice") invoice:String,
             @Query("line") line:String?,
+            @Query("yarl") yarl:String?,
             @Query("token") token:String,
         ):Call<IssuanceIssueResponse>
         @POST("issuance/elevator")
@@ -161,6 +163,7 @@ class ApiPantes(
             @Query("query") query: String,
             @Query("last") last: String,
             @Header("Authorization") authorization:String,
+            @Query("rgm") rgm: String,
             @Query("token") token: String,
             ):Call<InvoiceSearchResponse>
 
@@ -172,6 +175,7 @@ class ApiPantes(
         fun lineSearch(
             @Header("Authorization") authorization:String,
             @Query("invoice") invoice: String,
+            @Query("yarl") yarl: String,
             @Query("last") last: String,
             @Query("order") order: String,
             @Query("query") query: String,
@@ -184,6 +188,7 @@ class ApiPantes(
             @Header("Authorization") authorization:String,
             @Query("invoice") invoice: String,
             @Query("line") line: String,
+            @Query("yarl") yarl: String,
             @Query("token") token: String,
             ):Call<LinesInfoResponse>
         //endregion
@@ -594,6 +599,7 @@ class ApiPantes(
         token:String,
         invoice: String,
         line:String,
+        yarl: String,
         comment: String,
     ): ApiState<ResponseBody> {
         return flow {
@@ -603,6 +609,7 @@ class ApiPantes(
                     comment = comment,
                     invoice = invoice,
                     line = line,
+                    yarl = yarl,
                     token = token
                 ).execute()
 
@@ -831,18 +838,19 @@ class ApiPantes(
 
     //region invoice
 
-    suspend fun invoiceSearch(token:String,query:String,last:String): ApiState<InvoiceSearchResponse> {
+    suspend fun invoiceSearch(token:String,query:String,last:String,rgm : String = "N"): ApiState<InvoiceSearchResponse> {
         return flow {
             val response: Response<InvoiceSearchResponse> =
                 api.invoiceSearch(
                     authorization = "Bearer $token",
                     token = token,
                     query = query,
-                    last = last
+                    last = last,
+                    rgm = rgm
                 ).execute()
 
 
-            when(response.isSuccessful){
+           when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!.apply { request=query }))
                 else->emit(ApiState.Error(buildException(response)))
             }
@@ -866,6 +874,7 @@ class ApiPantes(
         coil: String?,
         comment: String,
         invoice: String,
+        yarl: String,
         line:String?
     ): ApiState<IssuanceIssueResponse> {
         return flow {
@@ -876,6 +885,7 @@ class ApiPantes(
                     comment = comment,
                     invoice = invoice,
                     line = line,
+                    yarl = yarl,
                     token = token
                 ).execute()
 
@@ -926,10 +936,10 @@ class ApiPantes(
     //endregion
 
     //region lines
-    suspend fun linesSearch(token:String, invoice: String, order: String,last: String,query: String): ApiState<*> {
+    suspend fun linesSearch(token:String, invoice: String,yarl: String, order: String,last: String,query: String): ApiState<*> {
         return flow {
             val response:Response<LinesSearchResponse> =
-                api.lineSearch( "Bearer $token",invoice,last,order,query,token).execute()
+                api.lineSearch( "Bearer $token",invoice,yarl,last,order,query,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 //else->emit(AppResult.Success(it))
@@ -938,10 +948,10 @@ class ApiPantes(
 
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun lineInfo(token:String, invoice: String, line:String): ApiState<LinesInfoResponse> {
+    suspend fun lineInfo(token:String, invoice: String, line:String,yarl:String): ApiState<LinesInfoResponse> {
         return flow {
             val response:Response<LinesInfoResponse> =
-                api.lineInfo( "Bearer $token",invoice,line,token).execute()
+                api.lineInfo( "Bearer $token",invoice,line,yarl,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 else->emit(ApiState.Error(buildException(response)))

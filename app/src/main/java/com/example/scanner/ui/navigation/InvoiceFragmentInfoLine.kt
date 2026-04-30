@@ -53,6 +53,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
         const val PARAM_LINE_COLLECTED="param4"
         const val PARAM_INVOICE_ID="param1"
         const val PARAM_INVOICE_NAME="param2"
+        const val PARAM_YARL="params3"
         const val PARAM3_RESULT="param3"
     }
 
@@ -62,6 +63,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
 
     private lateinit var lineId:String
     private lateinit var invoiceId:String
+    private lateinit var yarl:String
     private lateinit var invoiceNumber:String
     private val tabName0="Склад"
     private val tabName1="Характеристики"
@@ -186,6 +188,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                                             putSerializable(IssuanceIssueDialog.PARAM_COIL,coilsItem.number.toString())
                                                                             putSerializable(IssuanceIssueDialog.PARAM_COLLECTED,coilsItem.collected)
                                                                             putSerializable(IssuanceIssueDialog.PARAM_COMMENT,StringBuilder(linesInfoResponse.comment).toString())
+                                                                            putSerializable(IssuanceIssueDialog.PARAM_YARL,yarl)
                                                                         }
                                                                 }
                                                                 .show(
@@ -338,8 +341,8 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                             lineId=getArgument<Int>(PARAM_LINE_ID).toString()
                             invoiceId=getArgument(PARAM_INVOICE_ID)
                             invoiceNumber=getArgument(PARAM_INVOICE_NAME)
-
-                            invoiceLineInfoViewModel.requestLineInfo(lineId,invoiceId)
+                            yarl=getArgument(PARAM_YARL) ?: "params3"
+                            invoiceLineInfoViewModel.requestLineInfo(lineId,invoiceId,yarl)
                         }
                         is InvoiceLineInfoFragmentFormState.Error ->{
                             invoiceLineInfoViewModel.mainActivityRouter.navigate(
@@ -387,6 +390,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                     putSerializable(IssuanceIssueDialog.PARAM_LINE_NAME,linesInfoResponse.name)
                                                     putSerializable(IssuanceIssueDialog.PARAM_COIL,stringScanResult)
                                                     putSerializable(IssuanceIssueDialog.PARAM_COLLECTED,false)
+                                                    putSerializable(IssuanceIssueDialog.PARAM_YARL,yarl)
                                                 }
                                         }
                                         .show(childFragmentManager,IssuanceIssueDialog::class.java.name)
@@ -408,7 +412,8 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                     invoiceLineInfoViewModel.requestIssuanceComment(
                         invoiceId,
                         lineId.toString(),
-                        linesInfoResponse.comment
+                        linesInfoResponse.comment,
+                        yarl
                     )
                 }
             }
@@ -433,7 +438,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
         private val loginRepository: LoginRepository,
         val pref: Pref,
     ):BaseViewModel(){
-        fun requestIssuanceComment(invoiceId: String, lineId: String, comment: String) {
+        fun requestIssuanceComment(invoiceId: String, lineId: String, comment: String,yarl: String) {
             Other.getInstanceSingleton().ioCoroutineScope.launch {
                 invoiceLineInfoFragmentFormState.postValue(
                     when (val token = loginRepository.user?.token) {
@@ -442,6 +447,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                             when (val result = apiPantes.issuanceComment(
                                 token = token,
                                 invoice = invoiceId,
+                                yarl = yarl,
                                 line = lineId,
                                 comment=comment
                             )) {
@@ -456,7 +462,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                 )
             }
         }
-        fun requestLineInfo(lineId: String, invoiceId: String) {
+        fun requestLineInfo(lineId: String, invoiceId: String,yarl:String) {
             Other.getInstanceSingleton().ioCoroutineScope.launch {
                 invoiceLineInfoFragmentFormState.postValue(
                     when (val token = loginRepository.user?.token) {
@@ -465,7 +471,8 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                             when (val result = apiPantes.lineInfo(
                                 token = token,
                                 line = lineId,
-                                invoice = invoiceId
+                                invoice = invoiceId,
+                                yarl = yarl
                             )) {
                                 is ApiPantes.ApiState.Success ->
                                     InvoiceLineInfoFragmentFormState.SuccessLineInfo(result.data)
