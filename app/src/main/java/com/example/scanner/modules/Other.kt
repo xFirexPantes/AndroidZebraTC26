@@ -20,7 +20,11 @@ import com.example.scanner.ui.navigation.DryFragment
 import com.example.scanner.ui.navigation.DryFragmentInfo
 import com.example.scanner.ui.navigation.InControlFragment
 import com.example.scanner.ui.navigation.InControlFragmentInfo
+import com.example.scanner.ui.navigation.InvoiceFragmentInfoLinePr
+import com.example.scanner.ui.navigation.InvoiceFragmentInfoPr
 import com.example.scanner.ui.navigation.InvoiceFragmentLines
+import com.example.scanner.ui.navigation.InvoiceFragmentLinesPr
+import com.example.scanner.ui.navigation.InvoiceFragmentPr
 import com.example.scanner.ui.navigation.IsolatorFragment
 import com.example.scanner.ui.navigation.IsolatorFragmentIsolate
 import com.example.scanner.ui.navigation.IsolatorFragmentMinus
@@ -93,6 +97,9 @@ val viewModelFactory= viewModelFactory {
         InvoiceFragment.InvoicesViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
     initializer {
+        InvoiceFragmentPr.InvoicesViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
         ReceiveFragment.ReceiveViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
     initializer {
@@ -120,7 +127,13 @@ val viewModelFactory= viewModelFactory {
         InvoiceFragmentInfo.InvoiceInfoViewModel.getInstanceSingleton((this[APPLICATION_KEY] as App))
     }
     initializer {
+        InvoiceFragmentInfoPr.InvoiceInfoViewModel.getInstanceSingleton((this[APPLICATION_KEY] as App))
+    }
+    initializer {
         InvoiceFragmentLines.InvoiceLinesViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
+        InvoiceFragmentLinesPr.InvoiceLinesViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
     initializer {
         ComponentFragmentInfo.ComponentsInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
@@ -142,6 +155,9 @@ val viewModelFactory= viewModelFactory {
     }
     initializer {
         InvoiceFragmentInfoLine.InvoiceLineInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
+    }
+    initializer {
+        InvoiceFragmentInfoLinePr.InvoiceLineInfoViewModel.getInstance((this[APPLICATION_KEY] as App))
     }
     initializer {
         ViewModelSetting(Pref.getInstanceSingleton((this[APPLICATION_KEY] as App)))

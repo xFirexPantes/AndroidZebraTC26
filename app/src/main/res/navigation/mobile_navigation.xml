@@ -54,10 +54,18 @@
         android:id="@+id/nav_invoices"
         android:name="com.example.scanner.ui.navigation.InvoiceFragment"
         />
+    <fragment
+        android:id="@+id/nav_invoicesPr"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentPr"
+        />
     <!--invoice info-->
     <fragment
         android:id="@+id/nav_invoice_info_fragment"
         android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfo"
+        android:label="InvoiceInfoFragment" />
+    <fragment
+        android:id="@+id/nav_invoice_info_fragmentPr"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfoPr"
         android:label="InvoiceInfoFragment" />
     <fragment
         android:id="@+id/nav_admin_fragment"
@@ -68,12 +76,19 @@
         android:id="@+id/nav_invoice_lines_fragment"
         android:name="com.example.scanner.ui.navigation.InvoiceFragmentLines"
         android:label="InvoiceLinesFragment" />
+    <fragment
+        android:id="@+id/nav_invoice_lines_fragmentPr"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentLinesPr"
+        android:label="InvoiceLinesFragment" />
     <!--invoice line info-->
     <fragment
         android:id="@+id/nav_invoice_line_info_fragment"
         android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfoLine"
         android:label="InvoiceLineInfoFragment" />
-
+    <fragment
+        android:id="@+id/nav_invoice_line_info_fragmentPr"
+        android:name="com.example.scanner.ui.navigation.InvoiceFragmentInfoLinePr"
+        android:label="InvoiceLineInfoFragment" />
     <!--components-->
     <fragment
         android:id="@+id/nav_components_fragment"

@@ -40,7 +40,11 @@ import com.example.scanner.ui.navigation.HomeFragment
 import com.example.scanner.ui.navigation.InControlMenuFragment
 import com.example.scanner.ui.navigation.InvoiceFragmentInfo
 import com.example.scanner.ui.navigation.InvoiceFragmentInfoLine
+import com.example.scanner.ui.navigation.InvoiceFragmentInfoLinePr
+import com.example.scanner.ui.navigation.InvoiceFragmentInfoPr
 import com.example.scanner.ui.navigation.InvoiceFragmentLines
+import com.example.scanner.ui.navigation.InvoiceFragmentLinesPr
+import com.example.scanner.ui.navigation.InvoiceFragmentPr
 import com.example.scanner.ui.navigation.IsolatorFragment
 import com.example.scanner.ui.navigation.IsolatorFragmentIsolate
 import com.example.scanner.ui.navigation.IsolatorFragmentMinus
@@ -161,20 +165,28 @@ class MainActivity : BaseActivity() {
 
                 InvoiceFragment::class.java ->
                     navControllerMain?.navigate(R.id.nav_invoices, route.params)
+                InvoiceFragmentPr::class.java ->
+                    navControllerMain?.navigate(R.id.nav_invoicesPr, route.params)
                 //endregion
 
                 //region InvoiceInfo
                 InvoiceFragmentInfo::class.java ->
                     navControllerMain?.navigate(R.id.nav_invoice_info_fragment, route.params)
+                InvoiceFragmentInfoPr::class.java ->
+                    navControllerMain?.navigate(R.id.nav_invoice_info_fragmentPr, route.params)
                 //endregion
 
                 //region InvoiceLines
                 InvoiceFragmentLines::class.java ->
                     navControllerMain?.navigate(R.id.nav_invoice_lines_fragment, route.params)
+                InvoiceFragmentLinesPr::class.java ->
+                    navControllerMain?.navigate(R.id.nav_invoice_lines_fragmentPr, route.params)
                 //endregion
                 //region Invoice Line Info
                 InvoiceFragmentInfoLine::class.java ->
                     navControllerMain?.navigate(R.id.nav_invoice_line_info_fragment, route.params)
+                InvoiceFragmentInfoLinePr::class.java ->
+                    navControllerMain?.navigate(R.id.nav_invoice_line_info_fragmentPr, route.params)
                 //endregion
 
                 //region Components

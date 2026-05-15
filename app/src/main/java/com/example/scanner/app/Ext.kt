@@ -745,6 +745,7 @@ fun TemplatePresenterBinding.setAttribute(
                 //region checkbox
                 if (pair.first.size>=6 && pair.first[5]==true){
                     (templateCheckBoxCheckBox.parent as FrameLayout).visibility= View.VISIBLE
+                    (templateCheckBoxCheckBox.parent as FrameLayout).visibility= View.VISIBLE
                 }
                 //endregion
                 //endregion
@@ -792,7 +793,17 @@ val TemplatePresenterBinding.templateCheckBoxCheckBox: CheckBox
                 (newAttribute(AttributesType.CheckBox) as TemplateCheckBoxBinding).dataAttributeCheckBox
             }
     }
-val TemplatePresenterBinding.templateCheckBoxRoot: FrameLayout
+val TemplatePresenterBinding.templateCheckBoxCheckBoxPr: CheckBox
+    get()  {
+        return allAttributes()[AttributesType.CheckBox]
+            ?.let {
+                TemplateCheckBoxBinding.bind(it).dataAttributeCheckBoxPr
+            }
+            ?:run {
+                (newAttribute(AttributesType.CheckBox) as TemplateCheckBoxBinding).dataAttributeCheckBoxPr
+            }
+    }
+val TemplatePresenterBinding.templateCheckBoxRoot: LinearLayout
     get() {
         return allAttributes()[AttributesType.CheckBox]
             ?.let {

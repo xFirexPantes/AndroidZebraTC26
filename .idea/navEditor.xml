@@ -133,6 +133,18 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="nav_invoice_info_fragmentPr">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="nav_invoice_line_info_fragment">
                     <value>
                       <LayoutPositions>
@@ -145,12 +157,36 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="nav_invoice_line_info_fragmentPr">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="nav_invoice_lines_fragment">
                     <value>
                       <LayoutPositions>
                         <option name="myPosition">
                           <Point>
                             <option name="x" value="500" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="nav_invoice_lines_fragmentPr">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
                             <option name="y" value="12" />
                           </Point>
                         </option>
@@ -170,6 +206,18 @@
                     </value>
                   </entry>
                   <entry key="nav_invoices">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="nav_invoicesPr">
                     <value>
                       <LayoutPositions>
                         <option name="myPosition">

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MyCheckboxStyle">
+        <item name="colorControlNormal">@color/checkbox_unchecked</item> <!-- Цвет рамки, когда галка не стоит -->
+        <item name="colorAccent">@color/checkbox_checked</item> <!-- Цвет галки и рамки, когда она стоит -->
+    </style>
+    <style name="MyCheckboxStylePr">
+        <item name="colorControlNormal">@color/checkbox_unchecked</item> <!-- Цвет рамки, когда галка не стоит -->
+        <item name="colorAccent">@color/checkbox_checkedPr</item> <!-- Цвет галки и рамки, когда она стоит -->
+    </style>
+
+</resources>

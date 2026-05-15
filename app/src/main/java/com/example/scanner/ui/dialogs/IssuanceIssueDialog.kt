@@ -1,5 +1,6 @@
 package com.example.scanner.ui.dialogs
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -31,7 +32,8 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
         const val PARAM_COMMENT="param55"
         const val PARAM6_RESULT="param6"
         const val PARAM_YARL="params3"
-
+        const val PARAM_CHECKED=""
+        const val PARAM_RGM="0"
     }
 
     private val issuanceIssueDialogViewModel:IssuanceIssueDialogViewModel by viewModels { viewModelFactory  }
@@ -42,6 +44,8 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
     private var collected:Boolean?=null
     private var coil: String?=null
     private var yarl: String?=null
+    private var rgm: String?=null
+    private var checked:Boolean?=null
 
 
     override fun onCreateView(
@@ -69,12 +73,21 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
                 lineName=getArgument(PARAM_LINE_NAME)
                 coil=getArgument(PARAM_COIL)
                 collected=getArgument(PARAM_COLLECTED)
+                checked=getArgument(PARAM_CHECKED)
                 yarl=getArgument(PARAM_YARL) ?: "params3"
-                toolbar.title=when(collected!!){
-                    false->"Завершить сборку?"
-                    true->"Отменить сборку?"
+                rgm=getArgument(PARAM_RGM) ?: "0"
+                if (rgm == "0") {
+                    toolbar.title = when (collected!!) {
+                        false -> "Завершить сборку?"
+                        true -> "Отменить сборку?"
+                    }
                 }
-
+                else{
+                    toolbar.title = when (checked!!) {
+                        false -> "Завершить проверку?"
+                        true -> "Отменить проверку?"
+                    }
+                }
                 toolbar.subtitle=null
 
                 text.text=StringBuilder()
@@ -108,24 +121,53 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
                 cancel.setOnClickListener { dismiss() }
 
                 ok.setOnClickListener {
-                    when(collected!!){
-                        false->{
-                            issuanceIssueDialogViewModel.requestIssuanceIssue(
-                                coil=coil,
-                                comment = getArgument<String?>(PARAM_COMMENT)?:"",
-                                invoice=invoiceId,
-                                line = lineId,
-                                yarl= yarl ?: "params3"
-                            )
+                    when(rgm){
+                        "0"->{when(collected!!){
+                            false->{
+                                issuanceIssueDialogViewModel.requestIssuanceIssue(
+                                    coil=coil,
+                                    comment = getArgument<String?>(PARAM_COMMENT)?:"",
+                                    invoice=invoiceId,
+                                    line = lineId,
+                                    yarl= yarl ?: "params3",
+                                    rgm = "0",
+                                )
+                            }
+                            true->{
+                                issuanceIssueDialogViewModel.requestIssuanceReturn(
+                                    coil=coil,
+                                    invoice=invoiceId,
+                                    line = lineId,
+                                    yarl= yarl ?: "params3",
+                                    rgm = "0",
+                                )
+                            }
+                            }
                         }
-                        true->{
-                            issuanceIssueDialogViewModel.requestIssuanceReturn(
-                                coil=coil,
-                                invoice=invoiceId,
-                                line = lineId
-                            )
+                        "1"->{when(checked!!){
+                            false->{
+                                issuanceIssueDialogViewModel.requestIssuanceIssue(
+                                    coil=coil,
+                                    comment = getArgument<String?>(PARAM_COMMENT)?:"",
+                                    invoice=invoiceId,
+                                    line = lineId,
+                                    yarl= yarl ?: "params3",
+                                    rgm = "1",
+                                )
+                            }
+                            true->{
+                                issuanceIssueDialogViewModel.requestIssuanceReturn(
+                                    coil=coil,
+                                    invoice=invoiceId,
+                                    line = lineId,
+                                    yarl= yarl ?: "params3",
+                                    rgm = "1",
+                                )
+                            }
+                        }
                         }
                     }
+
                 }
 
                 issuanceIssueDialogViewModel.issuanceIssueDialogFormState.observe(viewLifecycleOwner){
@@ -144,7 +186,7 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
                                 ErrorsFragment::class.java,
                                 Bundle().apply { putSerializable(ErrorsFragment.PARAM,state.exceptionSAD.data) }
                             )
-                            dismiss()
+                                 dismiss()
                         }
                     }
                 }
@@ -165,42 +207,48 @@ class IssuanceIssueDialog(val confirmEnable: Boolean=true) : BaseFragmentDialog(
 class IssuanceIssueDialogViewModel(private val apiPantes: ApiPantes,private val loginRepository: LoginRepository):
     BaseViewModel(){
     fun requestIssuanceIssue(
-        coil: String?,
-        comment:String="",
-        invoice: String,
-        line:String?=null,
-        yarl:String
+    coil: String?,
+    comment: String = "",
+    invoice: String,
+    line: String? = null,
+    yarl: String,
+    rgm: String,
     ) {
         Other.getInstanceSingleton().ioCoroutineScope.launch {
-            loginRepository.user?.token?.let { token->
-                when(val result=apiPantes.issuanceIssue(
-                    token = token,
-                    coil = coil,
-                    comment = comment,
-                    invoice = invoice,
-                    line = line,
-                    yarl = yarl
+            val token = loginRepository.user?.token
+            if (token == null) {
+                issuanceIssueDialogFormState.postValue(
+                    IssuanceIssueDialogFormState.Error(Other.SAD(Exception("Отсутствует токен")))
                 )
-                ){
-                    is ApiPantes.ApiState.Success->{
-                        issuanceIssueDialogFormState.postValue(
-                            IssuanceIssueDialogFormState.SuccessIssuanceIssue(Other.SAD(result.data)))
-                    }
-                    is ApiPantes.ApiState.Error->{
-                        issuanceIssueDialogFormState.postValue(
-                            IssuanceIssueDialogFormState.Error(Other.SAD(result.exception)))
+                return@launch
+            }
 
-                    }
+            val result = try {
+                apiPantes.issuanceIssue(token, coil, comment, invoice, yarl,rgm, line)
+            } catch (e: Exception) {
+                ApiPantes.ApiState.Error(e)
+            }
 
+            when (result) {
+                is ApiPantes.ApiState.Success -> {
+                    issuanceIssueDialogFormState.postValue(
+                        IssuanceIssueDialogFormState.SuccessIssuanceIssue(Other.SAD(result.data))
+                    )
                 }
-
+                is ApiPantes.ApiState.Error -> {
+                    issuanceIssueDialogFormState.postValue(
+                        IssuanceIssueDialogFormState.Error(Other.SAD(result.exception))
+                    )
+                }
             }
         }
     }
     fun requestIssuanceReturn(
         coil: String?,
         invoice:String,
-        line: String?
+        line: String?,
+        yarl: String?,
+        rgm: String?
     ) {
         Other.getInstanceSingleton().ioCoroutineScope.launch {
             loginRepository.user?.token?.let { token->
@@ -208,7 +256,8 @@ class IssuanceIssueDialogViewModel(private val apiPantes: ApiPantes,private val 
                 token = token,
                 coil = coil,
                 invoice = invoice,
-                line = line
+                line = line,
+                yarl = yarl,rgm = rgm
             )){
                 is ApiPantes.ApiState.Success->{
                     issuanceIssueDialogFormState.postValue(

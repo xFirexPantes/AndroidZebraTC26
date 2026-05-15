@@ -38,6 +38,7 @@ data class IssuanceIssueResponse(
         val quantity: String,
         val rack: Long,
         val separate: Boolean,
+        var checkedpr: Boolean = false,
     ): Serializable
 
     data class Attribute(

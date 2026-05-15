@@ -1,6 +1,7 @@
 package com.example.scanner.ui.navigation
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.media.AudioManager
 import android.os.Bundle
 import android.text.Editable
@@ -22,6 +23,7 @@ import com.example.scanner.app.templateInputTextTextLayout
 import com.example.scanner.app.onRightDrawableClicked
 import com.example.scanner.app.setAttribute
 import com.example.scanner.app.templateAttributeTitleTextView
+import com.example.scanner.app.templateCheckBoxCheckBoxPr
 import com.example.scanner.databinding.TemplateButton2Binding
 import com.example.scanner.databinding.TemplateCardBinding
 import com.example.scanner.databinding.TemplateFragmentBinding
@@ -49,7 +51,7 @@ import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONObject
 
-class InvoiceFragmentInfoLine:BaseFragment(){
+class InvoiceFragmentInfoLinePr:BaseFragment(){
 
     companion object{
         const val PARAM_LINE_ID="param"
@@ -58,6 +60,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
         const val PARAM_INVOICE_NAME="param2"
         const val PARAM_YARL="params3"
         const val PARAM3_RESULT="param3"
+        const val PARAM_LINE_CHECKED="param4"
     }
 
     private val invoiceLineInfoViewModel: InvoiceLineInfoViewModel by viewModels { viewModelFactory  }
@@ -168,6 +171,23 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                     )
                                     //endregion
                                     //region список катушек
+                                val states = arrayOf(
+                                    intArrayOf(android.R.attr.state_checked), // Состояние "включён"
+                                    intArrayOf(-android.R.attr.state_checked) // Состояние "выключен"
+                                )
+
+                                val colors = intArrayOf(
+                                    ContextCompat.getColor(view!!.context, R.color.checkbox_checked),   // Цвет для включённого состояния
+                                    ContextCompat.getColor(view!!.context, R.color.checkbox_unchecked) // Цвет для выключенного
+                                )
+                                val colorsPr = intArrayOf(
+                                    ContextCompat.getColor(view!!.context, R.color.checkbox_checkedPr),   // Цвет для включённого состояния
+                                    ContextCompat.getColor(view!!.context, R.color.checkbox_unchecked) // Цвет для выключенного
+                                )
+
+                                val colorStateList = ColorStateList(states, colors)
+
+                                val colorStateListPr = ColorStateList(states, colorsPr)
                                     linesInfoResponse.coils.forEach { coilsItem ->
                                         arrayListViews.add(
                                             TemplatePresenterBinding.inflate(layoutInflater,card.containerVertical,false)
@@ -179,7 +199,36 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                         .append(coilsItem.quantity)
                                                     templateCheckBoxCheckBox.apply {
                                                         setOnClickListener {
+                                                            buttonTintList = colorStateList
                                                             templateCheckBoxCheckBox.isChecked=!templateCheckBoxCheckBox.isChecked
+//                                                            IssuanceIssueDialog()
+//                                                                .apply {
+//                                                                    arguments=
+//                                                                        Bundle().apply {
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_LINE_ID,lineId.toInt())
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_INVOICE_ID,invoiceId)
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_INVOICE_NAME,invoiceNumber)
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_LINE_NAME,linesInfoResponse.name)
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_COIL,coilsItem.number.toString())
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_COLLECTED,coilsItem.collected)
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_COMMENT,StringBuilder(linesInfoResponse.comment).toString())
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_YARL,yarl)
+//                                                                            putSerializable(IssuanceIssueDialog.PARAM_CHECKED,coilsItem.checkedpr)
+//                                                                        }
+//                                                                }
+//                                                                .show(
+//                                                                    childFragmentManager,
+//                                                                    IssuanceIssueDialog::class.java.name)
+
+                                                        }
+                                                        isChecked=coilsItem.collected
+                                                        (parent as ViewGroup).visibility=View.VISIBLE
+                                                        //isEnabled=!getArgument<Boolean>(PARAM_LINE_COLLECTED)
+                                                    }
+                                                    templateCheckBoxCheckBoxPr.apply {
+                                                        buttonTintList = colorStateListPr
+                                                        setOnClickListener {
+                                                            templateCheckBoxCheckBoxPr.isChecked=!templateCheckBoxCheckBoxPr.isChecked
                                                             IssuanceIssueDialog()
                                                                 .apply {
                                                                     arguments=
@@ -192,6 +241,8 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                                             putSerializable(IssuanceIssueDialog.PARAM_COLLECTED,coilsItem.collected)
                                                                             putSerializable(IssuanceIssueDialog.PARAM_COMMENT,StringBuilder(linesInfoResponse.comment).toString())
                                                                             putSerializable(IssuanceIssueDialog.PARAM_YARL,yarl)
+                                                                            putSerializable(IssuanceIssueDialog.PARAM_CHECKED,coilsItem.checkedpr)
+                                                                            putSerializable(IssuanceIssueDialog.PARAM_RGM,"1")
                                                                         }
                                                                 }
                                                                 .show(
@@ -199,8 +250,8 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                                     IssuanceIssueDialog::class.java.name)
 
                                                         }
-                                                        isChecked=coilsItem.collected
-                                                        (parent as ViewGroup).visibility=View.VISIBLE
+                                                        isChecked=coilsItem.checkedpr
+                                                        visibility=View.VISIBLE
                                                         //isEnabled=!getArgument<Boolean>(PARAM_LINE_COLLECTED)
                                                     }
                                                     if (coilsItem.isused) {
@@ -392,8 +443,9 @@ class InvoiceFragmentInfoLine:BaseFragment(){
                                                     putSerializable(IssuanceIssueDialog.PARAM_LINE_NAME,linesInfoResponse.name)
                                                     putSerializable(IssuanceIssueDialog.PARAM_COIL,stringScanResult)
                                                     putSerializable(IssuanceIssueDialog.PARAM_COLLECTED,false)
+                                                    putSerializable(IssuanceIssueDialog.PARAM_CHECKED,false)
                                                     putSerializable(IssuanceIssueDialog.PARAM_YARL,yarl)
-                                                    putSerializable(IssuanceIssueDialog.PARAM_RGM,"0")
+                                                    putSerializable(IssuanceIssueDialog.PARAM_RGM,"1")
                                                 }
                                         }
                                         .show(childFragmentManager,IssuanceIssueDialog::class.java.name)
@@ -409,7 +461,7 @@ class InvoiceFragmentInfoLine:BaseFragment(){
     }
 
     override fun onPause() {
-        if (this@InvoiceFragmentInfoLine::linesInfoResponse.isInitialized){
+        if (this@InvoiceFragmentInfoLinePr::linesInfoResponse.isInitialized){
             getArgument<String?>(PARAM_INVOICE_ID)?.let {invoiceId->
                 getArgument<Int?>(PARAM_LINE_ID)?.let { lineId ->
                     invoiceLineInfoViewModel.requestIssuanceComment(

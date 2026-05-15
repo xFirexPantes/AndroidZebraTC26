@@ -80,9 +80,9 @@ class InvoiceMenuFragment : Fragment() {
         }
         binding?.toCheck?.setOnClickListener {
             homeViewModel.mainActivityRouter.navigate(
-                InvoiceFragment::class.java,
-                Bundle().apply { putSerializable(InvoiceFragment.PARAM, "")
-                    putSerializable(EXTRA_RGM, "checknab")   }
+                InvoiceFragmentPr::class.java,
+                Bundle().apply { putSerializable(InvoiceFragmentPr.PARAM, "")
+                    putSerializable(EXTRA_RGM, "")   }
             )
         }
     }

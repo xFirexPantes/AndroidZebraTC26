@@ -23,6 +23,7 @@ import com.example.scanner.models.InControlSearchResponse
 import com.example.scanner.models.IsolatorListInfoResponse
 import com.example.scanner.models.IsolatorListSearchResponse
 import com.example.scanner.models.IsolatorOtvListResponse
+import com.example.scanner.models.LinesSearchResponsePr
 import com.example.scanner.models.TrueSignSearchResponse
 import com.example.scanner.ui.MainActivity
 import com.example.scanner.ui.base.NonFatalExceptionShowDialogMessage
@@ -129,6 +130,7 @@ class ApiPantes(
             @Query("invoice") invoice:String,
             @Query("line") line:String?,
             @Query("yarl") yarl:String?,
+            @Query("rgm") rgm:String?,
             @Query("token") token:String,
         ):Call<IssuanceIssueResponse>
         @POST("issuance/elevator")
@@ -144,6 +146,8 @@ class ApiPantes(
             @Query("coil") coil: String?,
             @Query("invoice") invoice:String,
             @Query("line") line:String?,
+            @Query("yarl") yarl:String?,
+            @Query("rgm") rgm:String?,
             @Query("token") token:String,
         ):Call<IssuanceIssueResponse>
         //endregion
@@ -181,7 +185,17 @@ class ApiPantes(
             @Query("query") query: String,
             @Query("token") token: String,
             ):Call<LinesSearchResponse>
-
+        @GET("line/search")
+        @Headers("Content-Type: application/json")
+        fun lineSearchPr(
+            @Header("Authorization") authorization:String,
+            @Query("invoice") invoice: String,
+            @Query("yarl") yarl: String,
+            @Query("last") last: String,
+            @Query("order") order: String,
+            @Query("query") query: String,
+            @Query("token") token: String,
+        ):Call<LinesSearchResponsePr>
         @GET("line/info")
         @Headers("Content-Type: application/json")
         fun lineInfo(
@@ -875,6 +889,7 @@ class ApiPantes(
         comment: String,
         invoice: String,
         yarl: String,
+        rgm: String,
         line:String?
     ): ApiState<IssuanceIssueResponse> {
         return flow {
@@ -886,6 +901,7 @@ class ApiPantes(
                     invoice = invoice,
                     line = line,
                     yarl = yarl,
+                    rgm = rgm,
                     token = token
                 ).execute()
 
@@ -896,7 +912,7 @@ class ApiPantes(
 
         }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
     }
-    suspend fun issuanceReturn(token:String, coil: String?,invoice: String, line:String?): ApiState<IssuanceIssueResponse> {
+    suspend fun issuanceReturn(token:String, coil: String?,invoice: String, line:String?,yarl:String?,rgm:String?): ApiState<IssuanceIssueResponse> {
         return flow {
             val response:Response<IssuanceIssueResponse> =
                 api.issuanceReturn(
@@ -904,6 +920,8 @@ class ApiPantes(
                     coil = coil,
                     invoice = invoice,
                     line = line,
+                    yarl = yarl,
+                    rgm= rgm,
                     token = token
                 ).execute()
             when(response.isSuccessful){
@@ -940,6 +958,18 @@ class ApiPantes(
         return flow {
             val response:Response<LinesSearchResponse> =
                 api.lineSearch( "Bearer $token",invoice,yarl,last,order,query,token).execute()
+            when(response.isSuccessful){
+                true->emit(ApiState.Success(response.body()!!))
+                //else->emit(AppResult.Success(it))
+                else->emit(ApiState.Error(buildException(response)))
+            }
+
+        }.flowOn(Dispatchers.IO).catch {emit(ApiState.Error(it))}.single()
+    }
+    suspend fun linesSearchPr(token:String, invoice: String,yarl: String, order: String,last: String,query: String): ApiState<*> {
+        return flow {
+            val response:Response<LinesSearchResponsePr> =
+                api.lineSearchPr( "Bearer $token",invoice,yarl,last,order,query,token).execute()
             when(response.isSuccessful){
                 true->emit(ApiState.Success(response.body()!!))
                 //else->emit(AppResult.Success(it))

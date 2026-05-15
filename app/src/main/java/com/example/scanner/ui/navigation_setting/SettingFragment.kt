@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.viewModels
 import com.example.scanner.app.templateAttributeDataTextView
@@ -116,21 +117,33 @@ class SettingFragment : BaseFragment() {
                                 TemplatePresenterBinding.inflate(inflater,containerVertical,false)
                                     .apply {
                                         templateAttributeTitleTextView.text="Включить ручной поиск"
-                                        templateCheckBoxCheckBox
-                                            .apply{
-                                                viewModelSetting.pref.enableManualInputMutableLiveData.observe(viewLifecycleOwner)
-                                                {
-                                                    isChecked=View.VISIBLE==it
-                                                }
-
-                                                (layoutParams as FrameLayout.LayoutParams).gravity=
-                                                    Gravity.START
-                                                (parent as View).visibility= View.VISIBLE
-                                                setOnClickListener {
-                                                    viewModelSetting.pref.manualInputIsEnable=
-                                                        if (isChecked) View.VISIBLE else View.GONE
-                                                }
+                                        templateCheckBoxCheckBox.apply {
+                                            viewModelSetting.pref.enableManualInputMutableLiveData.observe(viewLifecycleOwner) {
+                                                isChecked = View.VISIBLE == it
                                             }
+
+                                            // Убираем проблемное приведение и установку gravity.
+                                            // Вместо этого можно установить layout_gravity через корректные LayoutParams:
+
+                                            val lp = layoutParams
+                                            when (lp) {
+                                                is LinearLayout.LayoutParams -> {
+                                                    lp.gravity = Gravity.START
+                                                    layoutParams = lp
+                                                }
+                                                is FrameLayout.LayoutParams -> {
+                                                    lp.gravity = Gravity.START
+                                                    layoutParams = lp
+                                                }
+                                                // если другие типы, игнорируем
+                                            }
+
+                                            (parent as? View)?.visibility = View.VISIBLE
+
+                                            setOnClickListener {
+                                                viewModelSetting.pref.manualInputIsEnable = if (isChecked) View.VISIBLE else View.GONE
+                                            }
+                                        }
                                     }
                                     .root
                             )

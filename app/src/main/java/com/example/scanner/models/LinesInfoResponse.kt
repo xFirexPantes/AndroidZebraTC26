@@ -18,14 +18,15 @@ data class LinesInfoResponse(
     val number:String,
     val quantity:Double,
     val rack:Int,
-    val separate:Boolean
+    val separate:Boolean,
+
 ): Serializable {
     data class AttributesItem(
         val name:String,
         val value:String
     ): Serializable
     data class CoilsItem(val amount: Int,var collected:Boolean,val number:Int,val quantity:Double,
-                         val isused:Boolean = false){
+                         val isused:Boolean = false,    val checkedpr:Boolean,){
         override fun toString(): String {
             return StringBuilder()
                 .append(number)

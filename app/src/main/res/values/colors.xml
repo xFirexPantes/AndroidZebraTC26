@@ -16,4 +16,7 @@
     <color name="yellow_highlight">#FFF9C4</color>
     <!--    <color name="base_background">#CAB7FB</color>-->
     <color name="base_background">#FAF8FF</color>
+    <color name="checkbox_checkedPr">#1AA80A</color> <!-- Цвет для включённой галки -->
+    <color name="checkbox_unchecked">#B0BEC5</color>
+    <color name="checkbox_checked">#0A86C5</color> <!-- Цвет для выключенной рамки -->
 </resources>

@@ -1,6 +1,7 @@
 package com.example.scanner.ui.navigation
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Gravity
@@ -27,6 +28,7 @@ import com.example.scanner.R
 import com.example.scanner.app.templateAttributeDataTextView
 import com.example.scanner.app.templateCheckBoxCheckBox
 import com.example.scanner.app.setAttribute
+import com.example.scanner.app.templateCheckBoxCheckBoxPr
 import com.example.scanner.databinding.TemplateFragmentBinding
 import com.example.scanner.databinding.TemplateIconBinding
 import com.example.scanner.databinding.TemplateRecyclerBinding
@@ -34,7 +36,7 @@ import com.example.scanner.databinding.TemplateCardBinding
 import com.example.scanner.databinding.TemplatePresenterBinding
 import com.example.scanner.databinding.TemplateResultEmptyBinding
 import com.example.scanner.models.IssuanceIssueResponse
-import com.example.scanner.models.LinesSearchResponse
+import com.example.scanner.models.LinesSearchResponsePr
 import com.example.scanner.modules.ApiPantes
 import com.example.scanner.modules.Other
 import com.example.scanner.modules.Pref
@@ -55,7 +57,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Response
 
-class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
+class InvoiceFragmentLinesPr : BaseFragment(),SearchView.OnQueryTextListener {
 
     companion object{
         const val PARAMS_INVOICE_ID="params"
@@ -132,10 +134,10 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                 setOnClickListener {
                                     invoiceLinesViewModel.mainActivityRouter
                                         .navigate(
-                                            InvoiceFragmentInfo::class.java,
+                                            InvoiceFragmentInfoPr::class.java,
                                             Bundle().apply {
                                                 putSerializable(
-                                                    InvoiceFragmentInfo.PARAMS_INVOICE_ID,
+                                                    InvoiceFragmentInfoPr.PARAMS_INVOICE_ID,
                                                     getArgument(PARAMS_INVOICE_ID)
                                                 )
                                             })
@@ -170,7 +172,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                     .postValue(InvoiceLinesFormState.RequestLines)
                                             }
                                     }
-                                setOnQueryTextListener(this@InvoiceFragmentLines)
+                                setOnQueryTextListener(this@InvoiceFragmentLinesPr)
                                 findViewById<View>(androidx.appcompat.R.id.search_close_btn)
                                     .setOnClickListener {
                                         invoiceLinesViewModel.filterSearchView
@@ -250,7 +252,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                                         getString(R.string.order_by_place)
                                                                     setTextSort()
                                                                     adapterLines.setContent(
-                                                                        LinesSearchResponse())
+                                                                        LinesSearchResponsePr())
                                                                     invoiceLinesViewModel.invoiceLinesFormState.value=
                                                                         InvoiceLinesFormState.RequestLines
                                                                 }
@@ -259,7 +261,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                                         getString(R.string.order_by_name)
                                                                     setTextSort()
                                                                     adapterLines.setContent(
-                                                                        LinesSearchResponse())
+                                                                        LinesSearchResponsePr())
                                                                     invoiceLinesViewModel.invoiceLinesFormState.value=
                                                                         InvoiceLinesFormState.RequestLines
 
@@ -269,7 +271,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                                         getString(R.string.order_by_name_desc)
                                                                     setTextSort()
                                                                     adapterLines.setContent(
-                                                                        LinesSearchResponse())
+                                                                        LinesSearchResponsePr())
                                                                     invoiceLinesViewModel.invoiceLinesFormState.value=
                                                                         InvoiceLinesFormState.RequestLines
 
@@ -279,7 +281,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                                         getString(R.string.order_by_collected)
                                                                     setTextSort()
                                                                     adapterLines.setContent(
-                                                                        LinesSearchResponse())
+                                                                        LinesSearchResponsePr())
                                                                     invoiceLinesViewModel.invoiceLinesFormState.value=
                                                                         InvoiceLinesFormState.RequestLines
                                                                 }
@@ -288,7 +290,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                                                                         getString(R.string.order_by_not_collected)
                                                                     setTextSort()
                                                                     adapterLines.setContent(
-                                                                        LinesSearchResponse())
+                                                                        LinesSearchResponsePr())
                                                                     invoiceLinesViewModel.invoiceLinesFormState.value=
                                                                         InvoiceLinesFormState.RequestLines
 
@@ -395,7 +397,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                     }
                 }
                 is InvoiceLinesFormState.Success -> {
-                    val data = (state.data as LinesSearchResponse)
+                    val data = (state.data as LinesSearchResponsePr)
                     adapterLines.setContent(data)
                 }
                 is InvoiceLinesFormState.Error -> {
@@ -485,26 +487,26 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             //если в строке есть не собранные катушки - открыть строку
                             if(issuanceIssueResponse.line.coils.find { coil -> !coil.collected }!=null){
                                 invoiceLinesViewModel.mainActivityRouter.navigate(
-                                    InvoiceFragmentInfoLine::class.java,
+                                    InvoiceFragmentInfoLinePr::class.java,
                                     Bundle().apply {
                                         putSerializable(
-                                            InvoiceFragmentInfoLine.PARAM_INVOICE_ID,
+                                            InvoiceFragmentInfoLinePr.PARAM_INVOICE_ID,
                                             getArgument(PARAMS_INVOICE_ID)
                                         )
                                         putSerializable(
-                                            InvoiceFragmentInfoLine.PARAM_INVOICE_NAME,
+                                            InvoiceFragmentInfoLinePr.PARAM_INVOICE_NAME,
                                             getArgument(PARAMS1_INVOICE_NAME)
                                         )
                                         putSerializable(
-                                            InvoiceFragmentInfoLine.PARAM_LINE_ID,
+                                            InvoiceFragmentInfoLinePr.PARAM_LINE_ID,
                                             issuanceIssueResponse.line.id.toInt()
                                         )
                                         putSerializable(
-                                            InvoiceFragmentInfoLine.PARAM_LINE_COLLECTED,
+                                            InvoiceFragmentInfoLinePr.PARAM_LINE_COLLECTED,
                                             false
                                         )
                                         putSerializable(
-                                            InvoiceFragmentInfoLine.PARAM_YARL,
+                                            InvoiceFragmentInfoLinePr.PARAM_YARL,
                                             getArgument(PARAM_YARL)
                                         )
                                     }
@@ -564,7 +566,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                             coil = stringScanResult,
                             invoice = getArgument(PARAMS_INVOICE_ID),
                             yarl = getArgument(PARAM_YARL) ?: "params3",
-                            rgm = "0"
+                            rgm = "1"
                         )
                     }
                 }
@@ -584,7 +586,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                     }
 
                     is InvoiceFragmentInfoLine -> {
-                        f.getArgument<IssuanceIssueResponse?>(InvoiceFragmentInfoLine.PARAM3_RESULT)?.let {
+                        f.getArgument<IssuanceIssueResponse?>(InvoiceFragmentInfoLinePr.PARAM3_RESULT)?.let {
                             invoiceLinesViewModel.invoiceLinesFormState
                                 .postValue(
                                     InvoiceLinesFormState.RequestLines
@@ -628,7 +630,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
         }
     }
 
-    inner class AdapterLines : BaseRecyclerAdapter<LinesSearchResponse>(LinesSearchResponse()) {
+    inner class AdapterLines : BaseRecyclerAdapter<LinesSearchResponsePr>(LinesSearchResponsePr()) {
 
         private val contentItems=arrayOf<Pair<Array<Any>, String>>(
             Pair(arrayOf("name", "", "", "", "", true), ""),
@@ -640,7 +642,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
             Pair(arrayOf("amount"), "На складе "),
             Pair(arrayOf("separate"), "Отдельно "),)
 
-        override fun getCallback(dataOld: LinesSearchResponse?): DiffUtil.Callback {
+        override fun getCallback(dataOld: LinesSearchResponsePr?): DiffUtil.Callback {
             return object :DiffUtil.Callback(){
 
                 override fun getOldListSize(): Int {
@@ -676,7 +678,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
             }
         }
 
-        override fun appendData(dataNew: LinesSearchResponse) {
+        override fun appendData(dataNew: LinesSearchResponsePr) {
             if (dataNew.total>0) {
                 data.last = dataNew.last
                 data.found.addAll(dataNew.found)
@@ -689,14 +691,15 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
             return if(isResetContent) "" else data.last
         }
 
-        override fun cloneData(): LinesSearchResponse {
+        override fun cloneData(): LinesSearchResponsePr {
             return data.copy(
-                found = ArrayList<LinesSearchResponse.Item>().apply {
+                found = ArrayList<LinesSearchResponsePr.Item>().apply {
                     data.found.forEach { add(it.copy()) }
                 },
                 last=data.last,
                 total = data.total,
-                collected = data.collected
+                collected = data.collected,
+
             )
         }
 
@@ -712,64 +715,142 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val states = arrayOf(
+                intArrayOf(android.R.attr.state_checked), // Состояние "включён"
+                intArrayOf(-android.R.attr.state_checked) // Состояние "выключен"
+            )
+
+            val colors = intArrayOf(
+                ContextCompat.getColor(holder.itemView.context, R.color.checkbox_checked),   // Цвет для включённого состояния
+                ContextCompat.getColor(holder.itemView.context, R.color.checkbox_unchecked) // Цвет для выключенного
+            )
+            val colorsPr = intArrayOf(
+                ContextCompat.getColor(holder.itemView.context, R.color.checkbox_checkedPr),   // Цвет для включённого состояния
+                ContextCompat.getColor(holder.itemView.context, R.color.checkbox_unchecked) // Цвет для выключенного
+            )
+
+            val colorStateList = ColorStateList(states, colors)
+
+            val colorStateListPr = ColorStateList(states, colorsPr)
 
             fun postSetAttribute(
                 pair: Pair<Array<Any>, String>,
                 templatePresenterBinding: TemplatePresenterBinding,
-                itemData: LinesSearchResponse.Item
+                itemData: LinesSearchResponsePr.Item
             ){
                 when (pair.first[0]) {
                     "name" -> {
                         templatePresenterBinding.templateCheckBoxCheckBox
                             .apply {
                                 isChecked = itemData.collected
-                                setOnClickListener {
+                                buttonTintList = colorStateList
+                                    setOnClickListener {
                                     isChecked =
                                         itemData.collected
 
-                                    IssuanceIssueDialog()
-                                        .apply {
-                                            arguments =
-                                                Bundle().apply {
-                                                    putSerializable(
-                                                        IssuanceIssueDialog.PARAM_INVOICE_ID,
-                                                        this@InvoiceFragmentLines.getArgument(
-                                                            PARAMS_INVOICE_ID
-                                                        )
-                                                    )
-                                                    putSerializable(
-                                                        IssuanceIssueDialog.PARAM_INVOICE_NAME,
-                                                        this@InvoiceFragmentLines.getArgument(
-                                                            PARAMS1_INVOICE_NAME
-                                                        )
-                                                    )
-                                                    putSerializable(
-                                                        IssuanceIssueDialog.PARAM_LINE_ID,
-                                                        itemData.id
-                                                    )
-                                                    putSerializable(
-                                                        IssuanceIssueDialog.PARAM_LINE_NAME,
-                                                        itemData.name
-                                                    )
-                                                    putSerializable(
-                                                        IssuanceIssueDialog.PARAM_COLLECTED,
-                                                        itemData.collected
-                                                    )
-                                                }
-                                        }
-                                        .show(
-                                            childFragmentManager,
-                                            IssuanceIssueDialog::class.java.name
-                                        )
+
+//                                    IssuanceIssueDialog()
+//                                        .apply {
+//                                            itemData.collected
+//                                            arguments =
+//                                                Bundle().apply {
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_INVOICE_ID,
+//                                                        this@InvoiceFragmentLinesPr.getArgument(
+//                                                            PARAMS_INVOICE_ID
+//                                                        )
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_INVOICE_NAME,
+//                                                        this@InvoiceFragmentLinesPr.getArgument(
+//                                                            PARAMS1_INVOICE_NAME
+//                                                        )
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_LINE_ID,
+//                                                        itemData.id
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_LINE_NAME,
+//                                                        itemData.name
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_COLLECTED,
+//                                                        itemData.collected
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_CHECKED,
+//                                                        itemData.checkedpr
+//                                                    )
+//                                                }
+//                                        }
+//                                        .show(
+//                                            childFragmentManager,
+//                                            IssuanceIssueDialog::class.java.name
+//                                        )
 
                                 }
 
                             }
+                        templatePresenterBinding.templateCheckBoxCheckBoxPr
+                            .apply {
+
+                                visibility = View.VISIBLE
+                                isChecked = itemData.checkedpr
+                                buttonTintList = colorStateListPr
+                                setOnClickListener {
+                                    isChecked =
+                                        itemData.checkedpr
+
+
+//                                    IssuanceIssueDialog()
+//                                        .apply {
+//                                            arguments =
+//                                                Bundle().apply {
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_INVOICE_ID,
+//                                                        this@InvoiceFragmentLinesPr.getArgument(
+//                                                            PARAMS_INVOICE_ID
+//                                                        )
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_INVOICE_NAME,
+//                                                        this@InvoiceFragmentLinesPr.getArgument(
+//                                                            PARAMS1_INVOICE_NAME
+//                                                        )
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_LINE_ID,
+//                                                        itemData.id
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_LINE_NAME,
+//                                                        itemData.name
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_COLLECTED,
+//                                                        itemData.collected
+//                                                    )
+//                                                    putSerializable(
+//                                                        IssuanceIssueDialog.PARAM_CHECKED,
+//                                                        itemData.checkedpr
+//                                                    )
+//                                                }
+//                                        }
+//                                        .show(
+//                                            childFragmentManager,
+//                                            IssuanceIssueDialog::class.java.name
+//                                        )
+
+                                }
+
+                            }
+
                     }
                 }
             }
 
-            val itemData: LinesSearchResponse.Item =
+            val itemData: LinesSearchResponsePr.Item =
                 data.found[position]
 
 
@@ -851,26 +932,30 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
             holder.itemView.tag=existingAttribute
             itemBinding.containerVertical.setOnClickListener {
                 invoiceLinesViewModel.mainActivityRouter.navigate(
-                    InvoiceFragmentInfoLine::class.java,
+                    InvoiceFragmentInfoLinePr::class.java,
                     Bundle().apply {
                         putSerializable(
-                            InvoiceFragmentInfoLine.PARAM_INVOICE_ID,
+                            InvoiceFragmentInfoLinePr.PARAM_INVOICE_ID,
                             getArgument(PARAMS_INVOICE_ID)
                         )
                         putSerializable(
-                            InvoiceFragmentInfoLine.PARAM_INVOICE_NAME,
+                            InvoiceFragmentInfoLinePr.PARAM_INVOICE_NAME,
                             getArgument(PARAMS1_INVOICE_NAME)
                         )
                         putSerializable(
-                            InvoiceFragmentInfoLine.PARAM_LINE_ID,
+                            InvoiceFragmentInfoLinePr.PARAM_LINE_ID,
                             itemData.id
                         )
                         putSerializable(
-                            InvoiceFragmentInfoLine.PARAM_LINE_COLLECTED,
+                            InvoiceFragmentInfoLinePr.PARAM_LINE_COLLECTED,
                             itemData.collected
                         )
                         putSerializable(
-                            InvoiceFragmentInfoLine.PARAM_YARL,
+                            InvoiceFragmentInfoLinePr.PARAM_LINE_CHECKED,
+                            itemData.checkedpr
+                        )
+                        putSerializable(
+                            InvoiceFragmentInfoLinePr.PARAM_YARL,
                             getArgument(PARAM_YARL)
                         )
                     }
@@ -941,7 +1026,7 @@ class InvoiceFragmentLines : BaseFragment(),SearchView.OnQueryTextListener {
                     when (val token = loginRepository.user?.token) {
                         null -> InvoiceLinesFormState.Error(ErrorsFragment.nonFatalExceptionShowToasteToken)
                         else -> {
-                            when (val result = apiPantes.linesSearch(
+                            when (val result = apiPantes.linesSearchPr(
                                 token = token,
                                 invoice = invoice,
                                 yarl = yarl,
